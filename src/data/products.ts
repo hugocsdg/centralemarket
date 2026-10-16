@@ -5,7 +5,10 @@ export type Product = {
   id: number
   title: string
   price: number
-  condition: 'New' | 'Like new' | 'Good' | 'Fair'
+  // Para servicios: '/h', '/session'... Vacío para productos.
+  priceUnit?: string
+  // Los servicios no tienen estado (nuevo, usado...), por eso es opcional.
+  condition?: 'New' | 'Like new' | 'Good' | 'Fair'
   category: string
   location: string
   description: string
@@ -140,14 +143,38 @@ export const products: Product[] = [
     movingOut: true,
     image: 'https://picsum.photos/seed/jacket/600',
   },
+  {
+    id: 11,
+    title: 'Maths & physics tutoring',
+    price: 15,
+    priceUnit: '/h',
+    category: 'services',
+    location: 'Campus or online',
+    description: 'Sample listing. Help with first-year maths and physics, in English, French or Spanish.',
+    seller: 'Sample seller',
+    postedDaysAgo: 1,
+    image: 'https://picsum.photos/seed/tutoring/600',
+  },
+  {
+    id: 12,
+    title: 'Help moving furniture',
+    price: 10,
+    priceUnit: '/h',
+    category: 'services',
+    location: 'Gif-sur-Yvette',
+    description: 'Sample listing. Two people available on weekends to help you carry furniture.',
+    seller: 'Sample seller',
+    postedDaysAgo: 3,
+    image: 'https://picsum.photos/seed/moving/600',
+  },
 ]
 
 export function getProduct(id: number) {
   return products.find((product) => product.id === id)
 }
 
-export function formatPrice(price: number) {
-  return price === 0 ? 'Free' : `${price} €`
+export function formatPrice(price: number, unit = '') {
+  return price === 0 ? 'Free' : `${price} €${unit}`
 }
 
 export function formatPosted(daysAgo: number) {

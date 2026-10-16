@@ -55,7 +55,7 @@ function HomePage() {
       {/* Categorías */}
       <section>
         <h2 className="mb-4 text-2xl font-bold text-burdeos">Categories</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {categories.map(({ slug, name, icon: Icon }) => (
             <Link
               key={slug}

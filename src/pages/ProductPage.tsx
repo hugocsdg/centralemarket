@@ -46,17 +46,19 @@ function ProductPage() {
               {product.movingOut && (
                 <span className="rounded-full bg-burdeos px-3 py-1 text-xs font-medium text-white">Moving out</span>
               )}
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-gray-700">
-                {product.condition}
-              </span>
+              {product.condition && (
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-gray-700">
+                  {product.condition}
+                </span>
+              )}
             </div>
             <h1 className="mt-3 text-3xl font-bold text-gray-900">{product.title}</h1>
-            <p className="mt-1 text-3xl font-bold text-burdeos">{formatPrice(product.price)}</p>
+            <p className="mt-1 text-3xl font-bold text-burdeos">{formatPrice(product.price, product.priceUnit)}</p>
           </div>
 
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-gray-400" /> Pickup in {product.location}
+              <MapPin className="h-4 w-4 text-gray-400" /> {product.priceUnit ? product.location : `Pickup in ${product.location}`}
             </li>
             {category && (
               <li className="flex items-center gap-2">

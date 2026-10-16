@@ -1,4 +1,4 @@
-import { Bike, BookOpen, Dumbbell, Laptop, Package, Shirt, Sofa, Ticket, UtensilsCrossed, CookingPot } from 'lucide-react'
+import { Bike, BookOpen, CookingPot, Dumbbell, HandHelping, Laptop, Package, Shirt, Sofa, Ticket, UtensilsCrossed } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export type Category = {
@@ -17,6 +17,7 @@ export const categories: Category[] = [
   { slug: 'books', name: 'Books & Study', icon: BookOpen },
   { slug: 'bikes', name: 'Bikes & Transport', icon: Bike },
   { slug: 'sports', name: 'Sports & Leisure', icon: Dumbbell },
+  { slug: 'services', name: 'Services', icon: HandHelping },
   { slug: 'other', name: 'Other', icon: Package },
 ]
 

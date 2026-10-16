@@ -32,11 +32,15 @@ function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
       <div className="p-3">
-        <p className="text-lg font-bold text-burdeos">{formatPrice(product.price)}</p>
+        <p className="text-lg font-bold text-burdeos">{formatPrice(product.price, product.priceUnit)}</p>
         <h3 className="truncate text-sm font-medium text-gray-800">{product.title}</h3>
         <p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
-          <span>{product.condition}</span>
-          <span>·</span>
+          {product.condition && (
+            <>
+              <span>{product.condition}</span>
+              <span>·</span>
+            </>
+          )}
           <MapPin className="h-3 w-3" />
           <span className="truncate">{product.location}</span>
         </p>
