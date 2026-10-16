@@ -37,15 +37,15 @@ function ExplorePage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-3xl font-bold text-burdeos">Explore</h1>
+      <h1 className="text-3xl font-bold text-white">Explore</h1>
 
-      <label className="flex items-center gap-2 rounded-full bg-white px-4 py-3 shadow-sm">
-        <Search className="h-4 w-4 text-gray-500" />
+      <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
+        <Search className="h-4 w-4 text-white/50" />
         <input
           value={query}
           onChange={(event) => update('q', event.target.value)}
           placeholder="Search lamps, bikes, tickets…"
-          className="w-full bg-transparent text-sm outline-none placeholder:text-gray-500"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-white/50"
         />
       </label>
 
@@ -60,14 +60,14 @@ function ExplorePage() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-600">
+      <div className="flex items-center justify-between text-sm text-white/60">
         <span>
           {results.length} {results.length === 1 ? 'item' : 'items'}
         </span>
         <select
           value={sort}
           onChange={(event) => update('sort', event.target.value === 'newest' ? '' : event.target.value)}
-          className="rounded-full border border-gray-200 bg-white px-3 py-1.5"
+          className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white [&>option]:bg-noche"
         >
           <option value="newest">Newest first</option>
           <option value="price-asc">Lowest price</option>
@@ -78,7 +78,7 @@ function ExplorePage() {
       {results.length > 0 ? (
         <ProductGrid products={results} />
       ) : (
-        <p className="rounded-2xl bg-white p-10 text-center text-gray-600">
+        <p className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center text-white/60">
           No items found. Try adjusting your search or filters.
         </p>
       )}
@@ -97,7 +97,7 @@ function Chip({ active, onClick, children }: ChipProps) {
     <button
       onClick={onClick}
       className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
-        active ? 'bg-burdeos text-white' : 'bg-white text-gray-700 hover:bg-white/70'
+        active ? 'bg-gradient-to-r from-rojo to-carmin text-white' : 'border border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
       }`}
     >
       {children}

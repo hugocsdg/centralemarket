@@ -2,9 +2,23 @@
 
 @theme {
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Montserrat', 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
+  --color-noche: #12000A;
   --color-burdeos: #650038;
   --color-rojo: #B51227;
+  --color-carmin: #E0153F;
+  --color-rosa: #F43F5E;
   --color-morado: #9B80B2;
   --color-lavanda: #F6F2F5;
 }
 
+/* Tema oscuro para toda la web, como el fondo del logo */
+html {
+  background-color: var(--color-noche);
+  color-scheme: dark;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+}

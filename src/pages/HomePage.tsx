@@ -4,6 +4,7 @@ import { ArrowRight, Leaf, Search } from 'lucide-react'
 import { categories } from '../data/categories'
 import { products } from '../data/products'
 import ProductGrid from '../components/ProductGrid'
+import { LogoFull } from '../components/Logo'
 import SampleDataNotice from '../components/SampleDataNotice'
 
 function HomePage() {
@@ -20,30 +21,44 @@ function HomePage() {
 
   return (
     <div className="space-y-12">
-      {/* Portada, inspirada en el fondo del logo */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1a0010] via-burdeos to-rojo px-6 py-12 text-white sm:px-10 sm:py-16">
-        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-rojo/40 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-morado/30 blur-3xl" />
-        <div className="relative max-w-xl">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Your campus. Your marketplace.</h1>
-          <p className="mt-4 text-white/80">
+      {/* Portada: tu logo en grande sobre el fondo oscuro con ondas */}
+      <section className="grid items-center gap-8 pt-2 md:grid-cols-2 md:gap-12 md:pt-8">
+        <div className="relative order-first mx-auto w-full max-w-sm md:order-last md:max-w-md">
+          <div className="pointer-events-none absolute inset-0 rounded-full bg-rojo/30 blur-3xl" />
+          <LogoFull className="relative w-full drop-shadow-[0_10px_30px_rgba(224,21,63,0.35)]" />
+        </div>
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+            Your campus.
+            <br />
+            <span className="bg-gradient-to-r from-carmin to-morado bg-clip-text text-transparent">Your marketplace.</span>
+          </h1>
+          <p className="mt-4 text-white/70">
             Buy, sell and discover great deals from fellow CentraleSupélec students. Everything you need, all in one
             place.
           </p>
-          <form onSubmit={handleSearch} className="mt-6 flex items-center gap-2 rounded-full bg-white p-1.5 pl-4 text-gray-800">
-            <Search className="h-4 w-4 shrink-0 text-gray-500" />
+          <form
+            onSubmit={handleSearch}
+            className="mt-6 flex items-center gap-2 rounded-full border border-white/15 bg-white/10 p-1.5 pl-4 backdrop-blur-md"
+          >
+            <Search className="h-4 w-4 shrink-0 text-white/50" />
             <input
               name="q"
               placeholder="What are you looking for?"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-gray-500"
+              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50"
             />
-            <button className="rounded-full bg-rojo px-4 py-2 text-sm font-semibold text-white">Search</button>
+            <button className="rounded-full bg-gradient-to-r from-rojo to-carmin px-4 py-2 text-sm font-semibold text-white">
+              Search
+            </button>
           </form>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link to="/explore" className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-burdeos">
+            <Link
+              to="/explore"
+              className="rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-2.5 text-sm font-semibold shadow-lg shadow-rojo/30 hover:brightness-110"
+            >
               Explore marketplace
             </Link>
-            <Link to="/sell" className="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold">
+            <Link to="/sell" className="rounded-full border border-white/25 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">
               Start selling
             </Link>
           </div>
@@ -54,18 +69,18 @@ function HomePage() {
 
       {/* Categorías */}
       <section>
-        <h2 className="mb-4 text-2xl font-bold text-burdeos">Categories</h2>
+        <h2 className="mb-4 text-2xl font-bold">Categories</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {categories.map(({ slug, name, icon: Icon }) => (
             <Link
               key={slug}
               to={`/explore?category=${slug}`}
-              className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lavanda text-burdeos">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rojo/20 text-rosa">
                 <Icon className="h-5 w-5" />
               </span>
-              <span className="text-sm font-medium text-gray-800">{name}</span>
+              <span className="text-sm font-medium text-white/85">{name}</span>
             </Link>
           ))}
         </div>
@@ -78,14 +93,14 @@ function HomePage() {
       </section>
 
       {/* Me voy del campus */}
-      <section className="flex flex-col items-start gap-4 rounded-3xl bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <section className="flex flex-col items-start gap-4 rounded-3xl border border-white/10 bg-gradient-to-r from-burdeos/70 to-rojo/40 p-6 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div>
-          <h2 className="text-2xl font-bold text-burdeos">Leaving campus soon?</h2>
-          <p className="mt-1 text-gray-600">Find a new home for the things you no longer need.</p>
+          <h2 className="text-2xl font-bold">Leaving campus soon?</h2>
+          <p className="mt-1 text-white/70">Find a new home for the things you no longer need.</p>
         </div>
         <Link
           to="/sell"
-          className="flex items-center gap-2 rounded-full bg-rojo px-5 py-2.5 text-sm font-semibold text-white"
+          className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-burdeos hover:bg-white/90"
         >
           Sell your items <ArrowRight className="h-4 w-4" />
         </Link>
@@ -98,11 +113,11 @@ function HomePage() {
       </section>
 
       {/* Sostenibilidad */}
-      <section className="flex items-start gap-4 rounded-3xl bg-morado/15 p-6 sm:p-8">
-        <Leaf className="mt-1 h-6 w-6 shrink-0 text-burdeos" />
+      <section className="flex items-start gap-4 rounded-3xl border border-white/10 bg-morado/10 p-6 backdrop-blur-sm sm:p-8">
+        <Leaf className="mt-1 h-6 w-6 shrink-0 text-morado" />
         <div>
-          <h2 className="text-xl font-bold text-burdeos">Give your things a second life.</h2>
-          <p className="mt-1 text-gray-700">
+          <h2 className="text-xl font-bold">Give your things a second life.</h2>
+          <p className="mt-1 text-white/70">
             Every lamp, chair or bike that changes hands on campus is one less thing thrown away and one less thing
             bought new.
           </p>
@@ -116,10 +131,10 @@ function SectionTitle({ title, subtitle }: { title: string; subtitle: string }) 
   return (
     <div className="mb-4 flex items-end justify-between gap-4">
       <div>
-        <h2 className="text-2xl font-bold text-burdeos">{title}</h2>
-        <p className="text-sm text-gray-600">{subtitle}</p>
+        <h2 className="text-2xl font-bold">{title}</h2>
+        <p className="text-sm text-white/60">{subtitle}</p>
       </div>
-      <Link to="/explore" className="shrink-0 text-sm font-semibold text-rojo hover:underline">
+      <Link to="/explore" className="shrink-0 text-sm font-semibold text-rosa hover:underline">
         See all
       </Link>
     </div>
