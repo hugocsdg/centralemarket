@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --color-burdeos: #650038;
   --color-rojo: #B51227;
   --color-morado: #9B80B2;

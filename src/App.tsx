@@ -1,31 +1,43 @@
-import ProductCard from './components/ProductCard'
-import { products } from './data/products'
+import { Route, Routes } from 'react-router'
+import Layout from './components/Layout'
+import HomePage from './pages/HomePage'
+import ExplorePage from './pages/ExplorePage'
+import ProductPage from './pages/ProductPage'
+import ComingSoonPage from './pages/ComingSoonPage'
+import NotFoundPage from './pages/NotFoundPage'
 
+// El "mapa" de la web: qué página se enseña para cada URL.
+// Todas van dentro de <Layout>, que pone la cabecera y el menú.
 function App() {
   return (
-    <div className="mx-auto min-h-screen max-w-6xl bg-lavanda p-6">
-      <h1 className="text-4xl font-bold text-burdeos">
-        Centrale<span className="text-rojo">Market</span>
-      </h1>
-      <p className="mt-2 text-gray-600">Your campus. Your marketplace.</p>
-
-      <h2 className="mt-10 mb-4 text-2xl font-bold text-burdeos">Fresh on CentraleMarket</h2>
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            title={product.title}
-            price={product.price}
-            condition={product.condition}
-            location={product.location}
-            image={product.image}
-          />
-        ))}
-      </div>
-    </div>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/item/:id" element={<ProductPage />} />
+        <Route
+          path="/sell"
+          element={
+            <ComingSoonPage
+              title="Sell an item"
+              description="Publishing listings with photos will be available once student accounts are live."
+            />
+          }
+        />
+        <Route
+          path="/favorites"
+          element={<ComingSoonPage title="Favorites" description="Save items you like and find them here later." />}
+        />
+        <Route
+          path="/profile"
+          element={
+            <ComingSoonPage title="Your profile" description="Manage your listings and mark items as reserved or sold." />
+          }
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   )
 }
 
 export default App
-
