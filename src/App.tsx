@@ -1,13 +1,17 @@
 import { Route, Routes } from 'react-router'
 import Layout from './components/Layout'
+import RequireAuth from './components/RequireAuth'
 import HomePage from './pages/HomePage'
 import ExplorePage from './pages/ExplorePage'
 import ProductPage from './pages/ProductPage'
+import LoginPage from './pages/LoginPage'
+import ProfilePage from './pages/ProfilePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // El "mapa" de la web: qué página se enseña para cada URL.
 // Todas van dentro de <Layout>, que pone la cabecera y el menú.
+// Las que van dentro de <RequireAuth> piden iniciar sesión.
 function App() {
   return (
     <Routes>
@@ -15,23 +19,32 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/item/:id" element={<ProductPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/sell"
           element={
-            <ComingSoonPage
-              title="Sell an item"
-              description="Publishing listings with photos will be available once student accounts are live."
-            />
+            <RequireAuth>
+              <ComingSoonPage
+                title="Sell an item"
+                description="You're logged in! Publishing listings with photos is the next feature we're building."
+              />
+            </RequireAuth>
           }
         />
         <Route
           path="/favorites"
-          element={<ComingSoonPage title="Favorites" description="Save items you like and find them here later." />}
+          element={
+            <RequireAuth>
+              <ComingSoonPage title="Favorites" description="Save items you like and find them here later." />
+            </RequireAuth>
+          }
         />
         <Route
           path="/profile"
           element={
-            <ComingSoonPage title="Your profile" description="Manage your listings and mark items as reserved or sold." />
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
           }
         />
         <Route path="*" element={<NotFoundPage />} />

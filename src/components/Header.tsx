@@ -3,10 +3,12 @@ import type { FormEvent } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router'
 import { Heart, Plus, Search, User } from 'lucide-react'
 import Logo from './Logo'
+import { useAuth } from '../lib/auth'
 
 function Header() {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
+  const { session, profile } = useAuth()
 
   function handleSearch(event: FormEvent) {
     event.preventDefault()
@@ -44,9 +46,19 @@ function Header() {
           <NavLink to="/favorites" aria-label="Favorites" className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white">
             <Heart className="h-5 w-5" />
           </NavLink>
-          <NavLink to="/profile" aria-label="Profile" className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white">
-            <User className="h-5 w-5" />
-          </NavLink>
+          {session ? (
+            <NavLink
+              to="/profile"
+              aria-label="Profile"
+              className="ml-1 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos text-sm font-bold"
+            >
+              {profile?.display_name[0]?.toUpperCase() ?? <User className="h-4 w-4" />}
+            </NavLink>
+          ) : (
+            <Link to="/login" className="rounded-full px-3 py-2 text-sm font-medium text-white/80 hover:text-white">
+              Log in
+            </Link>
+          )}
           <Link
             to="/sell"
             className="ml-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-rojo to-carmin px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rojo/30 hover:brightness-110"
