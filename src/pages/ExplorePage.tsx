@@ -39,6 +39,7 @@ function ExplorePage() {
         <input
           value={query}
           onChange={(event) => update('q', event.target.value)}
+          aria-label="Search listings"
           placeholder="Search lamps, bikes, tickets…"
           className="w-full bg-transparent text-sm outline-none placeholder:text-white/50"
         />
@@ -62,9 +63,10 @@ function ExplorePage() {
           <div className="flex items-center justify-between text-sm text-white/60">
             <span>{data ? `${data.length} ${data.length === 1 ? 'item' : 'items'}` : ' '}</span>
             <select
+              aria-label="Sort by"
               value={sort}
               onChange={(event) => update('sort', event.target.value === 'newest' ? '' : event.target.value)}
-              className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white [&>option]:bg-noche"
+              className="min-h-11 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white [&>option]:bg-noche"
             >
               <option value="newest">Newest first</option>
               <option value="price-asc">Lowest price</option>
@@ -98,7 +100,7 @@ function Chip({ active, onClick, children }: ChipProps) {
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
+      className={`flex min-h-11 shrink-0 items-center rounded-full px-4 py-1.5 text-sm font-medium transition ${
         active
           ? 'btn-primary text-white'
           : 'glass text-white/80 hover:bg-white/10'

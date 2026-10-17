@@ -134,7 +134,7 @@ function ChatView({ conversation, userId }: { conversation: Conversation; userId
                 }`}
               >
                 <p className="break-words whitespace-pre-line">{message.content}</p>
-                <p className={`mt-0.5 text-right text-[10px] ${mine ? 'text-white/70' : 'text-white/40'}`}>
+                <p className={`mt-0.5 text-right text-[11px] ${mine ? 'text-white/70' : 'text-white/60'}`}>
                   {new Date(message.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                   {mine && (message.read_at ? ' · Seen' : '')}
                 </p>
@@ -156,7 +156,7 @@ function ChatView({ conversation, userId }: { conversation: Conversation; userId
           onChange={(event) => setText(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Write a message…"
-          className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 text-white outline-none placeholder:text-white/40 focus:border-rosa"
+          className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 text-white outline-none placeholder:text-white/50 focus:border-rosa"
         />
         <button
           disabled={!text.trim() || sending}

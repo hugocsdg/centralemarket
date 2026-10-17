@@ -53,7 +53,7 @@ function ProductCard({ listing }: ProductCardProps) {
 
       <div className="px-2 pt-2.5 pb-2">
         <h3 className="truncate font-sans text-sm font-semibold text-white/90">{listing.title}</h3>
-        <p className="mt-0.5 flex items-center gap-1 text-xs text-white/45">
+        <p className="mt-0.5 flex items-center gap-1 text-xs text-white/60">
           {listing.condition && (
             <>
               <span>{listing.condition}</span>

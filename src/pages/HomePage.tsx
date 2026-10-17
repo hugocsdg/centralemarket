@@ -73,11 +73,12 @@ function HomePage() {
             onSubmit={handleSearch}
             className="glass group mx-auto mt-8 flex max-w-lg items-center gap-2 rounded-full p-1.5 pl-5 transition focus-within:shadow-[0_0_0_4px_rgb(224_21_63/0.18),0_20px_40px_-20px_rgb(0_0_0/0.6)] md:mx-0"
           >
-            <Search className="h-5 w-5 shrink-0 text-white/40 transition group-focus-within:text-rosa" />
+            <Search className="h-5 w-5 shrink-0 text-white/60 transition group-focus-within:text-rosa" />
             <input
               name="q"
+              aria-label="Search listings"
               placeholder="What are you looking for?"
-              className="w-full bg-transparent py-2 text-white outline-none placeholder:text-white/40"
+              className="w-full bg-transparent py-2 text-white outline-none placeholder:text-white/50"
             />
             <button className="btn-primary shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold">Search</button>
           </form>

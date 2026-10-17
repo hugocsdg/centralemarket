@@ -55,7 +55,7 @@ function MessagesPage() {
               >
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
                   {cover ? (
-                    <img src={imageUrl(cover.path)} alt="" className="h-full w-full object-cover" />
+                    <img src={imageUrl(cover.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
                   ) : (
                     <ImageOff className="absolute inset-0 m-auto h-5 w-5 text-white/20" />
                   )}
@@ -63,7 +63,7 @@ function MessagesPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <p className={`truncate ${hasUnread ? 'font-bold' : 'font-medium'}`}>{other?.display_name}</p>
-                    <span className="shrink-0 text-xs text-white/40">{formatPosted(conversation.last_message_at)}</span>
+                    <span className="shrink-0 text-xs text-white/60">{formatPosted(conversation.last_message_at)}</span>
                   </div>
                   <p className="truncate text-xs text-white/50">
                     {iAmSeller ? 'Your listing' : 'Buying'} · {conversation.listing?.title}

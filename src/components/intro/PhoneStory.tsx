@@ -189,7 +189,7 @@ function OrderScreen() {
       <div className="mt-2 grid grid-cols-2 gap-1.5">
         {CARDS.map((card) => (
           <div key={card.name} data-card className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
-            <img src={photo(card.photo, 240, 240)} alt="" className="aspect-square w-full object-cover" />
+            <img src={photo(card.photo, 240, 240)} alt="" loading="lazy" decoding="async" className="aspect-square w-full object-cover" />
             <div className="p-1.5">
               <p className="font-bold">{card.price}</p>
               <p className="truncate text-[10px] text-white/60">{card.name}</p>
@@ -232,7 +232,7 @@ function SellScreen() {
     <div data-screen="sell" className={`${screen} px-3 pt-12`}>
       <p className="text-sm font-bold">Sell an item</p>
       <div className="mt-2 flex gap-1.5">
-        <img data-sell-photo src={photo('deskLamp', 240, 240)} alt="" className="aspect-square w-1/3 rounded-lg object-cover" />
+        <img data-sell-photo src={photo('deskLamp', 240, 240)} alt="" loading="lazy" decoding="async" className="aspect-square w-1/3 rounded-lg object-cover" />
         <div className="flex aspect-square w-1/3 items-center justify-center rounded-lg border border-dashed border-white/20 text-white/40">
           <Camera className="h-4 w-4" />
         </div>
@@ -298,7 +298,7 @@ function SoldScreen() {
   return (
     <div data-screen="sold" className={`${screen} items-center justify-center px-4`}>
       <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-        <img src={photo('deskLamp', 480, 360)} alt="" className="aspect-[4/3] w-full object-cover" />
+        <img src={photo('deskLamp', 480, 360)} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
         <div className="p-2.5">
           <p className="text-base font-bold">8 €</p>
           <p className="text-white/60">Desk lamp</p>

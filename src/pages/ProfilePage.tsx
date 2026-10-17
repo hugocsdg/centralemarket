@@ -73,7 +73,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
         <div>
           <h1 className="text-2xl font-bold">{profile.display_name}</h1>
           <p className="text-sm text-white/60">{email}</p>
-          <p className="text-xs text-white/40">Member since {memberSince}</p>
+          <p className="text-xs text-white/60">Member since {memberSince}</p>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
             <button
               key={value}
               onClick={() => setTab(value)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium ${
+              className={`min-h-11 rounded-full px-4 py-1.5 text-sm font-medium ${
                 tab === value
                   ? 'btn-primary text-white'
                   : 'glass text-white/80 hover:bg-white/10'
@@ -155,6 +155,6 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-rosa'
+  'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/50 focus:border-rosa'
 
 export default ProfilePage

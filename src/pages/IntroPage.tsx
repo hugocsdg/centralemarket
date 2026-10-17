@@ -105,14 +105,14 @@ function IntroPage() {
             {!session && (
               <Link
                 to="/login"
-                className="hidden rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap text-white/70 transition hover:text-white sm:block"
+                className="hidden min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap text-white/70 transition hover:text-white sm:flex"
               >
                 Log in
               </Link>
             )}
             <Link
               to={cta.to}
-              className="btn-primary flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap"
+              className="btn-primary flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap"
             >
               {cta.label} <ArrowRight className="hidden h-4 w-4 sm:block" />
             </Link>
@@ -149,7 +149,7 @@ function IntroPage() {
                 <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
               </Link>
             </div>
-            <p data-hero-fade className="mt-10 text-xs tracking-[0.25em] text-white/40 uppercase">
+            <p data-hero-fade className="mt-10 text-xs tracking-[0.25em] text-white/60 uppercase">
               Scroll to discover ↓
             </p>
           </div>
@@ -272,7 +272,7 @@ function IntroPage() {
         </section>
       </main>
 
-      <footer className="relative z-10 border-t border-white/5 py-8 text-center text-xs text-white/40">
+      <footer className="relative z-10 border-t border-white/5 py-8 text-center text-xs text-white/60">
         An independent student initiative for the CentraleSupélec community. · Photos from Unsplash
       </footer>
     </div>

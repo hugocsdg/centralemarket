@@ -36,12 +36,13 @@ function Header({ unread }: { unread: number }) {
 
         <form onSubmit={handleSearch} className="hidden flex-1 md:block">
           <label className="group mx-auto flex max-w-md items-center gap-2 rounded-full glass px-4 py-2 transition focus-within:border-rosa/60 focus-within:bg-white/10 focus-within:shadow-[0_0_0_4px_rgb(224_21_63/0.15)]">
-            <Search className="h-4 w-4 text-white/40 transition group-focus-within:text-rosa" />
+            <Search className="h-4 w-4 text-white/60 transition group-focus-within:text-rosa" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              aria-label="Search listings"
               placeholder="Search lamps, bikes, tickets…"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-white/40"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-white/50"
             />
           </label>
         </form>
@@ -50,7 +51,7 @@ function Header({ unread }: { unread: number }) {
           <NavLink
             to="/explore"
             className={({ isActive }) =>
-              `rounded-full px-3 py-2 text-sm font-medium transition ${
+              `flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium transition ${
                 isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
               }`
             }
@@ -61,12 +62,12 @@ function Header({ unread }: { unread: number }) {
             to="/messages"
             aria-label="Messages"
             className={({ isActive }) =>
-              `relative rounded-full p-2 transition ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`
+              `relative flex h-11 w-11 items-center justify-center rounded-full transition ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`
             }
           >
             <MessageCircle className="h-5 w-5" />
             {unread > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-carmin px-1 text-[10px] font-bold text-white shadow-[0_0_12px_rgb(224_21_63/0.8)]">
+              <span className="absolute top-0 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-carmin px-1 text-[11px] font-bold text-white shadow-[0_0_12px_rgb(224_21_63/0.8)]">
                 {unread}
               </span>
             )}
@@ -75,16 +76,16 @@ function Header({ unread }: { unread: number }) {
             <NavLink
               to="/profile"
               aria-label="Profile"
-              className="mx-1 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos text-sm font-bold ring-2 ring-white/10 transition hover:ring-rosa/50"
+              className="mx-1 flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos text-sm font-bold ring-2 ring-white/10 transition hover:ring-rosa/50"
             >
               {profile?.display_name[0]?.toUpperCase() ?? <User className="h-4 w-4" />}
             </NavLink>
           ) : (
-            <Link to="/login" className="rounded-full px-3 py-2 text-sm font-medium text-white/70 hover:text-white">
+            <Link to="/login" className="flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium text-white/70 hover:text-white">
               Log in
             </Link>
           )}
-          <Link to="/sell" className="btn-primary flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold">
+          <Link to="/sell" className="btn-primary flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold">
             <Plus className="h-4 w-4" />
             Sell
           </Link>
@@ -93,7 +94,7 @@ function Header({ unread }: { unread: number }) {
         <Link
           to="/explore"
           aria-label="Search"
-          className="ml-auto flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white/80 md:hidden"
+          className="ml-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80 md:hidden"
         >
           <Search className="h-5 w-5" />
         </Link>

@@ -20,8 +20,8 @@ function BottomNav({ unread }: { unread: number }) {
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 py-1 text-[10px] font-medium transition ${
-                  isActive ? 'text-white' : 'text-white/45'
+                `flex flex-col items-center gap-0.5 py-1 text-[11px] font-medium transition ${
+                  isActive ? 'text-white' : 'text-white/60'
                 }`
               }
             >
@@ -36,7 +36,7 @@ function BottomNav({ unread }: { unread: number }) {
                       {isActive && <span className="absolute inset-1 rounded-xl bg-white/10" />}
                       <Icon className="relative h-5 w-5" />
                       {to === '/messages' && unread > 0 && (
-                        <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-carmin px-1 text-[10px] font-bold text-white shadow-[0_0_12px_rgb(224_21_63/0.8)]">
+                        <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-carmin px-1 text-[11px] font-bold text-white shadow-[0_0_12px_rgb(224_21_63/0.8)]">
                           {unread}
                         </span>
                       )}

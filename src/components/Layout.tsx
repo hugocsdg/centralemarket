@@ -24,7 +24,7 @@ function Layout() {
       <main className="mx-auto max-w-6xl px-4 pt-24 pb-32 md:pt-28 md:pb-16">
         <Outlet />
       </main>
-      <footer className="hidden border-t border-white/5 py-8 text-center text-xs text-white/40 md:block">
+      <footer className="hidden border-t border-white/5 py-8 text-center text-xs text-white/60 md:block">
         An independent student initiative for the CentraleSupélec community. ·{' '}
         <Link to="/welcome" className="underline-offset-4 hover:text-white hover:underline">
           About CentraleMarket

@@ -66,6 +66,12 @@ h3 {
   letter-spacing: -0.02em;
 }
 
+/* Anillo rojo al moverse con el teclado (Tab); con el ratón no aparece */
+:where(a, button, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-rosa);
+  outline-offset: 3px;
+}
+
 ::selection {
   background: rgb(224 21 63 / 0.6);
   color: white;

@@ -51,7 +51,7 @@ function MacScene() {
               {/* Contenido de la pantalla: un anuncio por foto */}
               {ITEMS.map((item, i) => (
                 <div key={item.key} data-mac-item className={`absolute inset-0 top-[7%] ${i === 0 ? '' : 'opacity-0'}`}>
-                  <img src={photo(item.key, 900)} alt="" className="h-full w-full object-cover" />
+                  <img src={photo(item.key, 900)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   <div className="absolute bottom-[5%] left-[3%] rounded-[clamp(0.3rem,1vw,0.9rem)] bg-black/60 px-[2.5%] py-[1.5%] backdrop-blur-md">
                     <p className="text-[clamp(9px,2vw,22px)] font-bold">{item.price}</p>
                     <p className="text-[clamp(7px,1.2vw,13px)] text-white/70">{item.title}</p>
@@ -77,6 +77,8 @@ function MacScene() {
               data-enter={item.enter}
               data-exit={item.exit}
               src={photo(item.key, 1800)}
+              loading="lazy"
+              decoding="async"
               alt={item.title}
               className="h-full w-full object-cover will-change-transform"
             />

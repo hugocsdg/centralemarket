@@ -125,7 +125,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
                     index === selected ? 'border-rosa' : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={imageUrl(img.path)} alt="" className="h-full w-full object-cover" />
+                  <img src={imageUrl(img.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
@@ -154,19 +154,19 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
 
           <ul className="space-y-2 text-sm text-white/80">
             <li className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-white/40" />
+              <MapPin className="h-4 w-4 text-white/60" />
               {listing.category === 'services' ? listing.location : `Pickup in ${listing.location}`}
             </li>
             {category && (
               <li className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-white/40" />
+                <Tag className="h-4 w-4 text-white/60" />
                 <Link to={`/explore?category=${category.slug}`} className="hover:text-rosa hover:underline">
                   {category.name}
                 </Link>
               </li>
             )}
             <li className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-white/40" /> Listed {formatPosted(listing.created_at).toLowerCase()}
+              <Clock className="h-4 w-4 text-white/60" /> Listed {formatPosted(listing.created_at).toLowerCase()}
             </li>
           </ul>
 

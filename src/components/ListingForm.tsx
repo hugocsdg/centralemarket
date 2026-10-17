@@ -134,7 +134,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, onSubmit }: Li
             <div key={photo.preview} className="relative aspect-square overflow-hidden rounded-xl border border-white/10">
               <img src={photo.preview} alt="" className="h-full w-full object-cover" />
               {index === 0 && (
-                <span className="absolute bottom-1 left-1 rounded-full bg-noche/80 px-2 py-0.5 text-[10px] font-semibold">
+                <span className="absolute bottom-1 left-1 rounded-full bg-noche/80 px-2 py-0.5 text-[11px] font-semibold">
                   Cover
                 </span>
               )}
@@ -142,7 +142,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, onSubmit }: Li
                 type="button"
                 onClick={() => removePhoto(index)}
                 aria-label="Remove photo"
-                className="absolute top-1 right-1 rounded-full bg-noche/80 p-1 hover:bg-rojo"
+                className="absolute top-1 right-1 rounded-full bg-noche/80 p-1 after:absolute after:-inset-2 hover:bg-rojo"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -201,7 +201,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, onSubmit }: Li
                   key={option}
                   type="button"
                   onClick={() => setCondition(option)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  className={`min-h-11 rounded-full px-4 py-2 text-sm font-medium transition ${
                     condition === option
                       ? 'btn-primary text-white'
                       : 'border border-white/15 bg-white/5 text-white/80 hover:bg-white/10'
@@ -312,7 +312,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, onSubmit }: Li
 }
 
 const inputClass =
-  'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-rosa'
+  'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/50 focus:border-rosa'
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
