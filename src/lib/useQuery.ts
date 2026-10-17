@@ -27,10 +27,13 @@ export function useQuery<T>(key: string | null, fetcher: () => Promise<T>) {
   }, [key, version])
 
   const fresh = state.key === `${key}#${version}`
+  // Al recargar la misma petición, seguimos enseñando los datos anteriores mientras llegan los nuevos.
+  const sameRequest = state.key?.startsWith(`${key}#`) ?? false
+  const data = fresh || sameRequest ? state.data : undefined
   return {
-    data: fresh ? state.data : undefined,
+    data,
     error: fresh ? state.error : undefined,
-    loading: key !== null && !fresh,
+    loading: key !== null && !fresh && data === undefined,
     // Volver a pedir los datos (p. ej. después de editar algo).
     reload: () => setVersion((v) => v + 1),
   }

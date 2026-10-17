@@ -107,6 +107,30 @@ export type NewListing = {
   moving_out: boolean
 }
 
+// Una foto del formulario: o ya estaba subida (al editar) o es nueva del móvil/ordenador.
+export type PhotoItem =
+  | { kind: 'existing'; path: string; preview: string }
+  | { kind: 'new'; file: File; preview: string }
+
+// Sube fotos nuevas a la carpeta del usuario y devuelve dónde quedaron.
+async function uploadPhotos(
+  userId: string,
+  listingId: number,
+  files: File[],
+  uploaded: string[],
+  onProgress?: (message: string) => void,
+) {
+  for (const [index, file] of files.entries()) {
+    onProgress?.(`Uploading photo ${index + 1} of ${files.length}…`)
+    const blob = await prepareImage(file)
+    // Cada usuario sube a su propia carpeta (lo exige la regla de seguridad del almacén).
+    const path = `${userId}/${listingId}/${crypto.randomUUID()}.jpg`
+    const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg' })
+    if (error) throw error
+    uploaded.push(path)
+  }
+}
+
 // Publicar: 1) crear el anuncio  2) subir las fotos  3) guardar dónde están.
 // Si algo falla por el camino, se deshace todo para no dejar anuncios a medias.
 export async function createListing(
@@ -122,18 +146,7 @@ export async function createListing(
   const uploaded: string[] = []
 
   try {
-    for (const [index, photo] of photos.entries()) {
-      onProgress?.(`Uploading photo ${index + 1} of ${photos.length}…`)
-      const blob = await prepareImage(photo)
-      // Cada usuario sube a su propia carpeta (lo exige la regla de seguridad del almacén).
-      const path = `${userId}/${listingId}/${index}-${crypto.randomUUID()}.jpg`
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, blob, { contentType: 'image/jpeg' })
-      if (uploadError) throw uploadError
-      uploaded.push(path)
-    }
-
+    await uploadPhotos(userId, listingId, photos, uploaded, onProgress)
     const rows = uploaded.map((path, position) => ({ listing_id: listingId, path, position }))
     const { error: imagesError } = await supabase.from('listing_images').insert(rows)
     if (imagesError) throw imagesError
@@ -144,4 +157,55 @@ export async function createListing(
   }
 
   return listingId
+}
+
+// Editar: guardar los datos, subir las fotos nuevas, ordenar todas y borrar las que quitaste.
+export async function updateListing(
+  userId: string,
+  listingId: number,
+  listing: NewListing,
+  photos: PhotoItem[],
+  originalPaths: string[],
+  onProgress?: (message: string) => void,
+) {
+  onProgress?.('Saving changes…')
+  const { error } = await supabase.from('listings').update(listing).eq('id', listingId)
+  if (error) throw error
+
+  const newFiles = photos.flatMap((photo) => (photo.kind === 'new' ? [photo.file] : []))
+  const uploaded: string[] = []
+  try {
+    await uploadPhotos(userId, listingId, newFiles, uploaded, onProgress)
+  } catch (failure) {
+    if (uploaded.length) await supabase.storage.from(BUCKET).remove(uploaded)
+    throw failure
+  }
+
+  // Orden final: tal como aparecen en el formulario.
+  let next = 0
+  const finalPaths = photos.map((photo) => (photo.kind === 'existing' ? photo.path : uploaded[next++]))
+
+  onProgress?.('Updating photos…')
+  const { error: deleteError } = await supabase.from('listing_images').delete().eq('listing_id', listingId)
+  if (deleteError) throw deleteError
+  const rows = finalPaths.map((path, position) => ({ listing_id: listingId, path, position }))
+  const { error: insertError } = await supabase.from('listing_images').insert(rows)
+  if (insertError) throw insertError
+
+  const removed = originalPaths.filter((path) => !finalPaths.includes(path))
+  if (removed.length) await supabase.storage.from(BUCKET).remove(removed)
+}
+
+// Cambiar a disponible, reservado o vendido.
+export async function setListingStatus(listingId: number, status: ListingStatus) {
+  const { error } = await supabase.from('listings').update({ status }).eq('id', listingId)
+  if (error) throw error
+}
+
+// Borrar el anuncio y sus fotos. (Las conversaciones sobre él también se borran.)
+export async function deleteListing(listing: Listing) {
+  const { error } = await supabase.from('listings').delete().eq('id', listing.id)
+  if (error) throw error
+  const paths = listing.images.map((image) => image.path)
+  if (paths.length) await supabase.storage.from(BUCKET).remove(paths)
 }

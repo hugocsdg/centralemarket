@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ArrowLeft, CheckCircle2, Clock, ImageOff, MapPin, MessageCircle, Share2, Tag } from 'lucide-react'
 import { fetchListing, fetchListings, imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
+import OwnerPanel from '../components/OwnerPanel'
 import { formatPosted, formatPrice } from '../lib/format'
 import { getCategory } from '../data/categories'
 import { useAuth } from '../lib/auth'
@@ -17,7 +18,9 @@ function ProductPage() {
   const { id } = useParams()
   const [params] = useSearchParams()
   const { session } = useAuth()
-  const { data: listing, loading, error } = useQuery(session ? `item|${id}` : null, () => fetchListing(Number(id)))
+  const { data: listing, loading, error, reload } = useQuery(session ? `item|${id}` : null, () =>
+    fetchListing(Number(id)),
+  )
 
   // Quien llega por un enlace compartido sin sesión ve la invitación a entrar.
   if (!session) {
@@ -37,13 +40,20 @@ function ProductPage() {
       userId={session.user.id}
       isOwner={listing.seller_id === session.user.id}
       justPublished={params.has('published')}
+      onChanged={reload}
     />
   )
 }
 
-type ListingViewProps = { listing: Listing; userId: string; isOwner: boolean; justPublished: boolean }
+type ListingViewProps = {
+  listing: Listing
+  userId: string
+  isOwner: boolean
+  justPublished: boolean
+  onChanged: () => void
+}
 
-function ListingView({ listing, userId, isOwner, justPublished }: ListingViewProps) {
+function ListingView({ listing, userId, isOwner, justPublished, onChanged }: ListingViewProps) {
   const navigate = useNavigate()
   const [opening, setOpening] = useState(false)
   const [contactError, setContactError] = useState('')
@@ -175,14 +185,7 @@ function ListingView({ listing, userId, isOwner, justPublished }: ListingViewPro
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
-            {isOwner ? (
-              <Link
-                to="/profile"
-                className="flex flex-1 items-center justify-center rounded-full border border-white/20 bg-white/5 px-5 py-3 font-semibold hover:border-white/40"
-              >
-                This is your listing · Manage
-              </Link>
-            ) : (
+            {isOwner ? null : (
               <button
                 onClick={contactSeller}
                 disabled={opening}
@@ -199,6 +202,8 @@ function ListingView({ listing, userId, isOwner, justPublished }: ListingViewPro
             </button>
           </div>
           {contactError && <p className="text-sm text-rosa">{contactError}</p>}
+
+          {isOwner && <OwnerPanel listing={listing} onChanged={onChanged} />}
         </div>
       </div>
 

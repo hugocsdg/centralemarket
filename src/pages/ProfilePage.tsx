@@ -41,6 +41,9 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState('')
   const myListings = useQuery(`mine|${profile.id}`, () => fetchListings({ sellerId: profile.id, includeSold: true }))
+  const [tab, setTab] = useState<'active' | 'sold'>('active')
+  const active = myListings.data?.filter((listing) => listing.status !== 'sold')
+  const sold = myListings.data?.filter((listing) => listing.status === 'sold')
 
   async function save(event: FormEvent) {
     event.preventDefault()
@@ -112,11 +115,32 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
             <Plus className="h-4 w-4" /> Sell an item
           </Link>
         </div>
+        <div className="flex gap-2">
+          {(
+            [
+              ['active', `Active${active ? ` (${active.length})` : ''}`],
+              ['sold', `Sold${sold ? ` (${sold.length})` : ''}`],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setTab(value)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium ${
+                tab === value
+                  ? 'bg-gradient-to-r from-rojo to-carmin text-white'
+                  : 'border border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-white/50">Open a listing to edit it, mark it as reserved or sold, or delete it.</p>
         <ProductGrid
-          listings={myListings.data}
+          listings={tab === 'active' ? active : sold}
           loading={myListings.loading}
           error={myListings.error}
-          empty="You haven't listed anything yet."
+          empty={tab === 'active' ? "You don't have any active listings." : 'Nothing sold yet.'}
         />
       </section>
 

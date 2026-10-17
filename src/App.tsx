@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage'
 import SellPage from './pages/SellPage'
 import MessagesPage from './pages/MessagesPage'
 import ChatPage from './pages/ChatPage'
+import EditListingPage from './pages/EditListingPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -22,6 +23,14 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/item/:id" element={<ProductPage />} />
+        <Route
+          path="/item/:id/edit"
+          element={
+            <RequireAuth>
+              <EditListingPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/sell"
