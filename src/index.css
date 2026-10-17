@@ -22,6 +22,14 @@
   --animate-marquee: marquee 40s linear infinite;
   --animate-gradient: gradient-shift 8s ease infinite;
   --animate-spin-slow: spin 30s linear infinite;
+  --animate-scroll-dot: scroll-dot 1.8s cubic-bezier(0.6, 0, 0.4, 1) infinite;
+
+  @keyframes scroll-dot {
+    0% { transform: translateY(0); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(14px); opacity: 0; }
+  }
 
   @keyframes aurora-1 {
     0% { transform: translate(0, 0) scale(1); }
@@ -146,6 +154,37 @@ h3 {
   &:hover::before {
     opacity: 1;
   }
+}
+
+/* Luz que sigue al ratón dentro de una tarjeta (estilo Linear).
+   --mx / --my los pone IntroPage al mover el ratón. */
+@utility spotlight {
+  position: relative;
+  isolation: isolate;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      420px circle at var(--mx, 50%) var(--my, 50%),
+      rgb(255 77 115 / 0.16),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+  &:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Texto solo con contorno (para la cinta de categorías) */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 0.35);
 }
 
 /* Aparecer suavemente al hacer scroll (ver components/Reveal.tsx) */

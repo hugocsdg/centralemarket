@@ -42,8 +42,10 @@ function CampusScene() {
         const element = labelsBox.current.querySelector<HTMLElement>(`[data-label="${label.id}"]`)
         if (!element) continue
         const { x, y, visible: inFront } = engine.project(label.position)
+        // Se esconde si cae en la zona de los textos de abajo (en el móvil se tapaban).
+        const overCaptions = y > labelsBox.current.clientHeight * 0.62
         element.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`
-        element.style.opacity = inFront ? '1' : '0'
+        element.style.opacity = inFront && !overCaptions ? '1' : '0'
       }
     }
 
@@ -98,7 +100,7 @@ function CampusScene() {
         ScrollTrigger.create({
           trigger: el,
           start: 'top top',
-          end: () => `+=${window.innerHeight * 3}`,
+          end: () => `+=${window.innerHeight * (window.innerWidth < 768 ? 1.8 : 2.4)}`,
           pin: true,
           onUpdate: (self) => {
             state.current.progress = self.progress
@@ -132,6 +134,9 @@ function CampusScene() {
       {/* Fundidos arriba y abajo para que el 3D se mezcle con la página */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-noche to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-noche via-noche/70 to-transparent" />
+
+      {/* Sombra detrás de los textos para que se lean sobre los arcos de luz */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-[radial-gradient(ellipse_70%_80%_at_20%_100%,rgb(9_9_11/0.9),transparent_70%)]" />
 
       {/* Textos */}
       <div className="absolute inset-x-4 bottom-[8svh] md:inset-x-auto md:bottom-[10vh] md:left-[max(1rem,calc((100vw-72rem)/2+1rem))] md:w-[30rem]">

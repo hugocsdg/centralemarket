@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { MapPin, MessageCircle } from 'lucide-react'
 import { photo } from '../../data/photos'
 import type { PhotoKey } from '../../data/photos'
@@ -10,14 +11,24 @@ import type { PhotoKey } from '../../data/photos'
 //   enter: zona oscura desde la que aparece el objeto (la transición "sale" de ahí)
 //   exit:  zona oscura en la que la cámara se mete para pasar al siguiente objeto
 // Como las dos zonas son casi negras, el paso de una foto a otra parece un solo plano continuo.
-type Item = { key: PhotoKey; title: string; price: string; place: string; text: string; enter: string; exit: string }
+//   focus: qué parte de la foto se ve en el móvil (en vertical solo cabe una franja de la foto)
+type Item = {
+  key: PhotoKey
+  title: string
+  price: string
+  place: string
+  text: string
+  enter: string
+  exit: string
+  focus: string
+}
 const ITEMS: Item[] = [
-  { key: 'deskLamp', title: 'Desk lamp', price: '8 €', place: 'Gif-sur-Yvette', text: 'Warm light for late-night revision.', enter: '30% 40%', exit: '22% 58%' },
-  { key: 'roadBike', title: 'Road bike', price: '280 €', place: 'Palaiseau', text: 'Fast, light, ready for the plateau.', enter: '50% 58%', exit: '32% 74%' },
-  { key: 'armchair', title: 'Armchair', price: '45 €', place: 'Moulon', text: 'The comfiest seat in the residence.', enter: '58% 80%', exit: '18% 40%' },
-  { key: 'deskSetup', title: 'Desk & monitor', price: '120 €', place: 'Campus', text: 'A full study setup. Moving-out sale.', enter: '28% 62%', exit: '55% 88%' },
-  { key: 'headphonesDark', title: 'Headphones', price: '40 €', place: 'Orsay', text: 'Noise cancelling. Library-approved.', enter: '37% 72%', exit: '50% 22%' },
-  { key: 'party', title: 'Party ticket', price: '12 €', place: 'Campus', text: 'Friday night, sorted.', enter: '50% 88%', exit: '50% 50%' },
+  { key: 'deskLamp', title: 'Desk lamp', price: '8 €', place: 'Gif-sur-Yvette', text: 'Warm light for late-night revision.', enter: '30% 40%', exit: '22% 58%', focus: '32% 50%' },
+  { key: 'roadBike', title: 'Road bike', price: '280 €', place: 'Palaiseau', text: 'Fast, light, ready for the plateau.', enter: '50% 58%', exit: '32% 74%', focus: '55% 50%' },
+  { key: 'armchair', title: 'Armchair', price: '45 €', place: 'Moulon', text: 'The comfiest seat in the residence.', enter: '58% 80%', exit: '18% 40%', focus: '72% 60%' },
+  { key: 'deskSetup', title: 'Desk & monitor', price: '120 €', place: 'Campus', text: 'A full study setup. Moving-out sale.', enter: '28% 62%', exit: '55% 88%', focus: '74% 50%' },
+  { key: 'headphonesDark', title: 'Headphones', price: '40 €', place: 'Orsay', text: 'Noise cancelling. Library-approved.', enter: '37% 72%', exit: '50% 22%', focus: '50% 50%' },
+  { key: 'party', title: 'Party ticket', price: '12 €', place: 'Campus', text: 'Friday night, sorted.', enter: '50% 88%', exit: '50% 50%', focus: '55% 50%' },
 ]
 
 function MacScene() {
@@ -77,10 +88,13 @@ function MacScene() {
               data-enter={item.enter}
               data-exit={item.exit}
               src={photo(item.key, 1800)}
+              srcSet={`${photo(item.key, 1200)} 1200w, ${photo(item.key, 1800)} 1800w`}
+              sizes="100vw"
+              style={{ '--focus': item.focus } as CSSProperties}
               loading="lazy"
               decoding="async"
               alt={item.title}
-              className="h-full w-full object-cover will-change-transform"
+              className="h-full w-full object-cover object-[var(--focus)] will-change-transform md:object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-noche via-noche/10 to-noche/40" />
           </div>
