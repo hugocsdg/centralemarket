@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router'
-import { Heart, Plus, Search, User } from 'lucide-react'
+import { MessageCircle, Plus, Search, User } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '../lib/auth'
 
-function Header() {
+function Header({ unread }: { unread: number }) {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const { session, profile } = useAuth()
@@ -43,8 +43,17 @@ function Header() {
           >
             Explore
           </NavLink>
-          <NavLink to="/favorites" aria-label="Favorites" className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white">
-            <Heart className="h-5 w-5" />
+          <NavLink
+            to="/messages"
+            aria-label="Messages"
+            className="relative rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white"
+          >
+            <MessageCircle className="h-5 w-5" />
+            {unread > 0 && (
+              <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-carmin px-1 text-[10px] font-bold text-white">
+                {unread}
+              </span>
+            )}
           </NavLink>
           {session ? (
             <NavLink

@@ -9,7 +9,7 @@ import { fetchListings } from '../lib/listings'
 import { useQuery } from '../lib/useQuery'
 import ProductGrid from '../components/ProductGrid'
 
-// Tu perfil: ver tus datos, cambiar nombre y WhatsApp, y cerrar sesión.
+// Tu perfil: ver tus datos, cambiar tu nombre, ver tus anuncios y cerrar sesión.
 // (Tus anuncios aparecerán aquí cuando exista "Vender").
 function ProfilePage() {
   const { session, profile, refreshProfile, signOut } = useAuth()
@@ -38,7 +38,6 @@ type ProfileViewProps = {
 function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
   // El formulario empieza con los datos que ya hay en Supabase.
   const [name, setName] = useState(profile.display_name)
-  const [whatsapp, setWhatsapp] = useState(profile.whatsapp ?? '')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState('')
   const myListings = useQuery(`mine|${profile.id}`, () => fetchListings({ sellerId: profile.id, includeSold: true }))
@@ -47,18 +46,13 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
     event.preventDefault()
     setStatus('saving')
     setError('')
-    const cleanPhone = whatsapp.trim()
     const { error } = await supabase
       .from('profiles')
-      .update({ display_name: name.trim(), whatsapp: cleanPhone || null })
+      .update({ display_name: name.trim() })
       .eq('id', profile.id)
     if (error) {
       setStatus('error')
-      setError(
-        error.message.includes('whatsapp')
-          ? 'Use digits only, with country code (e.g. +34 612 345 678).'
-          : 'Could not save. Please try again.',
-      )
+      setError('Could not save. Please try again.')
       return
     }
     await onSaved()
@@ -97,22 +91,6 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
           />
         </label>
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-white/80">WhatsApp number (optional)</span>
-          <input
-            type="tel"
-            value={whatsapp}
-            onChange={(event) => {
-              setWhatsapp(event.target.value)
-              setStatus('idle')
-            }}
-            placeholder="+34 612 345 678"
-            className={inputClass}
-          />
-          <span className="mt-1 block text-xs text-white/50">
-            Buyers will use it to contact you about your listings. Only logged-in students can see it.
-          </span>
-        </label>
 
         {status === 'error' && <p className="rounded-xl bg-rojo/20 px-4 py-2 text-sm text-rosa">{error}</p>}
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ArrowLeft, CheckCircle2, Clock, ImageOff, MapPin, MessageCircle, Share2, Tag } from 'lucide-react'
 import { fetchListing, fetchListings, imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
@@ -7,6 +7,7 @@ import { formatPosted, formatPrice } from '../lib/format'
 import { getCategory } from '../data/categories'
 import { useAuth } from '../lib/auth'
 import { useQuery } from '../lib/useQuery'
+import { startConversation } from '../lib/chat'
 import ProductGrid from '../components/ProductGrid'
 import LoginPrompt from '../components/LoginPrompt'
 import NotFoundPage from './NotFoundPage'
@@ -30,10 +31,22 @@ function ProductPage() {
   if (error) return <p className="py-20 text-center text-rosa">{error}</p>
   if (!listing) return <NotFoundPage />
 
-  return <ListingView listing={listing} isOwner={listing.seller_id === session.user.id} justPublished={params.has('published')} />
+  return (
+    <ListingView
+      listing={listing}
+      userId={session.user.id}
+      isOwner={listing.seller_id === session.user.id}
+      justPublished={params.has('published')}
+    />
+  )
 }
 
-function ListingView({ listing, isOwner, justPublished }: { listing: Listing; isOwner: boolean; justPublished: boolean }) {
+type ListingViewProps = { listing: Listing; userId: string; isOwner: boolean; justPublished: boolean }
+
+function ListingView({ listing, userId, isOwner, justPublished }: ListingViewProps) {
+  const navigate = useNavigate()
+  const [opening, setOpening] = useState(false)
+  const [contactError, setContactError] = useState('')
   const [selected, setSelected] = useState(0)
   const [shareMessage, setShareMessage] = useState('')
   const category = getCategory(listing.category)
@@ -41,8 +54,19 @@ function ListingView({ listing, isOwner, justPublished }: { listing: Listing; is
   const similarListings = similar.data?.filter((item) => item.id !== listing.id).slice(0, 4)
 
   const image = listing.images[selected] ?? listing.images[0]
-  const phone = listing.seller?.whatsapp?.replace(/\D/g, '')
-  const whatsappText = `Hi! I'm interested in "${listing.title}" on CentraleMarket: ${window.location.origin}/item/${listing.id}`
+
+  // Abre el chat con el vendedor (o el que ya teníais sobre este anuncio).
+  async function contactSeller() {
+    setOpening(true)
+    setContactError('')
+    try {
+      const conversationId = await startConversation(listing.id, userId)
+      navigate(`/messages/${conversationId}`)
+    } catch {
+      setOpening(false)
+      setContactError('Could not open the chat. Please try again.')
+    }
+  }
 
   async function handleShare() {
     const url = `${window.location.origin}/item/${listing.id}`
@@ -158,19 +182,14 @@ function ListingView({ listing, isOwner, justPublished }: { listing: Listing; is
               >
                 This is your listing · Manage
               </Link>
-            ) : phone ? (
-              <a
-                href={`https://wa.me/${phone}?text=${encodeURIComponent(whatsappText)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-3 font-semibold shadow-lg shadow-rojo/30 hover:brightness-110"
-              >
-                <MessageCircle className="h-5 w-5" /> Contact on WhatsApp
-              </a>
             ) : (
-              <p className="flex flex-1 items-center justify-center rounded-full border border-white/10 px-5 py-3 text-center text-sm text-white/60">
-                The seller hasn't added a WhatsApp number yet
-              </p>
+              <button
+                onClick={contactSeller}
+                disabled={opening}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-3 font-semibold shadow-lg shadow-rojo/30 hover:brightness-110 disabled:opacity-60"
+              >
+                <MessageCircle className="h-5 w-5" /> {opening ? 'Opening chat…' : 'Message seller'}
+              </button>
             )}
             <button
               onClick={handleShare}
@@ -179,6 +198,7 @@ function ListingView({ listing, isOwner, justPublished }: { listing: Listing; is
               <Share2 className="h-5 w-5" /> {shareMessage || 'Share'}
             </button>
           </div>
+          {contactError && <p className="text-sm text-rosa">{contactError}</p>}
         </div>
       </div>
 

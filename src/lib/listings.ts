@@ -18,7 +18,7 @@ export type Listing = {
   status: ListingStatus
   moving_out: boolean
   created_at: string
-  seller: { display_name: string; whatsapp: string | null; created_at: string } | null
+  seller: { display_name: string; created_at: string } | null
   images: { path: string; position: number }[]
 }
 
@@ -26,7 +26,7 @@ export const CONDITIONS: Condition[] = ['New', 'Like new', 'Good', 'Fair']
 const BUCKET = 'listing-images'
 
 // Cada anuncio viene con su vendedor y sus fotos, en una sola petición.
-const SELECT = '*, seller:profiles(display_name, whatsapp, created_at), images:listing_images(path, position)'
+const SELECT = '*, seller:profiles(display_name, created_at), images:listing_images(path, position)'
 
 function withSortedImages(listing: Listing): Listing {
   return { ...listing, images: [...(listing.images ?? [])].sort((a, b) => a.position - b.position) }

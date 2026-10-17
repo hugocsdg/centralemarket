@@ -7,6 +7,8 @@ import ProductPage from './pages/ProductPage'
 import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
 import SellPage from './pages/SellPage'
+import MessagesPage from './pages/MessagesPage'
+import ChatPage from './pages/ChatPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -34,6 +36,22 @@ function App() {
           element={
             <RequireAuth>
               <ComingSoonPage title="Favorites" description="Save items you like and find them here later." />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <RequireAuth>
+              <MessagesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/messages/:id"
+          element={
+            <RequireAuth>
+              <ChatPage />
             </RequireAuth>
           }
         />
