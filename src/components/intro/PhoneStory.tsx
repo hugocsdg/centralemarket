@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Camera, Check, CheckCheck, Mail, Search } from 'lucide-react'
 import { LogoMark } from '../Logo'
 import { photo } from '../../data/photos'
@@ -62,28 +64,78 @@ function PhoneStory() {
 
         {/* El móvil */}
         <div className="relative mx-auto">
-          <div className="absolute -inset-10 rounded-full bg-carmin/25 blur-3xl" />
-          {/* iPhone: marco de titanio, botones laterales e isla dinámica */}
-          <div className="relative aspect-[9/19.5] h-[min(58svh,640px)] rounded-[3rem] bg-gradient-to-br from-[#8e8e93] via-[#3a3a3c] to-[#636366] p-[3px] shadow-[0_50px_100px_-25px_rgb(0_0_0/0.9),0_0_60px_-20px_rgb(224_21_63/0.35)]">
-            <span className="absolute top-[18%] -left-[3px] h-[6%] w-[3px] rounded-l bg-[#5a5a5e]" />
-            <span className="absolute top-[27%] -left-[3px] h-[10%] w-[3px] rounded-l bg-[#5a5a5e]" />
-            <span className="absolute top-[39%] -left-[3px] h-[10%] w-[3px] rounded-l bg-[#5a5a5e]" />
-            <span className="absolute top-[30%] -right-[3px] h-[14%] w-[3px] rounded-r bg-[#5a5a5e]" />
-            <div className="relative h-full w-full rounded-[2.85rem] bg-black p-[7px]">
-            <div className="absolute top-[14px] left-1/2 z-20 h-[22px] w-[30%] -translate-x-1/2 rounded-full bg-black ring-1 ring-white/5" />
-            <div className="relative h-full w-full overflow-hidden rounded-[2.4rem] bg-[#0c0c0e] text-[11px] sm:text-xs">
-              <ChaosScreen />
-              <OrderScreen />
-              <LoginScreen />
-              <SellScreen />
-              <ChatScreen />
-              <SoldScreen />
-            </div>
+          <div className="absolute -inset-10 rounded-full bg-carmin/20 blur-3xl" />
+          <IPhone>
+            <ChaosScreen />
+            <OrderScreen />
+            <LoginScreen />
+            <SellScreen />
+            <ChatScreen />
+            <SoldScreen />
+          </IPhone>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// Tamaño "real" al que se dibuja el iPhone. Luego se escala entero (como una imagen)
+// para que quepa en la pantalla sin deformarse: siempre con proporciones de iPhone.
+const DEVICE_W = 300
+const DEVICE_H = 650
+
+// iPhone estilo Pro actual: marco de titanio, bordes de pantalla muy finos,
+// isla dinámica, botón de acción, volumen, encendido y Camera Control.
+function IPhone({ children }: { children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+
+  useLayoutEffect(() => {
+    const element = box.current
+    if (!element) return
+    const update = () => setScale(element.clientHeight / DEVICE_H)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={box}
+      className="relative h-[min(60svh,660px)]"
+      style={{ aspectRatio: `${DEVICE_W} / ${DEVICE_H}` }}
+    >
+      <div
+        className="absolute top-0 left-0 origin-top-left"
+        style={{ width: DEVICE_W, height: DEVICE_H, transform: `scale(${scale})` }}
+      >
+        {/* Botones laterales */}
+        <span className="absolute top-[118px] -left-[3px] h-[30px] w-[4px] rounded-l-sm bg-gradient-to-r from-[#5c5c60] to-[#9a9a9f]" />
+        <span className="absolute top-[170px] -left-[3px] h-[56px] w-[4px] rounded-l-sm bg-gradient-to-r from-[#5c5c60] to-[#9a9a9f]" />
+        <span className="absolute top-[238px] -left-[3px] h-[56px] w-[4px] rounded-l-sm bg-gradient-to-r from-[#5c5c60] to-[#9a9a9f]" />
+        <span className="absolute top-[190px] -right-[3px] h-[86px] w-[4px] rounded-r-sm bg-gradient-to-l from-[#5c5c60] to-[#9a9a9f]" />
+        <span className="absolute top-[370px] -right-[2px] h-[52px] w-[3px] rounded-r-sm bg-[#6e6e73]" />
+
+        {/* Marco de titanio */}
+        <div className="absolute inset-0 rounded-[52px] bg-gradient-to-br from-[#b4b4b9] via-[#4a4a4e] to-[#8e8e93] p-[3px] shadow-[0_60px_120px_-30px_rgb(0_0_0/0.95),0_0_80px_-30px_rgb(224_21_63/0.35)]">
+          <div className="h-full w-full rounded-[49px] bg-[#1c1c1e] p-[2px]">
+            {/* Borde negro de la pantalla, muy fino */}
+            <div className="relative h-full w-full rounded-[47px] bg-black p-[5px]">
+              <div className="relative h-full w-full overflow-hidden rounded-[42px] bg-[#0c0c0e] text-[11px]">
+                {children}
+                {/* Isla dinámica */}
+                <div className="absolute top-[10px] left-1/2 z-30 flex h-[26px] w-[86px] -translate-x-1/2 items-center justify-end rounded-full bg-black pr-[9px]">
+                  <span className="h-[8px] w-[8px] rounded-full bg-[#141428] ring-1 ring-[#2a2a40]" />
+                </div>
+                {/* Reflejo del cristal */}
+                <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(115deg,rgb(255_255_255/0.07)_0%,transparent_32%)]" />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   )
 }
 
@@ -92,7 +144,7 @@ const screen = 'absolute inset-0 flex flex-col'
 function ChaosScreen() {
   return (
     <div data-screen="chaos" className={`${screen} bg-[#0b141a]`}>
-      <div className="flex items-center gap-2 bg-[#1f2c34] px-3 pt-8 pb-2">
+      <div className="flex items-center gap-2 bg-[#1f2c34] px-3 pt-11 pb-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-700 text-[10px]">🏠</span>
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">Campus buy & sell</p>
@@ -124,7 +176,7 @@ function ChaosScreen() {
 
 function OrderScreen() {
   return (
-    <div data-screen="order" className={`${screen} px-3 pt-8`}>
+    <div data-screen="order" className={`${screen} px-3 pt-11`}>
       <div className="flex items-center gap-1.5">
         <LogoMark className="h-5 w-auto" />
         <span className="font-logo font-bold">
@@ -177,7 +229,7 @@ function LoginScreen() {
 
 function SellScreen() {
   return (
-    <div data-screen="sell" className={`${screen} px-3 pt-9`}>
+    <div data-screen="sell" className={`${screen} px-3 pt-12`}>
       <p className="text-sm font-bold">Sell an item</p>
       <div className="mt-2 flex gap-1.5">
         <img data-sell-photo src={photo('lamp', 240, 240)} alt="" className="aspect-square w-1/3 rounded-lg object-cover" />
@@ -212,7 +264,7 @@ function ChatScreen() {
     { mine: true, text: 'Deal, see you at 6 🙌' },
   ]
   return (
-    <div data-screen="chat" className={`${screen} pt-8`}>
+    <div data-screen="chat" className={`${screen} pt-11`}>
       <div className="flex items-center gap-2 border-b border-white/10 px-3 pb-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos font-bold">
           P
