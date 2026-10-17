@@ -27,12 +27,12 @@ function MessagesPage() {
       )}
 
       {conversations.data?.length === 0 && (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
+        <div className="rounded-3xl glass p-10 text-center">
           <MessageCircle className="mx-auto h-8 w-8 text-rosa" />
           <p className="mt-3 text-white/70">No conversations yet. Find something you like and message the seller.</p>
           <Link
             to="/explore"
-            className="mt-5 inline-block rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-2.5 text-sm font-semibold"
+            className="mt-5 inline-block rounded-full btn-primary px-5 py-2.5 text-sm font-semibold"
           >
             Explore the marketplace
           </Link>
@@ -51,7 +51,7 @@ function MessagesPage() {
             <li key={conversation.id}>
               <Link
                 to={`/messages/${conversation.id}`}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition hover:bg-white/10"
+                className="flex items-center gap-3 rounded-2xl glass p-3 transition hover:bg-white/10"
               >
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
                   {cover ? (

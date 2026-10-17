@@ -6,7 +6,7 @@ import { Lock } from 'lucide-react'
 function LoginPrompt({ title = 'Students only' }: { title?: string }) {
   const location = useLocation()
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm">
+    <div className="rounded-3xl glass p-8 text-center backdrop-blur-sm">
       <Lock className="mx-auto h-8 w-8 text-rosa" />
       <h2 className="mt-3 text-xl font-bold">{title}</h2>
       <p className="mx-auto mt-1 max-w-sm text-sm text-white/60">
@@ -15,7 +15,7 @@ function LoginPrompt({ title = 'Students only' }: { title?: string }) {
       </p>
       <Link
         to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`}
-        className="mt-5 inline-block rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-2.5 text-sm font-semibold shadow-lg shadow-rojo/30"
+        className="mt-5 inline-block rounded-full btn-primary px-5 py-2.5 text-sm font-semibold shadow-lg shadow-rojo/30"
       >
         Log in to browse
       </Link>

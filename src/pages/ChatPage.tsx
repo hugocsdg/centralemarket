@@ -90,7 +90,7 @@ function ChatView({ conversation, userId }: { conversation: Conversation; userId
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-11rem)] max-w-2xl flex-col md:h-[calc(100dvh-9rem)]">
+    <div className="mx-auto flex h-[calc(100dvh-14rem)] max-w-2xl flex-col md:h-[calc(100dvh-11rem)]">
       {/* Cabecera: con quién hablas y de qué anuncio */}
       <div className="flex items-center gap-3 border-b border-white/10 pb-3">
         <Link to="/messages" aria-label="Back to messages" className="rounded-full p-2 hover:bg-white/10">
@@ -161,7 +161,7 @@ function ChatView({ conversation, userId }: { conversation: Conversation; userId
         <button
           disabled={!text.trim() || sending}
           aria-label="Send"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-rojo to-carmin disabled:opacity-40"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full btn-primary disabled:opacity-40"
         >
           <Send className="h-5 w-5" />
         </button>

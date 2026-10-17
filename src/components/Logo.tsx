@@ -17,7 +17,7 @@ function Logo() {
   return (
     <span className="flex items-center gap-2">
       <LogoMark />
-      <span className="font-display text-xl font-bold tracking-tight">
+      <span className="font-logo text-xl font-bold tracking-tight">
         <span className="text-white">Centrale</span>
         <span className="text-carmin">Market</span>
       </span>

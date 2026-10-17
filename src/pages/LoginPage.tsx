@@ -57,7 +57,7 @@ function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+    <div className="mx-auto max-w-md rounded-3xl glass p-8 backdrop-blur-sm">
       <LogoMark className="mx-auto h-14 w-auto" />
 
       {step === 'email' ? (
@@ -161,7 +161,7 @@ function friendlyError(message: string) {
 const inputClass =
   'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-rosa'
 const buttonClass =
-  'w-full rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-3 font-semibold text-white shadow-lg shadow-rojo/30 hover:brightness-110 disabled:opacity-50'
+  'w-full rounded-full btn-primary px-5 py-3 font-semibold text-white  disabled:opacity-50'
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (

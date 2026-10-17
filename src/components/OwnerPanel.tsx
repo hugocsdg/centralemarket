@@ -63,7 +63,7 @@ function OwnerPanel({ listing, onChanged }: { listing: Listing; onChanged: () =>
               onClick={() => changeStatus(status.value)}
               className={`rounded-full py-2 text-sm font-medium transition disabled:opacity-60 ${
                 listing.status === status.value
-                  ? 'bg-gradient-to-r from-rojo to-carmin text-white'
+                  ? 'btn-primary text-white'
                   : 'text-white/70 hover:bg-white/10'
               }`}
             >

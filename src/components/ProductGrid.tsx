@@ -17,13 +17,13 @@ function ProductGrid({ listings, loading, error, empty = 'Nothing here yet. Be t
     return (
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-white/5" />
+          <div key={i} className="glass aspect-[4/5.6] animate-pulse rounded-3xl" />
         ))}
       </div>
     )
   }
   if (listings.length === 0) {
-    return <p className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center text-white/60">{empty}</p>
+    return <p className="rounded-2xl glass p-10 text-center text-white/60">{empty}</p>
   }
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">

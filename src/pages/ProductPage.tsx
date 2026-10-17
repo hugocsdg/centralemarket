@@ -108,7 +108,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
       <div className="grid gap-6 md:grid-cols-2 md:gap-10">
         {/* Galería */}
         <div className="space-y-3">
-          <div className="relative aspect-square overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl shadow-black/40">
+          <div className="relative aspect-square overflow-hidden rounded-3xl glass shadow-2xl shadow-black/40">
             {image ? (
               <img src={imageUrl(image.path)} alt={listing.title} className="h-full w-full object-cover" />
             ) : (
@@ -174,7 +174,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
             <p className="leading-relaxed whitespace-pre-line text-white/80">{listing.description}</p>
           )}
 
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-3 rounded-2xl glass p-4">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos font-bold">
               {listing.seller?.display_name[0]?.toUpperCase() ?? '?'}
             </span>
@@ -189,7 +189,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
               <button
                 onClick={contactSeller}
                 disabled={opening}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-3 font-semibold shadow-lg shadow-rojo/30 hover:brightness-110 disabled:opacity-60"
+                className="flex flex-1 items-center justify-center gap-2 rounded-full btn-primary px-5 py-3 font-semibold  disabled:opacity-60"
               >
                 <MessageCircle className="h-5 w-5" /> {opening ? 'Opening chat…' : 'Message seller'}
               </button>

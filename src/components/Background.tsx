@@ -1,54 +1,36 @@
-// Fondo de la web inspirado en el del logo: casi negro con ondas burdeos y rojas que brillan.
+// Fondo de la web: casi negro, con "auroras" de luz roja y morada que se mueven despacio,
+// una rejilla tecnológica muy suave y un poco de grano, como en una foto de cine.
 // Va fijo detrás de todo (fixed + -z-10), así el contenido se desliza por encima.
+
+const NOISE =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")"
+
 function Background() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-noche">
-      <svg className="h-full w-full" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <linearGradient id="bg-wave-red" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#E0153F" stopOpacity="0.9" />
-            <stop offset="0.5" stopColor="#B51227" stopOpacity="0.55" />
-            <stop offset="1" stopColor="#650038" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="bg-wave-purple" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#3A0A2E" stopOpacity="0.9" />
-            <stop offset="1" stopColor="#12000A" stopOpacity="0" />
-          </linearGradient>
-          <radialGradient id="bg-glow" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0" stopColor="#B51227" stopOpacity="0.45" />
-            <stop offset="1" stopColor="#B51227" stopOpacity="0" />
-          </radialGradient>
-          <filter id="bg-blur" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="18" />
-          </filter>
-        </defs>
+      {/* Auroras de luz */}
+      <div className="absolute -top-[20vh] -left-[15vw] h-[70vh] w-[70vh] animate-aurora-1 rounded-full bg-carmin/35 blur-[120px]" />
+      <div className="absolute top-[10vh] -right-[20vw] h-[80vh] w-[80vh] animate-aurora-2 rounded-full bg-burdeos/60 blur-[130px]" />
+      <div className="absolute -bottom-[25vh] left-[20vw] h-[70vh] w-[70vh] animate-aurora-3 rounded-full bg-morado/25 blur-[140px]" />
+      <div className="absolute top-[45vh] left-[45vw] h-[40vh] w-[40vh] animate-aurora-1 rounded-full bg-rojo/25 blur-[110px] [animation-delay:-8s]" />
 
-        {/* Gran onda oscura arriba a la izquierda */}
-        <path d="M-100 -50 C 200 120, 420 60, 720 -80 L -100 -80 Z" fill="url(#bg-wave-purple)" />
-        <path d="M-100 330 C 150 120, 520 60, 760 -60" fill="none" stroke="#4A0D35" strokeOpacity="0.6" strokeWidth="3" />
+      {/* Rejilla que se desvanece hacia los bordes */}
+      <div
+        className="absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgb(255 255 255) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)',
+        }}
+      />
 
-        {/* Ondas rojas a la derecha */}
-        <path
-          d="M1100 -50 C 860 120, 820 380, 1100 620 Z"
-          fill="url(#bg-wave-red)"
-          filter="url(#bg-blur)"
-          opacity="0.75"
-        />
-        <path d="M1050 120 C 880 260, 860 520, 1060 760" fill="none" stroke="#E0153F" strokeOpacity="0.55" strokeWidth="2.5" />
+      {/* Grano */}
+      <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay" style={{ backgroundImage: NOISE }} />
 
-        {/* Onda roja abajo a la izquierda */}
-        <path
-          d="M-100 1100 C 120 820, 320 760, 520 1100 Z"
-          fill="url(#bg-wave-red)"
-          filter="url(#bg-blur)"
-          opacity="0.6"
-        />
-        <path d="M-80 900 C 140 760, 300 800, 480 1060" fill="none" stroke="#B51227" strokeOpacity="0.5" strokeWidth="2.5" />
-
-        {/* Brillos suaves */}
-        <circle cx="820" cy="200" r="260" fill="url(#bg-glow)" />
-        <circle cx="120" cy="880" r="220" fill="url(#bg-glow)" />
-      </svg>
+      {/* Viñeta: oscurece los bordes para centrar la atención */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(11_0_6/0.8))]" />
     </div>
   )
 }

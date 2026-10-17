@@ -21,10 +21,10 @@ function Layout() {
     <div className="relative min-h-screen text-white">
       <Background />
       <Header unread={unread} />
-      <main className="mx-auto max-w-6xl px-4 pt-6 pb-28 md:pb-12">
+      <main className="mx-auto max-w-6xl px-4 pt-24 pb-32 md:pt-28 md:pb-16">
         <Outlet />
       </main>
-      <footer className="hidden border-t border-white/10 py-6 text-center text-xs text-white/50 md:block">
+      <footer className="hidden border-t border-white/5 py-8 text-center text-xs text-white/40 md:block">
         An independent student initiative for the CentraleSupélec community.
       </footer>
       <BottomNav unread={unread} />

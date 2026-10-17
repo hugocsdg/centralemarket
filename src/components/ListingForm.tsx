@@ -203,7 +203,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, onSubmit }: Li
                   onClick={() => setCondition(option)}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                     condition === option
-                      ? 'bg-gradient-to-r from-rojo to-carmin text-white'
+                      ? 'btn-primary text-white'
                       : 'border border-white/15 bg-white/5 text-white/80 hover:bg-white/10'
                   }`}
                 >
@@ -303,7 +303,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, onSubmit }: Li
 
       <button
         disabled={busy}
-        className="w-full rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-3.5 font-semibold shadow-lg shadow-rojo/30 hover:brightness-110 disabled:opacity-60"
+        className="w-full rounded-full btn-primary px-5 py-3.5 font-semibold  disabled:opacity-60"
       >
         {busy ? progress : submitLabel}
       </button>
@@ -316,7 +316,7 @@ const inputClass =
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm sm:p-6">
+    <section className="space-y-4 rounded-3xl glass p-5 backdrop-blur-sm sm:p-6">
       <div>
         <h2 className="text-lg font-bold">{title}</h2>
         {hint && <p className="text-xs text-white/50">{hint}</p>}

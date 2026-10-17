@@ -77,7 +77,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
         </div>
       </div>
 
-      <form onSubmit={save} className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+      <form onSubmit={save} className="space-y-4 rounded-3xl glass p-6 backdrop-blur-sm">
         <h2 className="text-lg font-bold">Profile settings</h2>
 
         <label className="block">
@@ -99,7 +99,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
 
         <button
           disabled={status === 'saving'}
-          className="rounded-full bg-gradient-to-r from-rojo to-carmin px-5 py-2.5 font-semibold disabled:opacity-50"
+          className="rounded-full btn-primary px-5 py-2.5 font-semibold disabled:opacity-50"
         >
           {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save changes'}
         </button>
@@ -110,7 +110,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
           <h2 className="text-lg font-bold">My listings</h2>
           <Link
             to="/sell"
-            className="flex items-center gap-1 rounded-full bg-gradient-to-r from-rojo to-carmin px-4 py-2 text-sm font-semibold"
+            className="flex items-center gap-1 rounded-full btn-primary px-4 py-2 text-sm font-semibold"
           >
             <Plus className="h-4 w-4" /> Sell an item
           </Link>
@@ -127,8 +127,8 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
               onClick={() => setTab(value)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium ${
                 tab === value
-                  ? 'bg-gradient-to-r from-rojo to-carmin text-white'
-                  : 'border border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+                  ? 'btn-primary text-white'
+                  : 'glass text-white/80 hover:bg-white/10'
               }`}
             >
               {label}

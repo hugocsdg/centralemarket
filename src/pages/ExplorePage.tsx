@@ -100,8 +100,8 @@ function Chip({ active, onClick, children }: ChipProps) {
       onClick={onClick}
       className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
         active
-          ? 'bg-gradient-to-r from-rojo to-carmin text-white'
-          : 'border border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+          ? 'btn-primary text-white'
+          : 'glass text-white/80 hover:bg-white/10'
       }`}
     >
       {children}

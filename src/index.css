@@ -2,14 +2,49 @@
 
 @theme {
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Montserrat', 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
-  --color-noche: #12000A;
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
+  --font-logo: 'Montserrat', 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
+  --color-noche: #0B0006;
   --color-burdeos: #650038;
   --color-rojo: #B51227;
   --color-carmin: #E0153F;
   --color-rosa: #F43F5E;
   --color-morado: #9B80B2;
   --color-lavanda: #F6F2F5;
+
+  /* Animaciones */
+  --animate-aurora-1: aurora-1 22s ease-in-out infinite alternate;
+  --animate-aurora-2: aurora-2 28s ease-in-out infinite alternate;
+  --animate-aurora-3: aurora-3 34s ease-in-out infinite alternate;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-gradient: gradient-shift 8s ease infinite;
+  --animate-spin-slow: spin 30s linear infinite;
+
+  @keyframes aurora-1 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(18vw, 12vh) scale(1.25); }
+  }
+  @keyframes aurora-2 {
+    0% { transform: translate(0, 0) scale(1.1); }
+    100% { transform: translate(-20vw, 18vh) scale(0.9); }
+  }
+  @keyframes aurora-3 {
+    0% { transform: translate(0, 0) scale(0.9); }
+    100% { transform: translate(10vw, -16vh) scale(1.2); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-14px) rotate(-1.5deg); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
 }
 
 /* Tema oscuro para toda la web, como el fondo del logo */
@@ -18,7 +53,116 @@ html {
   color-scheme: dark;
 }
 
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
 h1,
-h2 {
+h2,
+h3 {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: rgb(224 21 63 / 0.6);
+  color: white;
+}
+
+/* ---------- Piezas del diseño (se usan como clases normales) ---------- */
+
+/* Cristal esmerilado: cajas semitransparentes con brillo arriba */
+@utility glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.075), rgb(255 255 255 / 0.025));
+  border: 1px solid rgb(255 255 255 / 0.09);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 20px 40px -20px rgb(0 0 0 / 0.6);
+}
+
+/* Botón principal: degradado rojo con resplandor */
+@utility btn-primary {
+  background-image: linear-gradient(135deg, #ff3b62 0%, var(--color-carmin) 35%, var(--color-rojo) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 8px 24px -6px rgb(224 21 63 / 0.6);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.3),
+      0 12px 32px -6px rgb(224 21 63 / 0.75);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Texto con degradado animado */
+@utility text-shine {
+  background-image: linear-gradient(90deg, #ff4d73, #e0153f, #c084fc, #ff4d73);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-gradient);
+}
+
+/* Borde que brilla al pasar el ratón (para tarjetas) */
+@utility glow-border {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgb(255 77 115 / 0.9), rgb(192 132 252 / 0.5) 40%, transparent 70%);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+/* Aparecer suavemente al hacer scroll (ver components/Reveal.tsx) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Quien prefiere menos movimiento (ajuste del sistema) no ve animaciones */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }
