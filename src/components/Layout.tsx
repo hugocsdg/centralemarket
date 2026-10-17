@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import { Link, Outlet, useLocation } from 'react-router'
 import Background from './Background'
 import Header from './Header'
 import BottomNav from './BottomNav'
@@ -25,7 +25,10 @@ function Layout() {
         <Outlet />
       </main>
       <footer className="hidden border-t border-white/5 py-8 text-center text-xs text-white/40 md:block">
-        An independent student initiative for the CentraleSupélec community.
+        An independent student initiative for the CentraleSupélec community. ·{' '}
+        <Link to="/welcome" className="underline-offset-4 hover:text-white hover:underline">
+          About CentraleMarket
+        </Link>
       </footer>
       <BottomNav unread={unread} />
     </div>

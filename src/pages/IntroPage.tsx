@@ -1,26 +1,31 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router'
 import 'lenis/dist/lenis.css'
-import {
-  ArrowRight,
-  Camera,
-  Handshake,
-  Luggage,
-  Mail,
-  MessageCircle,
-  PlaneLanding,
-  Search,
-  Sparkles,
-  Users,
-  Warehouse,
-} from 'lucide-react'
+import { ArrowRight, Luggage, PlaneLanding, Sparkles, Users, Warehouse } from 'lucide-react'
 import Background from '../components/Background'
-import Logo, { LogoFull } from '../components/Logo'
+import Logo from '../components/Logo'
+import PhoneStory from '../components/intro/PhoneStory'
+import Journey from '../components/intro/Journey'
 import { categories } from '../data/categories'
 import { useIntroAnimations } from '../lib/useIntroAnimations'
+import { ParticleField, buildShapes } from '../lib/particles'
+import type { Morph, Pose } from '../lib/particles'
+import { useAuth } from '../lib/auth'
+import { markIntroSeen } from '../lib/intro'
 
-// Página de presentación: explica qué es CentraleMarket a quien aún no ha entrado.
-// Las animaciones están en lib/useIntroAnimations.ts; aquí solo marcamos los elementos con data-….
+// Página de presentación: cuenta qué es CentraleMarket mientras haces scroll, como un vídeo.
+// - Partículas de luz (lib/particles.ts) que forman el logo y objetos.
+// - Un móvil que cuenta la historia (components/intro/PhoneStory.tsx).
+// - Un viaje horizontal por un año en el campus (components/intro/Journey.tsx).
+// Todas las animaciones de scroll están en lib/useIntroAnimations.ts.
+
+const OBJECTS = [
+  { title: 'Desk lamps', text: 'For those late nights before exams.' },
+  { title: 'Bikes', text: 'To get around the plateau.' },
+  { title: 'Sofas & chairs', text: 'Your room, upgraded.' },
+  { title: 'Laptops & tech', text: 'Screens, chargers, headphones.' },
+  { title: 'Party tickets', text: 'Friday night, sorted.' },
+]
 
 const AUDIENCE = [
   { icon: PlaneLanding, title: 'New arrivals', text: 'Furnish your room in a weekend without paying full price.' },
@@ -36,33 +41,63 @@ const STATS = [
   { count: 100, suffix: '%', label: 'verified CentraleSupélec students' },
 ]
 
-const STEPS = [
-  {
-    icon: Mail,
-    title: 'Sign in with your student email',
-    text: 'Type your @student-cs.fr address and the code we email you. No password to remember.',
-  },
-  { icon: Camera, title: 'List in under a minute', text: 'Snap a few photos, pick a category, set a price. Done — straight from your phone.' },
-  {
-    icon: MessageCircle,
-    title: 'Chat inside the app',
-    text: 'Buyers message you right on CentraleMarket. Your phone number stays private.',
-  },
-  { icon: Handshake, title: 'Meet on campus', text: 'Agree on a time, hand it over, mark it as sold. That’s it.' },
-]
-
-const PROBLEM =
-  'Right now, everything is sold in WhatsApp groups. Great deals get buried under hundreds of messages, nobody knows what is still available, and students leave campus without ever finding a buyer.'
-
 const GOALS = ['Keep good things in use.', 'Help students save money.', 'Make arriving and leaving campus easier.']
+
+// Dónde y cómo se colocan las partículas en cada momento (índices usados en useIntroAnimations):
+// 0 logo de portada · 1-5 objetos · 6 anillo de fondo · 7 logo final
+const ITEM = (shape: number, mobile: boolean): Pose =>
+  mobile ? { shape, cx: 0.5, cy: 0.33, size: 0.66, alpha: 1 } : { shape, cx: 0.68, cy: 0.52, size: 0.5, alpha: 1 }
+const POSES = {
+  desktop: [
+    { shape: 0, cx: 0.73, cy: 0.5, size: 0.55, alpha: 1 },
+    ...[1, 2, 3, 4, 5].map((s) => ITEM(s, false)),
+    { shape: 6, cx: 0.5, cy: 0.5, size: 1.3, alpha: 0.4, spin: 1 },
+    { shape: 0, cx: 0.5, cy: 0.34, size: 0.42, alpha: 1 },
+  ],
+  mobile: [
+    { shape: 0, cx: 0.5, cy: 0.25, size: 0.62, alpha: 1 },
+    ...[1, 2, 3, 4, 5].map((s) => ITEM(s, true)),
+    { shape: 6, cx: 0.5, cy: 0.5, size: 1.7, alpha: 0.32, spin: 1 },
+    { shape: 0, cx: 0.5, cy: 0.28, size: 0.6, alpha: 1 },
+  ],
+}
 
 function IntroPage() {
   const root = useRef<HTMLDivElement>(null)
-  useIntroAnimations(root)
+  const canvas = useRef<HTMLCanvasElement>(null)
+  // El scroll escribe aquí y las partículas lo leen en cada fotograma.
+  const morph = useRef<Morph>({ from: 0, to: 0, t: 0 })
+  const { session } = useAuth()
+
+  useIntroAnimations(root, morph)
+
+  // Recordar que ya se vio la introducción en este dispositivo.
+  useEffect(() => markIntroSeen(), [])
+
+  // Crear las partículas.
+  useEffect(() => {
+    let field: ParticleField | null = null
+    let cancelled = false
+    const count = window.innerWidth < 768 ? 1100 : 2200
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    buildShapes(count).then((shapes) => {
+      if (cancelled || !canvas.current) return
+      field = new ParticleField(canvas.current, shapes, POSES, morph.current)
+      if (reduced) field.drawStatic()
+      else field.start()
+    })
+    return () => {
+      cancelled = true
+      field?.stop()
+    }
+  }, [])
+
+  const cta = session ? { to: '/', label: 'Enter marketplace' } : { to: '/login', label: 'Get started' }
 
   return (
     <div ref={root} className="relative min-h-screen overflow-x-clip text-white">
       <Background />
+      <canvas ref={canvas} aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 h-full w-full" />
 
       {/* Barra de progreso de lectura */}
       <div
@@ -70,31 +105,36 @@ function IntroPage() {
         className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-carmin via-rosa to-morado"
       />
 
-      {/* Cabecera: se encoge y se oscurece al bajar (clase is-scrolled) */}
+      {/* Cabecera: se encoge y se oscurece al bajar */}
       <header data-intro-header className="intro-header fixed inset-x-0 top-0 z-40 px-3 pt-3">
         <div className="intro-bar glass mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full pr-2 pl-4">
           <Logo />
           <div className="flex items-center gap-1">
+            {!session && (
+              <Link
+                to="/login"
+                className="hidden rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap text-white/70 transition hover:text-white sm:block"
+              >
+                Log in
+              </Link>
+            )}
             <Link
-              to="/login"
-              className="hidden rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap text-white/70 transition hover:text-white sm:block"
-            >
-              Log in
-            </Link>
-            <Link
-              to="/login"
+              to={cta.to}
               className="btn-primary flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap"
             >
-              Get started <ArrowRight className="hidden h-4 w-4 sm:block" />
+              {cta.label} <ArrowRight className="hidden h-4 w-4 sm:block" />
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4">
-        {/* ---------- 1. Portada ---------- */}
-        <section data-hero className="grid min-h-[100svh] items-center gap-6 pt-28 pb-16 md:grid-cols-[1.2fr_1fr]">
-          <div className="text-center md:text-left">
+      <main className="relative z-10">
+        {/* ---------- 1. Portada (las partículas forman el logo) ---------- */}
+        <section
+          data-hero
+          className="mx-auto flex min-h-[100svh] max-w-6xl items-end px-4 pt-[44svh] pb-16 md:items-center md:pt-24"
+        >
+          <div className="w-full text-center md:w-[55%] md:text-left">
             <span
               data-hero-fade
               className="glass inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-white/80"
@@ -102,54 +142,49 @@ function IntroPage() {
               <span className="h-2 w-2 rounded-full bg-carmin shadow-[0_0_10px_rgb(224_21_63)]" />
               For CentraleSupélec students
             </span>
-            <h1 className="mt-6 text-5xl leading-[1.02] font-bold sm:text-6xl lg:text-7xl">
+            <h1 className="mt-5 text-[2.6rem] leading-[1.02] font-bold sm:text-6xl lg:text-7xl">
               <HeroWords text="The campus marketplace" />
               <span className="block">
                 <HeroWords text="you were waiting for." wordClassName="text-shine" />
               </span>
             </h1>
-            <p data-hero-fade className="mx-auto mt-6 max-w-lg text-lg text-white/65 md:mx-0">
-              Buy, sell and swap everything student life needs — furniture, tech, tickets, homemade food and services —
-              with people from your own school.
+            <p data-hero-fade className="mx-auto mt-5 max-w-lg text-base text-white/65 md:mx-0 md:text-lg">
+              Buy, sell and swap everything student life needs — with people from your own school.
             </p>
-            <div data-hero-fade className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
-              <Link to="/login" className="btn-primary group flex items-center gap-2 rounded-full px-7 py-3.5 font-semibold">
-                Get started
+            <div data-hero-fade className="mt-7 flex flex-wrap justify-center gap-3 md:justify-start">
+              <Link to={cta.to} className="btn-primary group flex items-center gap-2 rounded-full px-7 py-3.5 font-semibold">
+                {cta.label}
                 <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
               </Link>
-              <button
-                onClick={() => document.getElementById('how')?.scrollIntoView({ behavior: 'smooth' })}
-                className="glass rounded-full px-7 py-3.5 font-semibold transition hover:-translate-y-0.5 hover:bg-white/10"
-              >
-                How it works
-              </button>
             </div>
+            <p data-hero-fade className="mt-10 text-xs tracking-[0.25em] text-white/40 uppercase">
+              Scroll to discover ↓
+            </p>
           </div>
+        </section>
 
-          <div data-hero-parallax className="relative order-first mx-auto w-full max-w-[17rem] md:order-last md:max-w-md">
-            <div data-hero-logo className="relative">
-              <div className="absolute inset-[8%] animate-spin-slow rounded-full bg-[conic-gradient(from_0deg,transparent,rgb(224_21_63/0.55),transparent_40%,rgb(155_128_178/0.45),transparent_75%)] blur-2xl" />
-              <LogoFull className="relative w-full animate-float drop-shadow-[0_20px_50px_rgba(224,21,63,0.45)]" />
+        {/* ---------- 2. Objetos (las partículas se transforman) ---------- */}
+        <section data-objects-scene className="relative flex h-[100svh] items-end pb-24 md:items-center md:pb-0">
+          <div className="mx-auto w-full max-w-6xl px-4">
+            <div className="text-center md:w-[45%] md:text-left">
+              <p className="text-xs font-semibold tracking-[0.25em] text-rosa uppercase">Everything changes hands</p>
+              <div className="story-captions mt-3">
+                {OBJECTS.map((object, i) => (
+                  <div key={object.title} data-object-caption className={`story-caption ${i === 0 ? 'is-active' : ''}`}>
+                    <h2 className="text-4xl font-bold md:text-6xl">{object.title}</h2>
+                    <p className="mt-2 text-white/60 md:text-lg">{object.text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ---------- 2. El problema ---------- */}
-        <section className="py-24 md:py-40">
-          <p data-reveal className="text-xs font-semibold tracking-[0.25em] text-rosa uppercase">
-            The problem
-          </p>
-          <p data-scrub-words className="mt-6 font-display text-3xl leading-tight font-semibold sm:text-4xl md:text-5xl">
-            {PROBLEM.split(' ').map((word, i) => (
-              <span key={i} data-word>
-                {word}{' '}
-              </span>
-            ))}
-          </p>
-        </section>
+        {/* ---------- 3. El móvil cuenta la historia ---------- */}
+        <PhoneStory />
 
-        {/* ---------- 3. Para quién ---------- */}
-        <section className="py-16 md:py-24">
+        {/* ---------- 4. Para quién ---------- */}
+        <section className="mx-auto max-w-6xl px-4 py-24 md:py-32">
           <SectionHeading eyebrow="Who it's for" title="Made for every CentraleSupélec student" />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {AUDIENCE.map(({ icon: Icon, title, text }) => (
@@ -168,8 +203,11 @@ function IntroPage() {
           </div>
         </section>
 
-        {/* ---------- 4. En cifras ---------- */}
-        <section className="py-16 md:py-24">
+        {/* ---------- 5. Un año en el campus (horizontal) ---------- */}
+        <Journey />
+
+        {/* ---------- 6. En cifras ---------- */}
+        <section className="mx-auto max-w-6xl px-4 py-24 md:py-32">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {STATS.map(({ count, from, suffix, label }) => (
               <div key={label} data-reveal className="glass rounded-3xl p-6">
@@ -188,70 +226,8 @@ function IntroPage() {
           </div>
         </section>
 
-        {/* ---------- 5. Cómo funciona (fijada en escritorio) ---------- */}
-        <section id="how" data-steps className="py-16 md:flex md:min-h-screen md:items-center md:py-0">
-          <div className="grid w-full gap-10 md:grid-cols-[1fr_1.2fr] md:items-center">
-            <div>
-              <SectionHeading eyebrow="How it works" title="From your room to someone else's, in four steps" />
-              {/* Indicador de progreso de los pasos (escritorio) */}
-              <div className="mt-10 hidden items-stretch gap-4 md:flex">
-                <div className="relative w-[3px] overflow-hidden rounded-full bg-white/10">
-                  <div data-steps-fill className="absolute inset-0 origin-top bg-gradient-to-b from-carmin to-morado" />
-                </div>
-                <ol className="space-y-4">
-                  {STEPS.map((step, i) => (
-                    <li
-                      key={step.title}
-                      data-step-dot
-                      className={`step-dot text-sm font-medium text-white/35 transition-colors duration-300 ${i === 0 ? 'is-active' : ''}`}
-                    >
-                      0{i + 1} — {step.title}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-
-            <div data-steps-stage className="steps-stage relative space-y-4 md:h-[22rem] md:space-y-0">
-              {STEPS.map(({ icon: Icon, title, text }, i) => (
-                <div key={title} data-step data-reveal className="glass flex flex-col justify-between rounded-[2rem] p-8 md:h-full md:p-10">
-                  <div className="flex items-start justify-between">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-carmin to-burdeos shadow-lg shadow-rojo/30">
-                      <Icon className="h-7 w-7" />
-                    </span>
-                    <span className="text-shine font-display text-7xl leading-none font-bold opacity-40">0{i + 1}</span>
-                  </div>
-                  <div className="mt-10">
-                    <h3 className="text-2xl font-semibold md:text-3xl">{title}</h3>
-                    <p className="mt-3 text-white/65 md:text-lg">{text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- 6. Vista de la app (zoom con el scroll) ---------- */}
-        <section className="py-24 md:py-40">
-          <SectionHeading eyebrow="All in one place" title="Your whole campus market, organised" center />
-          <div data-zoom className="glass mt-12 overflow-hidden rounded-[2.5rem] p-4 will-change-transform md:p-8">
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-white/40">
-              <Search className="h-5 w-5" /> Search lamps, bikes, tickets…
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {categories.slice(0, 8).map(({ slug, name, icon: Icon }) => (
-                <div key={slug} className="relative flex aspect-[4/3] flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-4">
-                  <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-carmin/20 blur-2xl" />
-                  <Icon className="relative h-6 w-6 text-rosa" />
-                  <p className="relative text-sm font-semibold md:text-base">{name}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ---------- 7. Nuestro objetivo ---------- */}
-        <section className="py-16 md:py-24">
+        <section className="mx-auto max-w-6xl px-4 py-16 md:py-24">
           <p data-reveal className="text-xs font-semibold tracking-[0.25em] text-rosa uppercase">
             Our goal
           </p>
@@ -268,7 +244,9 @@ function IntroPage() {
               <Warehouse className="h-7 w-7 text-morado" />
             </span>
             <div>
-              <p className="text-xs font-semibold tracking-[0.2em] text-morado uppercase">Coming soon · an idea in progress</p>
+              <p className="text-xs font-semibold tracking-[0.2em] text-morado uppercase">
+                Coming soon · an idea in progress
+              </p>
               <h3 className="mt-2 text-2xl font-semibold">Campus Storage</h3>
               <p className="mt-2 max-w-2xl text-white/60">
                 Leaving before you've sold your furniture? We'd love to let you leave it in a campus storage space and keep
@@ -278,27 +256,30 @@ function IntroPage() {
           </div>
         </section>
 
-        {/* ---------- 8. Final ---------- */}
-        <section className="py-24 text-center md:py-40">
+        {/* ---------- 8. Final (las partículas vuelven a ser el logo) ---------- */}
+        <section
+          data-final-scene
+          className="flex min-h-[100svh] items-end justify-center px-4 pt-[52svh] pb-24 text-center md:pt-[58svh]"
+        >
           <div data-reveal>
             <h2 className="text-5xl font-bold sm:text-6xl md:text-7xl">
               Ready to <span className="text-shine">join?</span>
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-lg text-white/60">
+            <p className="mx-auto mt-4 max-w-md text-lg text-white/60">
               It takes 30 seconds. All you need is your @student-cs.fr email.
             </p>
             <Link
-              to="/login"
-              className="btn-primary group mt-10 inline-flex items-center gap-2 rounded-full px-10 py-4 text-lg font-semibold"
+              to={cta.to}
+              className="btn-primary group mt-8 inline-flex items-center gap-2 rounded-full px-10 py-4 text-lg font-semibold"
             >
-              Get started
+              {cta.label}
               <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
             </Link>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-white/40">
+      <footer className="relative z-10 border-t border-white/5 py-8 text-center text-xs text-white/40">
         An independent student initiative for the CentraleSupélec community.
       </footer>
     </div>
@@ -321,11 +302,11 @@ function HeroWords({ text, wordClassName = '' }: { text: string; wordClassName?:
   )
 }
 
-function SectionHeading({ eyebrow, title, center }: { eyebrow: string; title: string; center?: boolean }) {
+function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div data-reveal className={center ? 'text-center' : ''}>
+    <div data-reveal>
       <p className="text-xs font-semibold tracking-[0.25em] text-rosa uppercase">{eyebrow}</p>
-      <h2 className={`mt-3 text-4xl font-bold md:text-5xl ${center ? 'mx-auto max-w-2xl' : 'max-w-xl'}`}>{title}</h2>
+      <h2 className="mt-3 max-w-xl text-4xl font-bold md:text-5xl">{title}</h2>
     </div>
   )
 }

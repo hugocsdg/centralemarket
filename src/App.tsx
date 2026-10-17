@@ -15,6 +15,7 @@ import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
 import IntroPage from './pages/IntroPage'
 import { useAuth } from './lib/auth'
+import { introSeen } from './lib/intro'
 
 // El "mapa" de la web: qué página se enseña para cada URL.
 // Todas van dentro de <Layout>, que pone la cabecera y el menú.
@@ -93,7 +94,8 @@ function App() {
 function IntroGate({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth()
   if (loading) return null
-  return session ? children : <IntroRedirect />
+  // Sin sesión, siempre la introducción. Con sesión, solo la primera vez en este dispositivo.
+  return session && introSeen() ? children : <IntroRedirect />
 }
 
 // Sin sesión, la portada es la página de introducción (fuera del marco de la app).
