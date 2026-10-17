@@ -6,6 +6,7 @@ import ExplorePage from './pages/ExplorePage'
 import ProductPage from './pages/ProductPage'
 import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
+import SellPage from './pages/SellPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -24,10 +25,7 @@ function App() {
           path="/sell"
           element={
             <RequireAuth>
-              <ComingSoonPage
-                title="Sell an item"
-                description="You're logged in! Publishing listings with photos is the next feature we're building."
-              />
+              <SellPage />
             </RequireAuth>
           }
         />

@@ -2,10 +2,12 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { ArrowRight, Leaf, Search } from 'lucide-react'
 import { categories } from '../data/categories'
-import { products } from '../data/products'
 import ProductGrid from '../components/ProductGrid'
 import { LogoFull } from '../components/Logo'
-import SampleDataNotice from '../components/SampleDataNotice'
+import LoginPrompt from '../components/LoginPrompt'
+import { fetchListings } from '../lib/listings'
+import { useAuth } from '../lib/auth'
+import { useQuery } from '../lib/useQuery'
 
 function HomePage() {
   const navigate = useNavigate()
@@ -16,8 +18,10 @@ function HomePage() {
     navigate(query ? `/explore?q=${encodeURIComponent(query)}` : '/explore')
   }
 
-  const freshProducts = [...products].sort((a, b) => a.postedDaysAgo - b.postedDaysAgo).slice(0, 8)
-  const underTwenty = products.filter((product) => product.price < 20).slice(0, 4)
+  // Los anuncios solo se piden si has iniciado sesión (las reglas de Supabase lo exigen).
+  const { session } = useAuth()
+  const fresh = useQuery(session ? 'home-fresh' : null, () => fetchListings({ limit: 8 }))
+  const cheap = useQuery(session ? 'home-cheap' : null, () => fetchListings({ maxPrice: 20, limit: 4 }))
 
   return (
     <div className="space-y-12">
@@ -65,8 +69,6 @@ function HomePage() {
         </div>
       </section>
 
-      <SampleDataNotice />
-
       {/* Categorías */}
       <section>
         <h2 className="mb-4 text-2xl font-bold">Categories</h2>
@@ -89,7 +91,11 @@ function HomePage() {
       {/* Lo más nuevo */}
       <section>
         <SectionTitle title="Fresh on CentraleMarket" subtitle="See what your fellow students just listed." />
-        <ProductGrid products={freshProducts} />
+        {session ? (
+          <ProductGrid listings={fresh.data} loading={fresh.loading} error={fresh.error} />
+        ) : (
+          <LoginPrompt title="See what students are selling" />
+        )}
       </section>
 
       {/* Me voy del campus */}
@@ -107,10 +113,12 @@ function HomePage() {
       </section>
 
       {/* Menos de 20 € */}
-      <section>
-        <SectionTitle title="Great finds under €20" subtitle="Student budget approved." />
-        <ProductGrid products={underTwenty} />
-      </section>
+      {session && cheap.data && cheap.data.length > 0 && (
+        <section>
+          <SectionTitle title="Great finds under €20" subtitle="Student budget approved." />
+          <ProductGrid listings={cheap.data} />
+        </section>
+      )}
 
       {/* Sostenibilidad */}
       <section className="flex items-start gap-4 rounded-3xl border border-white/10 bg-morado/10 p-6 backdrop-blur-sm sm:p-8">

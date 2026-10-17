@@ -1,15 +1,34 @@
 import ProductCard from './ProductCard'
-import type { Product } from '../data/products'
+import type { Listing } from '../lib/listings'
 
 type ProductGridProps = {
-  products: Product[]
+  listings?: Listing[]
+  loading?: boolean
+  error?: string
+  empty?: string
 }
 
-function ProductGrid({ products }: ProductGridProps) {
+// Cuadrícula de anuncios con sus estados: cargando, error y vacío.
+function ProductGrid({ listings, loading, error, empty = 'Nothing here yet. Be the first to list something!' }: ProductGridProps) {
+  if (error) {
+    return <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{error}</p>
+  }
+  if (loading || !listings) {
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-white/5" />
+        ))}
+      </div>
+    )
+  }
+  if (listings.length === 0) {
+    return <p className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center text-white/60">{empty}</p>
+  }
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+      {listings.map((listing) => (
+        <ProductCard key={listing.id} listing={listing} />
       ))}
     </div>
   )

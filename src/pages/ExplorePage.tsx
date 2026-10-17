@@ -2,18 +2,26 @@ import type { ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 import { Search } from 'lucide-react'
 import { categories } from '../data/categories'
-import { products } from '../data/products'
+import { fetchListings } from '../lib/listings'
+import type { Sort } from '../lib/listings'
+import { useAuth } from '../lib/auth'
+import { useQuery } from '../lib/useQuery'
 import ProductGrid from '../components/ProductGrid'
-
-type Sort = 'newest' | 'price-asc' | 'price-desc'
+import LoginPrompt from '../components/LoginPrompt'
 
 // Todo el estado de la búsqueda vive en la URL (?q=...&category=...&sort=...),
 // así un enlace a una búsqueda se puede compartir por WhatsApp.
 function ExplorePage() {
+  const { session } = useAuth()
   const [params, setParams] = useSearchParams()
   const query = params.get('q') ?? ''
   const category = params.get('category') ?? ''
   const sort = (params.get('sort') as Sort) ?? 'newest'
+
+  // Se vuelve a pedir a Supabase cada vez que cambia la búsqueda, la categoría o el orden.
+  const { data, loading, error } = useQuery(session ? `explore|${query}|${category}|${sort}` : null, () =>
+    fetchListings({ query, category, sort }),
+  )
 
   function update(key: string, value: string) {
     const next = new URLSearchParams(params)
@@ -22,22 +30,9 @@ function ExplorePage() {
     setParams(next, { replace: true })
   }
 
-  const text = query.trim().toLowerCase()
-  const results = products
-    .filter((product) => !category || product.category === category)
-    .filter(
-      (product) =>
-        !text || product.title.toLowerCase().includes(text) || product.description.toLowerCase().includes(text),
-    )
-    .sort((a, b) => {
-      if (sort === 'price-asc') return a.price - b.price
-      if (sort === 'price-desc') return b.price - a.price
-      return a.postedDaysAgo - b.postedDaysAgo
-    })
-
   return (
     <div className="space-y-5">
-      <h1 className="text-3xl font-bold text-white">Explore</h1>
+      <h1 className="text-3xl font-bold">Explore</h1>
 
       <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
         <Search className="h-4 w-4 text-white/50" />
@@ -60,27 +55,34 @@ function ExplorePage() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between text-sm text-white/60">
-        <span>
-          {results.length} {results.length === 1 ? 'item' : 'items'}
-        </span>
-        <select
-          value={sort}
-          onChange={(event) => update('sort', event.target.value === 'newest' ? '' : event.target.value)}
-          className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white [&>option]:bg-noche"
-        >
-          <option value="newest">Newest first</option>
-          <option value="price-asc">Lowest price</option>
-          <option value="price-desc">Highest price</option>
-        </select>
-      </div>
-
-      {results.length > 0 ? (
-        <ProductGrid products={results} />
+      {!session ? (
+        <LoginPrompt />
       ) : (
-        <p className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center text-white/60">
-          No items found. Try adjusting your search or filters.
-        </p>
+        <>
+          <div className="flex items-center justify-between text-sm text-white/60">
+            <span>{data ? `${data.length} ${data.length === 1 ? 'item' : 'items'}` : ' '}</span>
+            <select
+              value={sort}
+              onChange={(event) => update('sort', event.target.value === 'newest' ? '' : event.target.value)}
+              className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white [&>option]:bg-noche"
+            >
+              <option value="newest">Newest first</option>
+              <option value="price-asc">Lowest price</option>
+              <option value="price-desc">Highest price</option>
+            </select>
+          </div>
+
+          <ProductGrid
+            listings={data}
+            loading={loading}
+            error={error}
+            empty={
+              query || category
+                ? 'No items found. Try adjusting your search or filters.'
+                : 'Nothing here yet. Be the first to list something!'
+            }
+          />
+        </>
       )}
     </div>
   )
@@ -97,7 +99,9 @@ function Chip({ active, onClick, children }: ChipProps) {
     <button
       onClick={onClick}
       className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
-        active ? 'bg-gradient-to-r from-rojo to-carmin text-white' : 'border border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+        active
+          ? 'bg-gradient-to-r from-rojo to-carmin text-white'
+          : 'border border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
       }`}
     >
       {children}

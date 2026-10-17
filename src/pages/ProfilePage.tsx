@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { LogOut } from 'lucide-react'
+import { Link } from 'react-router'
+import { LogOut, Plus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { Profile } from '../lib/auth'
+import { fetchListings } from '../lib/listings'
+import { useQuery } from '../lib/useQuery'
+import ProductGrid from '../components/ProductGrid'
 
 // Tu perfil: ver tus datos, cambiar nombre y WhatsApp, y cerrar sesión.
 // (Tus anuncios aparecerán aquí cuando exista "Vender").
@@ -37,6 +41,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
   const [whatsapp, setWhatsapp] = useState(profile.whatsapp ?? '')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState('')
+  const myListings = useQuery(`mine|${profile.id}`, () => fetchListings({ sellerId: profile.id, includeSold: true }))
 
   async function save(event: FormEvent) {
     event.preventDefault()
@@ -63,7 +68,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
   const memberSince = new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-4">
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos text-2xl font-bold">
           {profile.display_name[0]?.toUpperCase()}
@@ -119,9 +124,22 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
         </button>
       </form>
 
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-        <h2 className="text-lg font-bold">My listings</h2>
-        <p className="mt-1 text-sm text-white/60">Your listings will appear here once selling is live.</p>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">My listings</h2>
+          <Link
+            to="/sell"
+            className="flex items-center gap-1 rounded-full bg-gradient-to-r from-rojo to-carmin px-4 py-2 text-sm font-semibold"
+          >
+            <Plus className="h-4 w-4" /> Sell an item
+          </Link>
+        </div>
+        <ProductGrid
+          listings={myListings.data}
+          loading={myListings.loading}
+          error={myListings.error}
+          empty="You haven't listed anything yet."
+        />
       </section>
 
       <button
