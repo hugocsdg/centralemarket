@@ -60,7 +60,7 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
 
         // Al bajar desde la portada, el logo de partículas se deshace en un anillo de fondo.
         ScrollTrigger.create({
-          trigger: macScene,
+          trigger: q('[data-campus-scene]')[0] ?? macScene,
           start: 'top bottom',
           end: 'top top',
           onUpdate: (self) => setMorph(0, 1, self.progress),

@@ -236,6 +236,14 @@ h3 {
 [data-mac-scene]:not(.is-animated) .mac-full {
   display: none;
 }
+.is-animated .campus-captions {
+  height: 9rem;
+}
+@media (min-width: 768px) {
+  .is-animated .campus-captions {
+    height: 11rem;
+  }
+}
 .is-animated .mac-captions {
   height: 12.5rem;
 }

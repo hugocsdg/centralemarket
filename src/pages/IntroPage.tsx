@@ -6,6 +6,7 @@ import Background from '../components/Background'
 import Logo from '../components/Logo'
 import PhoneStory from '../components/intro/PhoneStory'
 import MacScene from '../components/intro/MacScene'
+import CampusScene from '../components/intro/CampusScene'
 import Journey from '../components/intro/Journey'
 import { categories } from '../data/categories'
 import { useIntroAnimations } from '../lib/useIntroAnimations'
@@ -16,6 +17,7 @@ import { markIntroSeen } from '../lib/intro'
 
 // Página de presentación: cuenta qué es CentraleMarket mientras haces scroll, como un vídeo.
 // - Partículas de luz (lib/particles.ts) que forman el logo.
+// - El campus en 3D con arcos entre compradores y vendedores (components/intro/CampusScene.tsx).
 // - Un MacBook en cuya pantalla se entra para ver fotos reales (components/intro/MacScene.tsx).
 // - Un móvil que cuenta la historia (components/intro/PhoneStory.tsx).
 // - Un viaje horizontal por un año en el campus (components/intro/Journey.tsx).
@@ -153,11 +155,23 @@ function IntroPage() {
           </div>
         </section>
 
-        {/* ---------- 2. MacBook: zoom a la pantalla con fotos reales ---------- */}
-        <MacScene />
+        {/* ---------- 2. El campus en 3D con las conexiones entre estudiantes ---------- */}
+        {/* El div de alrededor es necesario: GSAP mete la escena fijada en otro contenedor */}
+        <div>
+          <CampusScene />
+        </div>
+
+        {/* ---------- 3. MacBook: zoom a la pantalla con fotos reales ---------- */}
+        {/* El div de alrededor es necesario: GSAP mete la escena fijada en otro contenedor */}
+        <div>
+          <MacScene />
+        </div>
 
         {/* ---------- 3. El móvil cuenta la historia ---------- */}
-        <PhoneStory />
+        {/* El div de alrededor es necesario: GSAP mete la escena fijada en otro contenedor */}
+        <div>
+          <PhoneStory />
+        </div>
 
         {/* ---------- 4. Para quién ---------- */}
         <section className="mx-auto max-w-6xl px-4 py-24 md:py-32">
@@ -180,7 +194,10 @@ function IntroPage() {
         </section>
 
         {/* ---------- 5. Un año en el campus (horizontal) ---------- */}
-        <Journey />
+        {/* El div de alrededor es necesario: GSAP mete la escena fijada en otro contenedor */}
+        <div>
+          <Journey />
+        </div>
 
         {/* ---------- 6. En cifras ---------- */}
         <section className="mx-auto max-w-6xl px-4 py-24 md:py-32">
