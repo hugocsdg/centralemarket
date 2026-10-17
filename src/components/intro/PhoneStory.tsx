@@ -39,9 +39,9 @@ const CHAOS = [
 ]
 
 const CARDS: { photo: PhotoKey; price: string; name: string }[] = [
-  { photo: 'lamp', price: '8 €', name: 'Desk lamp' },
-  { photo: 'bike', price: '60 €', name: 'City bike' },
-  { photo: 'chair', price: '25 €', name: 'Desk chair' },
+  { photo: 'deskLamp', price: '8 €', name: 'Desk lamp' },
+  { photo: 'roadBike', price: '280 €', name: 'Road bike' },
+  { photo: 'armchair', price: '45 €', name: 'Armchair' },
   { photo: 'party', price: '12 €', name: 'Party ticket' },
   { photo: 'coffee', price: '35 €', name: 'Coffee machine' },
   { photo: 'books', price: 'Free', name: 'Books' },
@@ -232,14 +232,14 @@ function SellScreen() {
     <div data-screen="sell" className={`${screen} px-3 pt-12`}>
       <p className="text-sm font-bold">Sell an item</p>
       <div className="mt-2 flex gap-1.5">
-        <img data-sell-photo src={photo('lamp', 240, 240)} alt="" className="aspect-square w-1/3 rounded-lg object-cover" />
+        <img data-sell-photo src={photo('deskLamp', 240, 240)} alt="" className="aspect-square w-1/3 rounded-lg object-cover" />
         <div className="flex aspect-square w-1/3 items-center justify-center rounded-lg border border-dashed border-white/20 text-white/40">
           <Camera className="h-4 w-4" />
         </div>
       </div>
       <p className="mt-3 text-[10px] text-white/50">Title</p>
       <div className="relative mt-1 overflow-hidden rounded-lg border border-white/15 bg-white/10 px-2 py-1.5">
-        IKEA desk lamp
+        Desk lamp
         <span data-type-mask className="absolute inset-y-0 right-0 left-2 origin-right bg-[#202023]" />
       </div>
       <p className="mt-2 text-[10px] text-white/50">Price</p>
@@ -298,10 +298,10 @@ function SoldScreen() {
   return (
     <div data-screen="sold" className={`${screen} items-center justify-center px-4`}>
       <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-        <img src={photo('lamp', 480, 360)} alt="" className="aspect-[4/3] w-full object-cover" />
+        <img src={photo('deskLamp', 480, 360)} alt="" className="aspect-[4/3] w-full object-cover" />
         <div className="p-2.5">
           <p className="text-base font-bold">8 €</p>
-          <p className="text-white/60">IKEA desk lamp</p>
+          <p className="text-white/60">Desk lamp</p>
         </div>
         <span
           data-stamp

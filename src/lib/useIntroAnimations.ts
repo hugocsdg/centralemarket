@@ -56,6 +56,9 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
         const macItems = q('[data-mac-item]')
         const full = q('[data-mac-full]')[0]
         const fullItems = q('[data-mac-full-item]')
+        const fullImgs = q('[data-mac-full-img]')
+        // Profundidad para los giros 3D de las fotos.
+        gsap.set(fullImgs, { transformPerspective: 1200 })
         const macCaptions = q('[data-mac-caption]')
 
         // Al bajar desde la portada, el logo de partículas se deshace en un anillo de fondo.
@@ -78,7 +81,7 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
           scrollTrigger: {
             trigger: macScene,
             start: 'top top',
-            end: () => `+=${vh() * 6}`,
+            end: () => `+=${vh() * 10}`,
             pin: true,
             scrub: 0.8,
             invalidateOnRefresh: true,
@@ -101,18 +104,40 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
           .to(mac, { scale: zoom, duration: 1.4, ease: 'power3.in' }, '<')
           .to(q('[data-mac-chrome]'), { opacity: 0, duration: 0.4 }, '<')
           .to(full, { autoAlpha: 1, duration: 0.35, ease: 'none' }, '-=0.35')
-          .fromTo(fullItems[0], { scale: 1.25 }, { scale: 1, duration: 1.2, ease: 'power2.out' }, '<')
+          .fromTo(
+            fullImgs[0],
+            { scale: 1.35, rotationY: -18, rotationZ: 3 },
+            { scale: 1, rotationY: 0, rotationZ: 0, duration: 1.4, ease: 'power3.out' },
+            '<',
+          )
           .from(q('.mac-captions'), { opacity: 0, y: 40, duration: 0.5 }, '<0.2')
 
-        // Pasan las fotos (cada una entra con un pequeño zoom, como en un vídeo)
-        fullItems.forEach((item, i) => {
-          if (i === 0) return
+        // Pasan las fotos como un solo plano continuo:
+        //  1) pausa: el objeto se mueve despacio (como una cámara de cine)
+        //  2) la cámara se mete girando en una zona oscura del objeto, hasta verlo todo negro
+        //  3) el siguiente objeto sale de su propia zona oscura, girando en 3D hasta su sitio
+        // (El punto de giro se cambia solo cuando la foto está a tamaño normal, así no da saltos.)
+        fullImgs.forEach((img, i) => {
+          const isLast = i === fullImgs.length - 1
           macTl
-            .to({}, { duration: 0.6 })
-            .to(fullItems[i - 1], { opacity: 0, scale: 0.96, duration: 0.5 })
-            .fromTo(item, { opacity: 0, scale: 1.18 }, { opacity: 1, scale: 1, duration: 0.9, ease: 'power2.out' }, '<')
-            .set(macItems[i - 1], { opacity: 0 }, '<')
-            .set(macItems[i], { opacity: 1 }, '<')
+            .set(img, { transformOrigin: img.dataset.exit })
+            .to(img, { scale: 1.08, rotationY: i % 2 ? -7 : 7, xPercent: i % 2 ? 2 : -2, duration: 1.1, ease: 'none' })
+          if (isLast) return
+
+          const next = fullImgs[i + 1]
+          macTl
+            .to(img, { scale: 7, rotationZ: i % 2 ? -14 : 14, duration: 0.9, ease: 'power3.in' })
+            .to(fullItems[i], { opacity: 0, duration: 0.2, ease: 'none' }, '-=0.2')
+            .set(next, { transformOrigin: next.dataset.enter }, '<')
+            .fromTo(fullItems[i + 1], { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'none' }, '<')
+            .fromTo(
+              next,
+              { scale: 7, rotationZ: i % 2 ? 16 : -16, rotationY: i % 2 ? -35 : 35, xPercent: 0 },
+              { scale: 1, rotationZ: 0, rotationY: 0, duration: 1.2, ease: 'power3.out' },
+              '<',
+            )
+            .set(macItems[i], { opacity: 0 }, '<')
+            .set(macItems[i + 1], { opacity: 1 }, '<')
         })
 
         // Salimos de la pantalla: volvemos a ver el Mac entero

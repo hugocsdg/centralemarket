@@ -6,13 +6,18 @@ import type { PhotoKey } from '../../data/photos'
 // y dentro van pasando fotos reales de cosas que se venden en el campus.
 // Las animaciones están en lib/useIntroAnimations.ts (busca "data-mac").
 
-// focus: qué parte de la foto se mantiene visible cuando se recorta (el objeto).
-const ITEMS: { key: PhotoKey; title: string; price: string; place: string; text: string; focus?: string }[] = [
-  { key: 'lamp', title: 'Desk lamp', price: '8 €', place: 'Gif-sur-Yvette', text: 'For those late nights before exams.' },
-  { key: 'bike', title: 'City bike', price: '60 €', place: 'Palaiseau', text: 'To get around the plateau.', focus: '60% 85%' },
-  { key: 'chair', title: 'Desk chair', price: '25 €', place: 'Campus', text: 'Your room, upgraded.' },
-  { key: 'headphones', title: 'Headphones', price: '30 €', place: 'Orsay', text: 'Focus mode: on.' },
-  { key: 'party', title: 'Party ticket', price: '12 €', place: 'Campus', text: 'Friday night, sorted.' },
+// Cada foto tiene dos puntos (en % de la foto):
+//   enter: zona oscura desde la que aparece el objeto (la transición "sale" de ahí)
+//   exit:  zona oscura en la que la cámara se mete para pasar al siguiente objeto
+// Como las dos zonas son casi negras, el paso de una foto a otra parece un solo plano continuo.
+type Item = { key: PhotoKey; title: string; price: string; place: string; text: string; enter: string; exit: string }
+const ITEMS: Item[] = [
+  { key: 'deskLamp', title: 'Desk lamp', price: '8 €', place: 'Gif-sur-Yvette', text: 'Warm light for late-night revision.', enter: '30% 40%', exit: '22% 58%' },
+  { key: 'roadBike', title: 'Road bike', price: '280 €', place: 'Palaiseau', text: 'Fast, light, ready for the plateau.', enter: '50% 58%', exit: '32% 74%' },
+  { key: 'armchair', title: 'Armchair', price: '45 €', place: 'Moulon', text: 'The comfiest seat in the residence.', enter: '58% 80%', exit: '18% 40%' },
+  { key: 'deskSetup', title: 'Desk & monitor', price: '120 €', place: 'Campus', text: 'A full study setup. Moving-out sale.', enter: '28% 62%', exit: '55% 88%' },
+  { key: 'headphonesDark', title: 'Headphones', price: '40 €', place: 'Orsay', text: 'Noise cancelling. Library-approved.', enter: '37% 72%', exit: '50% 22%' },
+  { key: 'party', title: 'Party ticket', price: '12 €', place: 'Campus', text: 'Friday night, sorted.', enter: '50% 88%', exit: '50% 50%' },
 ]
 
 function MacScene() {
@@ -46,12 +51,7 @@ function MacScene() {
               {/* Contenido de la pantalla: un anuncio por foto */}
               {ITEMS.map((item, i) => (
                 <div key={item.key} data-mac-item className={`absolute inset-0 top-[7%] ${i === 0 ? '' : 'opacity-0'}`}>
-                  <img
-                    src={photo(item.key, 900)}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    style={{ objectPosition: item.focus ?? 'center' }}
-                  />
+                  <img src={photo(item.key, 900)} alt="" className="h-full w-full object-cover" />
                   <div className="absolute bottom-[5%] left-[3%] rounded-[clamp(0.3rem,1vw,0.9rem)] bg-black/60 px-[2.5%] py-[1.5%] backdrop-blur-md">
                     <p className="text-[clamp(9px,2vw,22px)] font-bold">{item.price}</p>
                     <p className="text-[clamp(7px,1.2vw,13px)] text-white/70">{item.title}</p>
@@ -68,16 +68,19 @@ function MacScene() {
       </div>
 
       {/* Fotos a pantalla completa (aparecen al "entrar" en la pantalla) */}
-      <div data-mac-full className="mac-full absolute inset-0 z-20 bg-noche">
+      <div data-mac-full className="mac-full absolute inset-0 z-20 overflow-hidden bg-black [perspective:1400px]">
         {ITEMS.map((item, i) => (
           <div key={item.key} data-mac-full-item className={`absolute inset-0 ${i === 0 ? '' : 'opacity-0'}`}>
+            {/* data-enter / data-exit: puntos de la transición (ver arriba) */}
             <img
+              data-mac-full-img
+              data-enter={item.enter}
+              data-exit={item.exit}
               src={photo(item.key, 1800)}
               alt={item.title}
-              className="h-full w-full object-cover"
-              style={{ objectPosition: item.focus ?? 'center' }}
+              className="h-full w-full object-cover will-change-transform"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-noche via-noche/20 to-noche/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-noche via-noche/10 to-noche/40" />
           </div>
         ))}
 
