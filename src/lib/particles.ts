@@ -1,11 +1,5 @@
-import { createElement } from 'react'
-import type { ComponentType } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
-import { Bike, LampDesk, Laptop, Sofa, Ticket } from 'lucide-react'
-
 // Motor de partículas de la introducción.
-// Miles de puntos de luz que forman una figura (el logo, una lámpara, una bici…)
-// y viajan de una figura a otra según el scroll.
+// Miles de puntos de luz que forman el logo y se deshacen en un anillo de fondo según el scroll.
 //
 // Cómo funciona:
 // 1) Al empezar, dibujamos cada figura en un lienzo invisible y apuntamos qué píxeles están "pintados".
@@ -24,8 +18,7 @@ export type Pose = {
 
 export type Morph = { from: number; to: number; t: number }
 
-// Figuras: 0 logo, 1 lámpara, 2 bici, 3 sofá, 4 portátil, 5 entrada, 6 anillo.
-const ICONS: ComponentType<{ size?: number; strokeWidth?: number; color?: string }>[] = [LampDesk, Bike, Sofa, Laptop, Ticket]
+// Figuras: 0 logo, 1 anillo.
 
 const SAMPLE = 220 // tamaño del lienzo invisible donde se dibuja cada figura
 
@@ -83,18 +76,11 @@ export async function buildShapes(count: number) {
   const shapes: Float32Array[] = []
   const logo = await loadImage('/logo-mark.png')
   shapes.push(samplePoints(logo, logo.naturalWidth, logo.naturalHeight, count))
-  for (const Icon of ICONS) {
-    const svg = renderToStaticMarkup(createElement(Icon, { size: 200, strokeWidth: 2.4, color: 'white' }))
-    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
-    const image = await loadImage(url)
-    URL.revokeObjectURL(url)
-    shapes.push(samplePoints(image, 200, 200, count))
-  }
   shapes.push(ringPoints(count))
   return shapes
 }
 
-const COLORS = ['#ff4d73', '#e0153f', '#f43f5e', '#c084fc', '#ffffff']
+const COLORS = ['#ff4d73', '#e0153f', '#f43f5e', '#a1a1aa', '#ffffff']
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 

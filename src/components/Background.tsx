@@ -1,5 +1,5 @@
-// Fondo de la web: casi negro, con "auroras" de luz roja y morada que se mueven despacio,
-// una rejilla tecnológica muy suave y un poco de grano, como en una foto de cine.
+// Fondo de la web: negro y gris oscuro, con una luz roja muy suave (el color del logo)
+// y reflejos grises que se mueven despacio, una rejilla muy tenue y un poco de grano.
 // Va fijo detrás de todo (fixed + -z-10), así el contenido se desliza por encima.
 
 const NOISE =
@@ -8,15 +8,15 @@ const NOISE =
 function Background() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-noche">
-      {/* Auroras de luz */}
-      <div className="absolute -top-[20vh] -left-[15vw] h-[70vh] w-[70vh] animate-aurora-1 rounded-full bg-carmin/35 blur-[120px]" />
-      <div className="absolute top-[10vh] -right-[20vw] h-[80vh] w-[80vh] animate-aurora-2 rounded-full bg-burdeos/60 blur-[130px]" />
-      <div className="absolute -bottom-[25vh] left-[20vw] h-[70vh] w-[70vh] animate-aurora-3 rounded-full bg-morado/25 blur-[140px]" />
-      <div className="absolute top-[45vh] left-[45vw] h-[40vh] w-[40vh] animate-aurora-1 rounded-full bg-rojo/25 blur-[110px] [animation-delay:-8s]" />
+      {/* Luces suaves */}
+      <div className="absolute -top-[25vh] -left-[15vw] h-[70vh] w-[70vh] animate-aurora-1 rounded-full bg-carmin/[0.14] blur-[130px]" />
+      <div className="absolute top-[10vh] -right-[20vw] h-[80vh] w-[80vh] animate-aurora-2 rounded-full bg-zinc-500/[0.10] blur-[140px]" />
+      <div className="absolute -bottom-[30vh] left-[20vw] h-[70vh] w-[70vh] animate-aurora-3 rounded-full bg-zinc-300/[0.06] blur-[150px]" />
+      <div className="absolute top-[50vh] left-[50vw] h-[35vh] w-[35vh] animate-aurora-1 rounded-full bg-rojo/[0.10] blur-[120px] [animation-delay:-8s]" />
 
       {/* Rejilla que se desvanece hacia los bordes */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
+        className="absolute inset-0 opacity-[0.05]"
         style={{
           backgroundImage:
             'linear-gradient(rgb(255 255 255) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255) 1px, transparent 1px)',
@@ -27,10 +27,10 @@ function Background() {
       />
 
       {/* Grano */}
-      <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay" style={{ backgroundImage: NOISE }} />
+      <div className="absolute inset-0 opacity-[0.07] mix-blend-overlay" style={{ backgroundImage: NOISE }} />
 
       {/* Viñeta: oscurece los bordes para centrar la atención */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(11_0_6/0.8))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(9_9_11/0.85))]" />
     </div>
   )
 }

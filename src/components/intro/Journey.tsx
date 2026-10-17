@@ -44,7 +44,7 @@ function Journey() {
 
       <div className="mx-auto mt-8 w-full max-w-6xl px-4">
         <div className="h-[3px] overflow-hidden rounded-full bg-white/10">
-          <div data-journey-fill className="h-full origin-left scale-x-0 bg-gradient-to-r from-carmin to-morado" />
+          <div data-journey-fill className="h-full origin-left scale-x-0 bg-gradient-to-r from-carmin to-plata" />
         </div>
       </div>
     </section>

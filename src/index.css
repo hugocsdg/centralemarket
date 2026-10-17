@@ -4,12 +4,14 @@
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Space Grotesk', 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
   --font-logo: 'Montserrat', 'Plus Jakarta Sans', ui-sans-serif, sans-serif;
-  --color-noche: #0B0006;
+  /* Base: negro y grises; el rojo del logo solo como acento */
+  --color-noche: #09090B;
+  --color-grafito: #18181B;
   --color-burdeos: #650038;
   --color-rojo: #B51227;
   --color-carmin: #E0153F;
   --color-rosa: #F43F5E;
-  --color-morado: #9B80B2;
+  --color-plata: #A1A1AA;
   --color-lavanda: #F6F2F5;
 
   /* Animaciones */
@@ -106,7 +108,7 @@ h3 {
 
 /* Texto con degradado animado */
 @utility text-shine {
-  background-image: linear-gradient(90deg, #ff4d73, #e0153f, #c084fc, #ff4d73);
+  background-image: linear-gradient(90deg, #ffffff, #ff4d73, #e0153f, #ffffff);
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -124,7 +126,7 @@ h3 {
     inset: 0;
     padding: 1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, rgb(255 77 115 / 0.9), rgb(192 132 252 / 0.5) 40%, transparent 70%);
+    background: linear-gradient(135deg, rgb(255 77 115 / 0.9), rgb(255 255 255 / 0.35) 40%, transparent 70%);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -192,20 +194,50 @@ h3 {
   margin: 0;
   opacity: 0;
   transform: translateY(18px);
+  /* El texto que se va desaparece rápido… */
   transition:
-    opacity 0.5s ease,
-    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+    opacity 0.2s ease,
+    transform 0.3s ease;
   pointer-events: none;
 }
 .is-animated .story-caption.is-active {
   opacity: 1;
   transform: none;
+  /* …y el nuevo entra justo después, sin que se solapen */
+  transition:
+    opacity 0.45s ease 0.18s,
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.18s;
 }
 .is-animated[data-phone-scene],
 .is-animated[data-journey] {
   height: 100svh;
   min-height: 0;
   padding-block: 0;
+}
+
+/* Escena del MacBook */
+.is-animated[data-mac-scene] {
+  height: 100svh;
+  min-height: 0;
+  padding-block: 0;
+}
+.is-animated[data-mac-scene] [data-mac-headline] {
+  position: absolute;
+  inset-inline: 0;
+  top: 11svh;
+}
+.is-animated[data-mac-scene] .mac-stage {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  align-items: center;
+  padding-top: 16svh;
+}
+[data-mac-scene]:not(.is-animated) .mac-full {
+  display: none;
+}
+.is-animated .mac-captions {
+  height: 12.5rem;
 }
 
 /* Móvil sin animación: solo se ve la pantalla de la web ordenada */

@@ -1,5 +1,7 @@
 import { Camera, Check, CheckCheck, Mail, Search } from 'lucide-react'
 import { LogoMark } from '../Logo'
+import { photo } from '../../data/photos'
+import type { PhotoKey } from '../../data/photos'
 
 // La escena del móvil: se queda fija mientras haces scroll y su pantalla va cambiando.
 // Las animaciones están en lib/useIntroAnimations.ts (busca "data-phone").
@@ -34,13 +36,13 @@ const CHAOS = [
   { who: 'Ravi', text: 'anyone selling a mirror' },
 ]
 
-const CARDS = [
-  { emoji: '💡', price: '8 €', name: 'Desk lamp' },
-  { emoji: '🚲', price: '60 €', name: 'City bike' },
-  { emoji: '🪑', price: '25 €', name: 'Office chair' },
-  { emoji: '🎟️', price: '12 €', name: 'Party ticket' },
-  { emoji: '☕', price: '35 €', name: 'Coffee machine' },
-  { emoji: '📚', price: 'Free', name: 'Books' },
+const CARDS: { photo: PhotoKey; price: string; name: string }[] = [
+  { photo: 'lamp', price: '8 €', name: 'Desk lamp' },
+  { photo: 'bike', price: '60 €', name: 'City bike' },
+  { photo: 'chair', price: '25 €', name: 'Desk chair' },
+  { photo: 'party', price: '12 €', name: 'Party ticket' },
+  { photo: 'coffee', price: '35 €', name: 'Coffee machine' },
+  { photo: 'books', price: 'Free', name: 'Books' },
 ]
 
 function PhoneStory() {
@@ -61,15 +63,22 @@ function PhoneStory() {
         {/* El móvil */}
         <div className="relative mx-auto">
           <div className="absolute -inset-10 rounded-full bg-carmin/25 blur-3xl" />
-          <div className="relative aspect-[9/19] h-[min(56svh,620px)] rounded-[2.6rem] border-[6px] border-white/15 bg-noche p-1.5 shadow-[0_40px_80px_-20px_rgb(224_21_63/0.5)]">
-            <div className="absolute top-2.5 left-1/2 z-20 h-4 w-20 -translate-x-1/2 rounded-full bg-black" />
-            <div className="relative h-full w-full overflow-hidden rounded-[2.1rem] bg-[#0f0a0d] text-[11px] sm:text-xs">
+          {/* iPhone: marco de titanio, botones laterales e isla dinámica */}
+          <div className="relative aspect-[9/19.5] h-[min(58svh,640px)] rounded-[3rem] bg-gradient-to-br from-[#8e8e93] via-[#3a3a3c] to-[#636366] p-[3px] shadow-[0_50px_100px_-25px_rgb(0_0_0/0.9),0_0_60px_-20px_rgb(224_21_63/0.35)]">
+            <span className="absolute top-[18%] -left-[3px] h-[6%] w-[3px] rounded-l bg-[#5a5a5e]" />
+            <span className="absolute top-[27%] -left-[3px] h-[10%] w-[3px] rounded-l bg-[#5a5a5e]" />
+            <span className="absolute top-[39%] -left-[3px] h-[10%] w-[3px] rounded-l bg-[#5a5a5e]" />
+            <span className="absolute top-[30%] -right-[3px] h-[14%] w-[3px] rounded-r bg-[#5a5a5e]" />
+            <div className="relative h-full w-full rounded-[2.85rem] bg-black p-[7px]">
+            <div className="absolute top-[14px] left-1/2 z-20 h-[22px] w-[30%] -translate-x-1/2 rounded-full bg-black ring-1 ring-white/5" />
+            <div className="relative h-full w-full overflow-hidden rounded-[2.4rem] bg-[#0c0c0e] text-[11px] sm:text-xs">
               <ChaosScreen />
               <OrderScreen />
               <LoginScreen />
               <SellScreen />
               <ChatScreen />
               <SoldScreen />
+            </div>
             </div>
           </div>
         </div>
@@ -128,9 +137,7 @@ function OrderScreen() {
       <div className="mt-2 grid grid-cols-2 gap-1.5">
         {CARDS.map((card) => (
           <div key={card.name} data-card className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
-            <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-burdeos/60 to-morado/30 text-3xl">
-              {card.emoji}
-            </div>
+            <img src={photo(card.photo, 240, 240)} alt="" className="aspect-square w-full object-cover" />
             <div className="p-1.5">
               <p className="font-bold">{card.price}</p>
               <p className="truncate text-[10px] text-white/60">{card.name}</p>
@@ -173,9 +180,7 @@ function SellScreen() {
     <div data-screen="sell" className={`${screen} px-3 pt-9`}>
       <p className="text-sm font-bold">Sell an item</p>
       <div className="mt-2 flex gap-1.5">
-        <div data-sell-photo className="flex aspect-square w-1/3 items-center justify-center rounded-lg bg-gradient-to-br from-burdeos/70 to-morado/40 text-3xl">
-          💡
-        </div>
+        <img data-sell-photo src={photo('lamp', 240, 240)} alt="" className="aspect-square w-1/3 rounded-lg object-cover" />
         <div className="flex aspect-square w-1/3 items-center justify-center rounded-lg border border-dashed border-white/20 text-white/40">
           <Camera className="h-4 w-4" />
         </div>
@@ -183,7 +188,7 @@ function SellScreen() {
       <p className="mt-3 text-[10px] text-white/50">Title</p>
       <div className="relative mt-1 overflow-hidden rounded-lg border border-white/15 bg-white/10 px-2 py-1.5">
         IKEA desk lamp
-        <span data-type-mask className="absolute inset-y-0 right-0 left-2 origin-right bg-[#1d1519]" />
+        <span data-type-mask className="absolute inset-y-0 right-0 left-2 origin-right bg-[#202023]" />
       </div>
       <p className="mt-2 text-[10px] text-white/50">Price</p>
       <div data-sell-price className="mt-1 rounded-lg border border-white/15 bg-white/10 px-2 py-1.5 font-bold">
@@ -241,9 +246,7 @@ function SoldScreen() {
   return (
     <div data-screen="sold" className={`${screen} items-center justify-center px-4`}>
       <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-        <div className="flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-burdeos/60 to-morado/30 text-6xl">
-          💡
-        </div>
+        <img src={photo('lamp', 480, 360)} alt="" className="aspect-[4/3] w-full object-cover" />
         <div className="p-2.5">
           <p className="text-base font-bold">8 €</p>
           <p className="text-white/60">IKEA desk lamp</p>

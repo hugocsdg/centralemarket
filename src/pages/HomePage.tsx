@@ -46,7 +46,7 @@ function HomePage() {
       <section className="relative grid items-center gap-8 md:grid-cols-[1.15fr_1fr] md:gap-4">
         <div className="relative order-first mx-auto w-full max-w-[18rem] md:order-last md:max-w-md">
           {/* Anillo de luz girando detrás del logo */}
-          <div className="absolute inset-[8%] animate-spin-slow rounded-full bg-[conic-gradient(from_0deg,transparent,rgb(224_21_63/0.55),transparent_40%,rgb(155_128_178/0.45),transparent_75%)] blur-2xl" />
+          <div className="absolute inset-[8%] animate-spin-slow rounded-full bg-[conic-gradient(from_0deg,transparent,rgb(224_21_63/0.55),transparent_40%,rgb(255_255_255/0.22),transparent_75%)] blur-2xl" />
           <LogoFull className="relative w-full animate-float drop-shadow-[0_20px_50px_rgba(224,21,63,0.45)]" />
         </div>
 
@@ -204,7 +204,7 @@ function HomePage() {
       <Reveal>
         <section className="relative overflow-hidden rounded-[2rem] p-[1px]">
           {/* Borde de luz animado */}
-          <div className="absolute inset-0 animate-gradient bg-[linear-gradient(90deg,#e0153f,#9b80b2,#650038,#e0153f)] bg-[length:300%_100%]" />
+          <div className="absolute inset-0 animate-gradient bg-[linear-gradient(90deg,#e0153f,#ffffff66,#3f3f46,#e0153f)] bg-[length:300%_100%]" />
           <div className="relative flex flex-col items-start gap-6 rounded-[calc(2rem-1px)] bg-noche/90 p-8 backdrop-blur-xl md:flex-row md:items-center md:justify-between md:p-12">
             <div className="absolute -bottom-20 -left-10 h-60 w-60 rounded-full bg-carmin/30 blur-3xl" />
             <div className="relative">
@@ -238,8 +238,8 @@ function HomePage() {
       {/* ---------- Sostenibilidad ---------- */}
       <Reveal>
         <section className="glass flex flex-col items-center gap-4 rounded-[2rem] p-8 text-center md:p-12">
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-morado/20">
-            <Leaf className="h-7 w-7 text-morado" />
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-plata/20">
+            <Leaf className="h-7 w-7 text-plata" />
           </span>
           <h2 className="text-3xl font-bold md:text-4xl">
             Give your things a <span className="text-shine">second life.</span>

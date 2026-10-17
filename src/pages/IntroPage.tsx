@@ -5,6 +5,7 @@ import { ArrowRight, Luggage, PlaneLanding, Sparkles, Users, Warehouse } from 'l
 import Background from '../components/Background'
 import Logo from '../components/Logo'
 import PhoneStory from '../components/intro/PhoneStory'
+import MacScene from '../components/intro/MacScene'
 import Journey from '../components/intro/Journey'
 import { categories } from '../data/categories'
 import { useIntroAnimations } from '../lib/useIntroAnimations'
@@ -14,18 +15,11 @@ import { useAuth } from '../lib/auth'
 import { markIntroSeen } from '../lib/intro'
 
 // Página de presentación: cuenta qué es CentraleMarket mientras haces scroll, como un vídeo.
-// - Partículas de luz (lib/particles.ts) que forman el logo y objetos.
+// - Partículas de luz (lib/particles.ts) que forman el logo.
+// - Un MacBook en cuya pantalla se entra para ver fotos reales (components/intro/MacScene.tsx).
 // - Un móvil que cuenta la historia (components/intro/PhoneStory.tsx).
 // - Un viaje horizontal por un año en el campus (components/intro/Journey.tsx).
 // Todas las animaciones de scroll están en lib/useIntroAnimations.ts.
-
-const OBJECTS = [
-  { title: 'Desk lamps', text: 'For those late nights before exams.' },
-  { title: 'Bikes', text: 'To get around the plateau.' },
-  { title: 'Sofas & chairs', text: 'Your room, upgraded.' },
-  { title: 'Laptops & tech', text: 'Screens, chargers, headphones.' },
-  { title: 'Party tickets', text: 'Friday night, sorted.' },
-]
 
 const AUDIENCE = [
   { icon: PlaneLanding, title: 'New arrivals', text: 'Furnish your room in a weekend without paying full price.' },
@@ -43,21 +37,17 @@ const STATS = [
 
 const GOALS = ['Keep good things in use.', 'Help students save money.', 'Make arriving and leaving campus easier.']
 
-// Dónde y cómo se colocan las partículas en cada momento (índices usados en useIntroAnimations):
-// 0 logo de portada · 1-5 objetos · 6 anillo de fondo · 7 logo final
-const ITEM = (shape: number, mobile: boolean): Pose =>
-  mobile ? { shape, cx: 0.5, cy: 0.33, size: 0.66, alpha: 1 } : { shape, cx: 0.68, cy: 0.52, size: 0.5, alpha: 1 }
-const POSES = {
+// Dónde y cómo se colocan las partículas (índices usados en useIntroAnimations):
+// 0 logo de portada · 1 anillo de fondo · 2 logo final
+const POSES: { desktop: Pose[]; mobile: Pose[] } = {
   desktop: [
     { shape: 0, cx: 0.73, cy: 0.5, size: 0.55, alpha: 1 },
-    ...[1, 2, 3, 4, 5].map((s) => ITEM(s, false)),
-    { shape: 6, cx: 0.5, cy: 0.5, size: 1.3, alpha: 0.4, spin: 1 },
+    { shape: 1, cx: 0.5, cy: 0.5, size: 1.3, alpha: 0.35, spin: 1 },
     { shape: 0, cx: 0.5, cy: 0.34, size: 0.42, alpha: 1 },
   ],
   mobile: [
     { shape: 0, cx: 0.5, cy: 0.25, size: 0.62, alpha: 1 },
-    ...[1, 2, 3, 4, 5].map((s) => ITEM(s, true)),
-    { shape: 6, cx: 0.5, cy: 0.5, size: 1.7, alpha: 0.32, spin: 1 },
+    { shape: 1, cx: 0.5, cy: 0.5, size: 1.7, alpha: 0.3, spin: 1 },
     { shape: 0, cx: 0.5, cy: 0.28, size: 0.6, alpha: 1 },
   ],
 }
@@ -102,7 +92,7 @@ function IntroPage() {
       {/* Barra de progreso de lectura */}
       <div
         data-progress
-        className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-carmin via-rosa to-morado"
+        className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-carmin via-rosa to-plata"
       />
 
       {/* Cabecera: se encoge y se oscurece al bajar */}
@@ -163,22 +153,8 @@ function IntroPage() {
           </div>
         </section>
 
-        {/* ---------- 2. Objetos (las partículas se transforman) ---------- */}
-        <section data-objects-scene className="relative flex h-[100svh] items-end pb-24 md:items-center md:pb-0">
-          <div className="mx-auto w-full max-w-6xl px-4">
-            <div className="text-center md:w-[45%] md:text-left">
-              <p className="text-xs font-semibold tracking-[0.25em] text-rosa uppercase">Everything changes hands</p>
-              <div className="story-captions mt-3">
-                {OBJECTS.map((object, i) => (
-                  <div key={object.title} data-object-caption className={`story-caption ${i === 0 ? 'is-active' : ''}`}>
-                    <h2 className="text-4xl font-bold md:text-6xl">{object.title}</h2>
-                    <p className="mt-2 text-white/60 md:text-lg">{object.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* ---------- 2. MacBook: zoom a la pantalla con fotos reales ---------- */}
+        <MacScene />
 
         {/* ---------- 3. El móvil cuenta la historia ---------- */}
         <PhoneStory />
@@ -240,11 +216,11 @@ function IntroPage() {
           </div>
 
           <div data-reveal className="glass mt-16 flex flex-col gap-6 rounded-[2rem] p-8 md:flex-row md:items-center md:p-10">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-morado/20">
-              <Warehouse className="h-7 w-7 text-morado" />
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-plata/20">
+              <Warehouse className="h-7 w-7 text-plata" />
             </span>
             <div>
-              <p className="text-xs font-semibold tracking-[0.2em] text-morado uppercase">
+              <p className="text-xs font-semibold tracking-[0.2em] text-plata uppercase">
                 Coming soon · an idea in progress
               </p>
               <h3 className="mt-2 text-2xl font-semibold">Campus Storage</h3>
@@ -280,7 +256,7 @@ function IntroPage() {
       </main>
 
       <footer className="relative z-10 border-t border-white/5 py-8 text-center text-xs text-white/40">
-        An independent student initiative for the CentraleSupélec community.
+        An independent student initiative for the CentraleSupélec community. · Photos from Unsplash
       </footer>
     </div>
   )
