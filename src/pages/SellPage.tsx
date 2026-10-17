@@ -31,6 +31,7 @@ function SellPage() {
 
   const [error, setError] = useState('')
   const [progress, setProgress] = useState('')
+  const errorRef = useRef<HTMLDivElement>(null)
 
   const isService = category === 'services'
   const needsConfirmation = category === 'food' || category === 'tickets'
@@ -60,15 +61,27 @@ function SellPage() {
     event.preventDefault()
     setError('')
 
-    // Comprobaciones antes de enviar nada.
-    if (!session) return
-    if (photos.length === 0) return setError('Add at least one photo.')
-    if (!category) return setError('Choose a category.')
-    if (!isService && !condition) return setError('Choose the condition of your item.')
+    // Comprobamos todo nosotros (no el navegador) y decimos TODO lo que falta de una vez.
     const numericPrice = isFree ? 0 : Number(price.replace(',', '.'))
-    if (!isFree && (!price || Number.isNaN(numericPrice) || numericPrice < 0)) return setError('Enter a valid price.')
-    if (numericPrice > 10000) return setError('Price must be under 10 000 €.')
-    if (needsConfirmation && !confirmed) return setError('Please confirm the rules for this category.')
+    const problems: string[] = []
+    if (!session) problems.push('Your session has expired. Please log in again.')
+    if (photos.length === 0) problems.push('Add at least one photo.')
+    if (title.trim().length < 3) problems.push('Write a title (at least 3 characters).')
+    if (!category) problems.push('Choose a category.')
+    if (category && !isService && !condition) problems.push('Choose the condition (New, Like new, Good or Fair).')
+    if (!isFree && (!price || Number.isNaN(numericPrice) || numericPrice < 0)) {
+      problems.push('Enter a price, or tick "Give it away for free".')
+    }
+    if (numericPrice > 10000) problems.push('Price must be under 10 000 €.')
+    if (location.trim().length < 2) problems.push(isService ? 'Say where you offer it.' : 'Add a pickup location.')
+    if (needsConfirmation && !confirmed) problems.push('Tick the confirmation box for this category.')
+
+    if (problems.length > 0 || !session) {
+      setError(problems.join('\n'))
+      // Llevar la vista al aviso para que se vea seguro, también en el móvil.
+      requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+      return
+    }
 
     try {
       const id = await createListing(
@@ -90,13 +103,14 @@ function SellPage() {
     } catch (failure) {
       setProgress('')
       setError(failure instanceof Error ? failure.message : 'Something went wrong. Please try again.')
+      requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
     }
   }
 
   const busy = progress !== ''
 
   return (
-    <form onSubmit={publish} className="mx-auto max-w-2xl space-y-6">
+    <form onSubmit={publish} noValidate className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Sell an item</h1>
         <p className="mt-1 text-white/60">Takes less than a minute. Buyers will contact you directly.</p>
@@ -265,7 +279,16 @@ function SellPage() {
         </Check>
       )}
 
-      {error && <p className="rounded-xl bg-rojo/20 px-4 py-3 text-sm text-rosa">{error}</p>}
+      {error && (
+        <div ref={errorRef} role="alert" className="rounded-xl border border-rojo/50 bg-rojo/20 px-4 py-3 text-sm text-rosa">
+          <p className="font-semibold">Almost there! Please fix:</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5">
+            {error.split('\n').map((problem) => (
+              <li key={problem}>{problem}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <button
         disabled={busy}
