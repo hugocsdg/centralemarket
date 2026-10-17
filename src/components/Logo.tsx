@@ -16,8 +16,8 @@ export function LogoFull({ className = 'w-full' }: LogoMarkProps) {
 function Logo() {
   return (
     <span className="flex items-center gap-2">
-      <LogoMark />
-      <span className="font-logo text-xl font-bold tracking-tight">
+      <LogoMark className="h-8 w-auto sm:h-9" />
+      <span className="font-logo text-lg font-bold tracking-tight whitespace-nowrap sm:text-xl">
         <span className="text-white">Centrale</span>
         <span className="text-carmin">Market</span>
       </span>

@@ -12,7 +12,7 @@ import { LogoMark } from '../components/Logo'
 function LoginPage() {
   const { session } = useAuth()
   const [params] = useSearchParams()
-  const next = params.get('next') || '/profile'
+  const next = params.get('next') || '/'
 
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')

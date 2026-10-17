@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
+import type { ReactNode } from 'react'
 import Layout from './components/Layout'
 import RequireAuth from './components/RequireAuth'
 import HomePage from './pages/HomePage'
@@ -12,15 +13,26 @@ import ChatPage from './pages/ChatPage'
 import EditListingPage from './pages/EditListingPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
+import IntroPage from './pages/IntroPage'
+import { useAuth } from './lib/auth'
 
 // El "mapa" de la web: qué página se enseña para cada URL.
 // Todas van dentro de <Layout>, que pone la cabecera y el menú.
 // Las que van dentro de <RequireAuth> piden iniciar sesión.
+// La portada "/" depende de si has entrado: sin sesión ves la introducción, con sesión la web.
 function App() {
   return (
     <Routes>
+      <Route path="/welcome" element={<IntroPage />} />
       <Route element={<Layout />}>
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={
+            <IntroGate>
+              <HomePage />
+            </IntroGate>
+          }
+        />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/item/:id" element={<ProductPage />} />
         <Route
@@ -76,6 +88,17 @@ function App() {
       </Route>
     </Routes>
   )
+}
+
+function IntroGate({ children }: { children: ReactNode }) {
+  const { session, loading } = useAuth()
+  if (loading) return null
+  return session ? children : <IntroRedirect />
+}
+
+// Sin sesión, la portada es la página de introducción (fuera del marco de la app).
+function IntroRedirect() {
+  return <Navigate to="/welcome" replace />
 }
 
 export default App
