@@ -13,7 +13,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP)
 // como una obra de arte. Al bajar aparecen las tarjetas y el precio sube: 8 € → 40 € → 280 €.
 // En móvil o con "reducir movimiento": imagen fija y las tres tarjetas debajo.
 
-const VIDEO: string | undefined = undefined // public/intro/gallery.mp4 cuando esté aprobado
+const VIDEO = '/intro/gallery.mp4'
 const POSTER = {
   src: '/intro/gallery-1920.webp',
   srcSet: '/intro/gallery-1280.webp 1280w, /intro/gallery-1920.webp 1920w',
