@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Imágenes y vídeos de Higgsfield para revisar (no se publican)
+review/
