@@ -67,6 +67,7 @@ export class CampusScene {
   private frame = 0
   private running = false
   private clock = new THREE.Clock()
+  private elapsed = 0 // ms de giro acumulados solo mientras se ve (así no da un salto al volver)
   private canvas: HTMLCanvasElement
   private state: CampusState
   private mobile: boolean
@@ -272,6 +273,11 @@ export class CampusScene {
     this.mobile = width < 768
     this.camera.aspect = width / height
     this.camera.fov = this.mobile ? 50 : 36
+    // Mover el dibujo en la pantalla sin mover el centro de giro: un poco hacia arriba
+    // (los textos van abajo) y, en escritorio, un poco a la derecha (los textos van a la izquierda).
+    const shiftX = this.mobile ? 0 : -0.06 * width
+    const shiftY = (this.mobile ? 0.07 : 0.08) * height
+    this.camera.setViewOffset(width, height, shiftX, shiftY, width, height)
     this.camera.updateProjectionMatrix()
   }
 
@@ -294,21 +300,22 @@ export class CampusScene {
     // Cámara: empieza alta, como un plano, y baja girando despacio.
     // Escritorio: el norte arriba y el campus a la derecha (los textos van a la izquierda).
     // Móvil: girada 90° para que el campus, que es alargado, quepa a lo alto, y por encima de los textos.
+    // La cámara gira alrededor del CENTRO del campus, a una distancia en la que cabe entero
+    // en cualquier orientación. El giro del scroll y el giro solo (con el tiempo) van en el
+    // mismo sentido, para que nunca "cambie de dirección".
     const view = this.mobile
-      ? { angle: 0.1, sweep: 0.35, radius: [175, 140], height: [205, 150], right: [0, 0], up: 42 }
-      : { angle: Math.PI / 2 + 0.2, sweep: 0.5, radius: [150, 145], height: [180, 135], right: [30, 4], up: 22 }
-    const angle = view.angle - p * view.sweep + t * 0.00003
-    const radius = view.radius[0] + (view.radius[1] - view.radius[0]) * p
-    const height = view.height[0] + (view.height[1] - view.height[0]) * p
-    const toCamera = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle))
-    const right = new THREE.Vector3(Math.sin(angle), 0, -Math.cos(angle))
-    const shift = view.right[0] + (view.right[1] - view.right[0]) * p
-    const target = toCamera.clone().multiplyScalar(view.up).addScaledVector(right, -shift)
-    this.camera.position.copy(target).addScaledVector(toCamera, radius).setY(height)
-    this.camera.lookAt(target)
+      ? { angle: 0.1, sweep: 0.35, distance: [500, 450], tilt: [0.98, 0.8] }
+      : { angle: Math.PI / 2 + 0.2, sweep: 0.5, distance: [265, 235], tilt: [0.9, 0.72] }
+    const angle = view.angle + p * view.sweep + t * 0.00005
+    const distance = view.distance[0] + (view.distance[1] - view.distance[0]) * p
+    const tilt = view.tilt[0] + (view.tilt[1] - view.tilt[0]) * p // ángulo sobre el suelo (radianes)
+    const radius = Math.cos(tilt) * distance
+    const height = Math.sin(tilt) * distance
+    this.camera.position.set(Math.cos(angle) * radius, height, Math.sin(angle) * radius)
+    this.camera.lookAt(0, 0, 0)
     const fog = this.scene.fog as THREE.Fog
-    fog.near = Math.hypot(radius, height) * 0.95
-    fog.far = Math.hypot(radius, height) * 1.9
+    fog.near = distance * 0.95
+    fog.far = distance * 1.9
 
     // Las residencias se encienden poco a poco (cada luz, un anuncio nuevo).
     this.residenceMaterial.emissiveIntensity = Math.min(1, Math.max(0, (p - 0.25) / 0.3)) * 0.12
@@ -338,9 +345,11 @@ export class CampusScene {
   start(onFrame?: () => void) {
     if (this.running) return
     this.running = true
+    this.clock.getDelta() // descartar el tiempo que estuvo parado
     const loop = () => {
       if (!this.running) return
-      this.render(this.clock.getElapsedTime() * 1000)
+      this.elapsed += Math.min(100, this.clock.getDelta() * 1000)
+      this.render(this.elapsed)
       onFrame?.()
       this.frame = requestAnimationFrame(loop)
     }
