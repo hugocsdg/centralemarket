@@ -101,9 +101,8 @@ function HeroScene({ copy, cta }: Props) {
           </h1>
         </div>
         <div>
-          <p data-hero-fade className="max-w-md text-base text-pretty text-white/80 md:text-lg">
-            {t.sub}
-          </p>
+          {/* Sin animación de entrada: es lo primero que se lee y así aparece enseguida */}
+          <p className="max-w-md text-base text-pretty text-white/80 md:text-lg">{t.sub}</p>
           <div data-hero-fade className="mt-7 flex flex-wrap items-center gap-3">
             <Link
               to={cta.to}

@@ -23,6 +23,7 @@ type Props = {
 
 function ScrubVideo({ ref, src, poster, alt = '', priority = false, className = '' }: Props) {
   const video = useRef<HTMLVideoElement>(null)
+  const wrapper = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const state = useRef({
@@ -75,27 +76,44 @@ function ScrubVideo({ ref, src, poster, alt = '', priority = false, className = 
       if (!s.raf) s.raf = requestAnimationFrame(tick)
     },
     // Descargar el vídeo (solo cuando la escena está en modo vídeo).
+    // Descargar el vídeo (solo cuando la escena está en modo vídeo), y no antes de que esté cerca:
+    // así la galería no compite con la portada al abrir la página.
     enable() {
       const s = state.current
       if (!src || s.loading) return
       s.loading = true
-      const controller = new AbortController()
-      const watchdog = setTimeout(() => controller.abort(), 20000)
-      fetch(src, { priority: 'low', signal: controller.signal } as RequestInit)
-        .then((res) => {
-          if (!res.ok) throw new Error(String(res.status))
-          return res.blob()
-        })
-        .then((blob) => {
-          const v = video.current
-          if (!v) return
-          v.src = URL.createObjectURL(blob)
-          v.load()
-        })
-        .catch(() => setFailed(true))
-        .finally(() => clearTimeout(watchdog))
+      const box = wrapper.current
+      if (!box) return download()
+      const near = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return
+          near.disconnect()
+          download()
+        },
+        { rootMargin: '100% 0px' },
+      )
+      near.observe(box)
     },
   }))
+
+  const download = () => {
+    if (!src) return
+    const controller = new AbortController()
+    const watchdog = setTimeout(() => controller.abort(), 20000)
+    fetch(src, { priority: 'low', signal: controller.signal } as RequestInit)
+      .then((res) => {
+        if (!res.ok) throw new Error(String(res.status))
+        return res.blob()
+      })
+      .then((blob) => {
+        const v = video.current
+        if (!v) return
+        v.src = URL.createObjectURL(blob)
+        v.load()
+      })
+      .catch(() => setFailed(true))
+      .finally(() => clearTimeout(watchdog))
+  }
 
   useEffect(() => {
     const v = video.current
@@ -135,7 +153,7 @@ function ScrubVideo({ ref, src, poster, alt = '', priority = false, className = 
   }, [])
 
   return (
-    <div className={`absolute inset-0 overflow-hidden ${className}`}>
+    <div ref={wrapper} className={`absolute inset-0 overflow-hidden ${className}`}>
       <picture>
         <source media="(max-width: 720px)" srcSet={poster.mobile} />
         <img

@@ -72,33 +72,57 @@ function CampusScene({ copy }: { copy: IntroCopy }) {
       { rootMargin: '200px 0px' },
     )
 
-    import('../../lib/campus3d').then(({ CampusScene: Engine }) => {
-      if (cancelled || !canvas.current) return
-      engine = new Engine(canvas.current, state.current)
-      setLabels(engine.labels)
-      const onResize = () => {
-        engine?.resize()
-        if (reduced) {
-          engine?.render(0, false)
-          placeLabels()
+    // El 3D (Three.js) pesa mucho: se descarga y se prepara solo cuando la escena está cerca,
+    // no al abrir la página (en el móvil eso bloqueaba la portada varios segundos).
+    const load = () =>
+      import('../../lib/campus3d').then(({ CampusScene: Engine }) => {
+        if (cancelled || !canvas.current) return
+        engine = new Engine(canvas.current, state.current)
+        setLabels(engine.labels)
+        const onResize = () => {
+          engine?.resize()
+          if (reduced) {
+            engine?.render(0, false)
+            placeLabels()
+          }
         }
-      }
-      window.addEventListener('resize', onResize)
-      cleanupResize = () => window.removeEventListener('resize', onResize)
-      if (reduced) {
-        state.current.progress = 0.8 // quieto, pero con las conexiones dibujadas
-        engine.render(0, false)
-        // Las etiquetas aparecen en la página un poco después (React las pinta tras setLabels).
-        setTimeout(placeLabels, 150)
-      } else if (visible) {
-        engine.start(placeLabels)
-      }
+        window.addEventListener('resize', onResize)
+        cleanupResize = () => window.removeEventListener('resize', onResize)
+        if (reduced) {
+          state.current.progress = 0.8 // quieto, pero con las conexiones dibujadas
+          engine.render(0, false)
+          // Las etiquetas aparecen en la página un poco después (React las pinta tras setLabels).
+          setTimeout(placeLabels, 150)
+        } else if (visible) {
+          engine.start(placeLabels)
+        }
+      })
+    // Empieza a descargarse en cuanto la persona empieza a moverse por la página (rueda, dedo, teclado)
+    // o cuando la escena aparece. Ojo: no vale el evento "scroll", porque GSAP hace scroll solo al calcular.
+    const INPUTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
+    let requested = false
+    const request = () => {
+      if (requested) return
+      requested = true
+      INPUTS.forEach((type) => window.removeEventListener(type, request))
+      near.disconnect()
+      load()
+    }
+    INPUTS.forEach((type) => window.addEventListener(type, request, { passive: true }))
+    // (intersectionRatio > 0: si solo "toca" el borde de la pantalla, aún no cuenta)
+    const near = new IntersectionObserver(([entry]) => entry.intersectionRatio > 0 && request(), {
+      threshold: [0, 0.01],
     })
-    if (section.current) observer.observe(section.current)
+    if (section.current) {
+      observer.observe(section.current)
+      near.observe(section.current)
+    }
 
     return () => {
       cancelled = true
       observer.disconnect()
+      near.disconnect()
+      INPUTS.forEach((type) => window.removeEventListener(type, request))
       cleanupResize()
       engine?.dispose()
     }
