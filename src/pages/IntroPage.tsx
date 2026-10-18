@@ -426,6 +426,14 @@ function IntroPage() {
               Log in
             </Link>
             <span>Photos from Unsplash</span>
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-11 items-center transition hover:text-white"
+            >
+              Map © OpenStreetMap contributors
+            </a>
             <span>© {YEAR}</span>
           </div>
         </div>

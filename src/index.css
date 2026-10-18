@@ -218,6 +218,22 @@ h3 {
 .story-caption + .story-caption {
   margin-top: 1.5rem;
 }
+/* Campus sin animación (reducir movimiento): el mapa arriba, quieto, y los textos debajo */
+[data-campus-scene]:not(.is-animated) {
+  height: auto;
+}
+[data-campus-scene]:not(.is-animated) .campus-stage {
+  position: relative;
+  height: 75svh;
+}
+[data-campus-scene]:not(.is-animated) .campus-copy {
+  position: relative;
+  inset: auto;
+  width: auto;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 0 1rem 4rem;
+}
 .is-animated .story-captions {
   position: relative;
   height: 7.5rem;
