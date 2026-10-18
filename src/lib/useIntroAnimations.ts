@@ -3,7 +3,6 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import Lenis from 'lenis'
-import type { Morph } from './particles'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 // En el móvil la barra del navegador aparece y desaparece al hacer scroll: que no recalcule todo por eso.
@@ -25,16 +24,12 @@ export function scrollToSection(id: string) {
 // Solo se anima transform y opacity, para que vaya a 60 fps.
 //
 // Escenas fijadas (se quedan quietas mientras el scroll avanza "dentro" de ellas):
-//   data-mac-scene      zoom a la pantalla de un MacBook con fotos reales
-//   data-phone-scene    el móvil cuenta la historia en 6 pantallas
-//   data-journey        los paneles se desplazan en horizontal
-export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRef: RefObject<Morph>) {
+//   data-phone-scene    el móvil cuenta los 4 pasos
+// La portada, el campus y la galería llevan su propia animación en su componente.
+export function useIntroAnimations(scope: RefObject<HTMLElement | null>) {
   useGSAP(
     () => {
       const q = gsap.utils.selector(scope)
-      const setMorph = (from: number, to: number, t: number) => {
-        Object.assign(morphRef.current, { from, to, t })
-      }
 
       // Barra de progreso y cabecera: siempre (no son movimiento que maree).
       gsap.to(q('[data-progress]'), { scaleX: 1, ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: 0.3 } })
@@ -46,7 +41,7 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
 
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
-        const animated = [...q('[data-mac-scene]'), ...q('[data-phone-scene]'), ...q('[data-journey]')]
+        const animated = q('[data-phone-scene]')
         animated.forEach((el) => el.classList.add('is-animated'))
         const vh = () => window.innerHeight
 
@@ -60,7 +55,14 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
 
         // ---------- 1. Portada: entrada al cargar ----------
         gsap.from(q('[data-hero-word]'), { yPercent: 110, duration: 1, ease: 'power4.out', stagger: 0.06, delay: 0.3 })
-        gsap.from(q('[data-hero-fade]'), { opacity: 0, y: 24, duration: 0.8, ease: 'power3.out', stagger: 0.1, delay: 0.7 })
+        gsap.from(q('[data-hero-fade]'), {
+          opacity: 0,
+          y: 24,
+          duration: 0.8,
+          ease: 'power3.out',
+          stagger: 0.1,
+          delay: 0.7,
+        })
         gsap.from(q('[data-scroll-hint]'), { opacity: 0, duration: 1, delay: 1.6 })
         // El indicador de scroll se va en cuanto empiezas a bajar.
         gsap.to(q('[data-scroll-hint]'), {
@@ -100,121 +102,24 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
         // En el móvil las escenas fijadas duran menos: el dedo recorre menos pantalla que la rueda.
         const isPhone = window.innerWidth < 768
 
-        // ---------- 2. MacBook: aparece, entramos en su pantalla y pasan las fotos ----------
-        const macScene = q('[data-mac-scene]')[0]
-        const mac = q('[data-mac]')[0]
-        const macItems = q('[data-mac-item]')
-        const full = q('[data-mac-full]')[0]
-        const fullItems = q('[data-mac-full-item]')
-        const fullImgs = q('[data-mac-full-img]')
-        // Profundidad para los giros 3D de las fotos.
-        gsap.set(fullImgs, { transformPerspective: 1200 })
-        const macCaptions = q('[data-mac-caption]')
-
-        // Al bajar desde la portada, el logo de partículas se deshace en un anillo de fondo.
-        ScrollTrigger.create({
-          trigger: q('[data-campus-scene]')[0] ?? macScene,
-          start: 'top bottom',
-          end: 'top top',
-          onUpdate: (self) => setMorph(0, 1, self.progress),
-        })
-
-        // Cuánto hay que ampliar el Mac para que su pantalla llene la ventana.
-        const zoom = () => {
-          const screenBox = mac.firstElementChild as HTMLElement
-          return Math.max(window.innerWidth / screenBox.offsetWidth, window.innerHeight / (screenBox.offsetHeight * 0.95)) * 1.1
-        }
-
-        gsap.set(full, { autoAlpha: 0 })
-        const macTl = gsap.timeline({
-          defaults: { ease: 'power2.inOut' },
-          scrollTrigger: {
-            trigger: macScene,
-            start: 'top top',
-            end: () => `+=${vh() * (isPhone ? 6 : 7)}`,
-            pin: true,
-            scrub: 0.8,
-            invalidateOnRefresh: true,
-          },
-          // Se comprueba con la animación (no con el scroll), así la ficha nunca va por detrás de la foto.
-          onUpdate: () => {
-            let active = 0
-            fullItems.forEach((item, i) => {
-              if (Number(gsap.getProperty(item, 'opacity')) > 0.5) active = i
-            })
-            macCaptions.forEach((el, i) => el.classList.toggle('is-active', i === active))
-          },
-        })
-
-        macTl
-          .from(mac, { y: 120, scale: 0.8, opacity: 0, duration: 0.8, ease: 'power3.out' })
-          .to({}, { duration: 0.3 })
-          // Entramos en la pantalla
-          .to(q('[data-mac-headline]'), { opacity: 0, y: -40, duration: 0.4 })
-          .to(mac, { scale: zoom, duration: 1.4, ease: 'power3.in' }, '<')
-          .to(q('[data-mac-chrome]'), { opacity: 0, duration: 0.4 }, '<')
-          .to(full, { autoAlpha: 1, duration: 0.35, ease: 'none' }, '-=0.35')
-          .fromTo(
-            fullImgs[0],
-            { scale: 1.35, rotationY: -18, rotationZ: 3 },
-            { scale: 1, rotationY: 0, rotationZ: 0, duration: 1.4, ease: 'power3.out' },
-            '<',
-          )
-          .from(q('.mac-captions'), { opacity: 0, y: 40, duration: 0.5 }, '<0.2')
-
-        // Pasan las fotos como un solo plano continuo:
-        //  1) pausa: el objeto se mueve despacio (como una cámara de cine)
-        //  2) la cámara se mete girando en una zona oscura del objeto, hasta verlo todo negro
-        //  3) el siguiente objeto sale de su propia zona oscura, girando en 3D hasta su sitio
-        // (El punto de giro se cambia solo cuando la foto está a tamaño normal, así no da saltos.)
-        fullImgs.forEach((img, i) => {
-          const isLast = i === fullImgs.length - 1
-          macTl
-            .set(img, { transformOrigin: img.dataset.exit })
-            .to(img, { scale: 1.08, rotationY: i % 2 ? -7 : 7, xPercent: i % 2 ? 2 : -2, duration: 1.1, ease: 'none' })
-          if (isLast) return
-
-          const next = fullImgs[i + 1]
-          macTl
-            .to(img, { scale: 7, rotationZ: i % 2 ? -14 : 14, duration: 0.9, ease: 'power3.in' })
-            .to(fullItems[i], { opacity: 0, duration: 0.2, ease: 'none' }, '-=0.2')
-            .set(next, { transformOrigin: next.dataset.enter }, '<')
-            .fromTo(fullItems[i + 1], { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'none' }, '<')
-            .fromTo(
-              next,
-              { scale: 7, rotationZ: i % 2 ? 16 : -16, rotationY: i % 2 ? -35 : 35, xPercent: 0 },
-              { scale: 1, rotationZ: 0, rotationY: 0, duration: 1.2, ease: 'power3.out' },
-              '<',
-            )
-            .set(macItems[i], { opacity: 0 }, '<')
-            .set(macItems[i + 1], { opacity: 1 }, '<')
-        })
-
-        // Salimos de la pantalla: volvemos a ver el Mac entero
-        macTl
-          .to({}, { duration: 0.6 })
-          .to(q('.mac-captions'), { opacity: 0, y: 30, duration: 0.3 })
-          .to(full, { autoAlpha: 0, duration: 0.35, ease: 'none' })
-          .to(mac, { scale: 0.9, duration: 1.2, ease: 'power3.out' }, '<')
-          .to(q('[data-mac-chrome]'), { opacity: 1, duration: 0.4 }, '<0.6')
-          .to({}, { duration: 0.3 })
-
-        // ---------- 3. El móvil ----------
+        // ---------- 2. El móvil: los 4 pasos ----------
         const phone = q('[data-phone-scene]')[0]
         const screen = (name: string) => q(`[data-screen="${name}"]`)
         const phoneCaptions = q('[data-phone-caption]')
-        const labels = ['chaos', 'order', 'login', 'sell', 'chat', 'sold']
+        const stepDots = q('[data-step-dot]')
+        const labels = ['login', 'sell', 'chat', 'sold']
 
-        gsap.set(['order', 'login', 'sell', 'chat', 'sold'].map((name) => screen(name)[0]), { autoAlpha: 0 })
-        const unread = q('[data-unread]')[0]
-        const counter = { value: 12 }
+        gsap.set(
+          ['sell', 'chat', 'sold'].map((name) => screen(name)[0]),
+          { autoAlpha: 0 },
+        )
 
         const tl = gsap.timeline({
           defaults: { ease: 'power2.out' },
           scrollTrigger: {
             trigger: phone,
             start: 'top top',
-            end: () => `+=${vh() * (isPhone ? 4 : 4.5)}`,
+            end: () => `+=${vh() * (isPhone ? 2.2 : 2.4)}`,
             pin: true,
             scrub: 0.6,
           },
@@ -226,6 +131,7 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
               if (time >= tl.labels[label] - 0.15) active = i
             })
             phoneCaptions.forEach((el, i) => el.classList.toggle('is-active', i === active))
+            stepDots.forEach((el, i) => el.classList.toggle('bg-carmin', i <= active))
           },
         })
         // Cambiar de una pantalla del móvil a otra.
@@ -234,34 +140,12 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
             .to(screen(from), { autoAlpha: 0, scale: 0.94, duration: 0.5 })
             .fromTo(screen(to), { autoAlpha: 0, scale: 1.06 }, { autoAlpha: 1, scale: 1, duration: 0.5 }, '<')
 
-        // a) Caos: los mensajes suben sin parar y entierran la lámpara.
-        tl.addLabel('chaos')
-          .to(q('[data-chat-list]'), { yPercent: -62, ease: 'none', duration: 2 })
-          .to(
-            counter,
-            {
-              value: 99,
-              ease: 'none',
-              duration: 2,
-              onUpdate: () => {
-                unread.textContent = counter.value >= 99 ? '99+' : String(Math.round(counter.value))
-              },
-            },
-            '<',
-          )
-          .to(q('[data-lamp-msg]'), { opacity: 0.3, duration: 0.6 }, 0.8)
-        // b) Orden: aparece CentraleMarket con las tarjetas.
-        tl.addLabel('order')
-        swap('chaos', 'order')
-          .from(q('[data-card]'), { opacity: 0, y: 30, scale: 0.8, stagger: 0.12, duration: 0.5 }, '<0.2')
-          .to({}, { duration: 0.8 })
-        // c) Login con código.
+        // a) Login con código.
         tl.addLabel('login')
-        swap('order', 'login')
           .from(q('[data-code-digit]'), { opacity: 0, y: -12, stagger: 0.12, duration: 0.3 })
           .from(q('[data-login-ok]'), { opacity: 0, scale: 0.8, duration: 0.3 })
           .to({}, { duration: 0.6 })
-        // d) Publicar: foto, título que se escribe, precio, botón.
+        // b) Publicar: foto, título que se escribe, precio, botón.
         tl.addLabel('sell')
         swap('login', 'sell')
           .from(q('[data-sell-photo]'), { scale: 0.6, opacity: 0, duration: 0.4 })
@@ -271,36 +155,18 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
           .to(q('[data-publish]'), { scale: 1, duration: 0.15 })
           .from(q('[data-toast]'), { opacity: 0, y: 10, duration: 0.3 })
           .to({}, { duration: 0.5 })
-        // e) Chat: los mensajes van apareciendo.
+        // c) Chat: los mensajes van apareciendo.
         tl.addLabel('chat')
         swap('sell', 'chat')
           .from(q('[data-bubble]'), { opacity: 0, y: 14, scale: 0.9, stagger: 0.3, duration: 0.3 })
           .from(q('[data-seen]'), { opacity: 0, duration: 0.2 })
           .to({}, { duration: 0.5 })
-        // f) Vendido: el sello cae sobre la tarjeta.
+        // d) Vendido: el sello cae sobre la tarjeta.
         tl.addLabel('sold')
         swap('chat', 'sold')
           .from(q('[data-stamp]'), { scale: 2.6, opacity: 0, rotation: -30, duration: 0.4, ease: 'back.out(2)' })
           .from(q('[data-sold-note]'), { opacity: 0, y: 8, duration: 0.3 })
           .to({}, { duration: 0.8 })
-
-        // ---------- 4. Un año en el campus (horizontal) ----------
-        const journey = q('[data-journey]')[0]
-        const track = q('[data-journey-track]')[0]
-        const distance = () => Math.max(0, track.scrollWidth - window.innerWidth)
-        gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: journey,
-              start: 'top top',
-              end: () => `+=${distance()}`,
-              pin: true,
-              scrub: 0.6,
-              invalidateOnRefresh: true,
-            },
-          })
-          .to(track, { x: () => -distance(), ease: 'none' }, 0)
-          .to(q('[data-journey-fill]'), { scaleX: 1, ease: 'none' }, 0)
 
         // ---------- Aparecer al entrar en pantalla (escalonado) ----------
         const revealed = q('[data-reveal]')
@@ -313,39 +179,31 @@ export function useIntroAnimations(scope: RefObject<HTMLElement | null>, morphRe
           onLeave: (elements) => gsap.to(elements, { opacity: 1, y: 0, duration: 0.4, overwrite: true }),
         })
 
-        // ---------- Líneas que se revelan con el scroll ----------
-        q('[data-line]').forEach((line) => {
+        // ---------- Líneas rojas finas que se dibujan solas al llegar ----------
+        q('[data-draw]').forEach((line) => {
           gsap.fromTo(
             line,
-            { opacity: 0.1, y: 30 },
-            { opacity: 1, y: 0, ease: 'none', scrollTrigger: { trigger: line, start: 'top 90%', end: 'top 60%', scrub: true } },
+            { scaleX: 0 },
+            {
+              scaleX: 1,
+              duration: 1.4,
+              ease: 'expo.out',
+              scrollTrigger: { trigger: line, start: 'top 85%', once: true },
+            },
           )
         })
 
-        // ---------- Contadores ----------
-        q('[data-count]').forEach((element) => {
-          const target = Number(element.dataset.count)
-          const from = Number(element.dataset.from ?? 0)
-          const suffix = element.dataset.suffix ?? ''
-          const value = { n: from }
-          element.textContent = `${from}${suffix}`
-          gsap.to(value, {
-            n: target,
-            duration: 1.6,
-            ease: 'power2.out',
-            scrollTrigger: { trigger: element, start: 'top 85%', once: true },
-            onUpdate: () => {
-              element.textContent = `${Math.round(value.n)}${suffix}`
+        // ---------- Imágenes que entran con un ligero zoom ----------
+        q('[data-img-reveal]').forEach((img) => {
+          gsap.fromTo(
+            img,
+            { scale: 1.12 },
+            {
+              scale: 1,
+              ease: 'none',
+              scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true },
             },
-          })
-        })
-
-        // ---------- 5. Final: el anillo vuelve a ser el logo ----------
-        ScrollTrigger.create({
-          trigger: q('[data-final-scene]')[0],
-          start: 'top bottom',
-          end: 'top 15%',
-          onUpdate: (self) => setMorph(1, 2, self.progress),
+          )
         })
 
         return () => {
