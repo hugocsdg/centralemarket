@@ -149,7 +149,7 @@ function HeroScene({ copy, cta }: Props) {
       <div
         data-scroll-hint
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex"
+        className="pointer-events-none absolute right-6 bottom-6 hidden flex-col items-center gap-2 md:flex"
       >
         <span className="flex h-9 w-[22px] justify-center rounded-full border border-white/30 pt-2">
           <span className="h-1.5 w-1 animate-scroll-dot rounded-full bg-white/80" />
