@@ -31,6 +31,7 @@ function ScrubVideo({ ref, src, poster, alt = '', priority = false, className = 
     raf: 0,
     last: 0,
     busy: false,
+    busyAt: 0,
     pending: null as number | null,
     loading: false,
   })
@@ -39,11 +40,15 @@ function ScrubVideo({ ref, src, poster, alt = '', priority = false, className = 
     const v = video.current
     const s = state.current
     if (!v || !v.duration) return
-    if (s.busy) {
+    // Si ya está en ese momento, no hace falta saltar (y el navegador no avisaría al terminar).
+    if (Math.abs(v.currentTime - time) < 0.01) return
+    // Seguridad: si un salto no avisa en 300 ms, no nos quedamos bloqueados.
+    if (s.busy && performance.now() - s.busyAt < 300) {
       s.pending = time
       return
     }
     s.busy = true
+    s.busyAt = performance.now()
     v.currentTime = time
   }
 
@@ -122,6 +127,8 @@ function ScrubVideo({ ref, src, poster, alt = '', priority = false, className = 
       v.removeEventListener('canplay', onReady)
       v.removeEventListener('error', onError)
       cancelAnimationFrame(s.raf)
+      s.raf = 0 // si no, el siguiente seek creería que el bucle sigue en marcha
+      s.last = 0
       if (v.src.startsWith('blob:')) URL.revokeObjectURL(v.src)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

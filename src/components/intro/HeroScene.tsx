@@ -17,7 +17,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP)
 // En escritorio la portada se queda fija y el scroll mueve el vídeo; el titular vive en el cielo.
 // En móvil o con "reducir movimiento" se ve la imagen fija, con el titular arriba.
 
-const VIDEO: string | undefined = undefined // public/intro/campus-night.mp4 cuando esté aprobado
+const VIDEO = '/intro/campus-night.mp4'
 const POSTER = {
   src: '/intro/campus-night-1920.webp',
   srcSet: '/intro/campus-night-1280.webp 1280w, /intro/campus-night-1920.webp 1920w',
