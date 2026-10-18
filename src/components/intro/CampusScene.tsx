@@ -159,7 +159,7 @@ function CampusScene({ copy }: { copy: IntroCopy }) {
       <div className="campus-copy absolute inset-x-4 bottom-[8svh] md:inset-x-auto md:bottom-[10vh] md:left-[max(1rem,calc((100vw-72rem)/2+1rem))] md:w-[30rem]">
         <div className="story-captions campus-captions">
           {captions.map((caption, i) => (
-            <div key={caption.title} data-campus-caption className={`story-caption ${i === 0 ? 'is-active' : ''}`}>
+            <div key={i} data-campus-caption className={`story-caption ${i === 0 ? 'is-active' : ''}`}>
               <h2 className="text-3xl font-bold md:text-5xl">{caption.title}</h2>
               <p className="mt-2 text-white/75 md:text-lg">{caption.text}</p>
             </div>

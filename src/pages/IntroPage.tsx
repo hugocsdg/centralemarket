@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Link } from 'react-router'
 import 'lenis/dist/lenis.css'
 import { ArrowRight, SkipForward } from 'lucide-react'
 import Logo, { LogoMark } from '../components/Logo'
+import LangSwitch from '../components/LangSwitch'
 import HeroScene from '../components/intro/HeroScene'
 import CampusScene from '../components/intro/CampusScene'
 import GalleryScene from '../components/intro/GalleryScene'
@@ -42,6 +44,12 @@ function IntroPage() {
   // Recordar que ya se vio la introducción en este dispositivo.
   useEffect(() => markIntroSeen(), [])
 
+  // Al cambiar de idioma los textos cambian de alto: recalcular dónde empieza y acaba cada escena.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => ScrollTrigger.refresh())
+    return () => cancelAnimationFrame(frame)
+  }, [lang])
+
   const cta = session ? { to: '/', label: copy.nav.enter } : { to: '/login', label: copy.nav.getStarted }
 
   return (
@@ -64,6 +72,7 @@ function IntroPage() {
             <span className="sr-only">CentraleMarket</span>
           </span>
           <div className="flex items-center gap-1">
+            <LangSwitch label={copy.nav.language} className="mr-1 hidden md:flex" />
             <button
               type="button"
               onClick={() => scrollToSection('join')}
@@ -227,6 +236,7 @@ function IntroPage() {
               {copy.footer.osm}
             </a>
             <span>© {YEAR}</span>
+            <LangSwitch label={copy.nav.language} />
           </div>
         </div>
         <p

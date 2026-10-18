@@ -75,7 +75,7 @@ function GalleryScene({ copy }: { copy: IntroCopy }) {
         }
       })
     },
-    { scope: section, dependencies: [t] },
+    { scope: section },
   )
 
   return (
@@ -105,7 +105,7 @@ function GalleryScene({ copy }: { copy: IntroCopy }) {
         <ul aria-label={t.example} className="gallery-cards mt-8 grid gap-3">
           {t.items.map((item, i) => (
             <li
-              key={item.name}
+              key={i}
               data-gallery-card
               className="flex items-center gap-4 rounded-2xl border border-white/12 bg-noche/70 p-3 pr-5 backdrop-blur-md"
             >

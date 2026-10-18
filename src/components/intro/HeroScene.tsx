@@ -8,6 +8,7 @@ import ScrubVideo from './ScrubVideo'
 import { STATIC_QUERY } from '../../lib/scrub'
 import type { ScrubHandle } from './ScrubVideo'
 import { scrollToSection } from '../../lib/useIntroAnimations'
+import LangSwitch from '../LangSwitch'
 import type { IntroCopy } from '../../i18n/intro'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -80,16 +81,20 @@ function HeroScene({ copy, cta }: Props) {
       {/* Arriba, en el cielo: el titular. Abajo, sobre el campus en sombra: el resto. */}
       <div data-hero-copy className="hero-copy mx-auto w-full max-w-6xl px-4">
         <div>
-          <p
-            data-hero-fade
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-noche/50 px-3 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inset-0 animate-ping rounded-full bg-carmin/70" />
-              <span className="relative h-2 w-2 rounded-full bg-carmin" />
-            </span>
-            {t.badge}
-          </p>
+          {/* En el móvil el selector de idioma va aquí (en la cabecera no cabe) */}
+          <div className="flex items-center justify-between gap-3">
+            <p
+              data-hero-fade
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-noche/50 px-3 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inset-0 animate-ping rounded-full bg-carmin/70" />
+                <span className="relative h-2 w-2 rounded-full bg-carmin" />
+              </span>
+              {t.badge}
+            </p>
+            <LangSwitch label={copy.nav.language} className="bg-noche/50 backdrop-blur-md md:hidden" />
+          </div>
           <h1 className="mt-5 max-w-4xl text-[2.55rem] leading-[1.02] font-bold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[5rem]">
             <HeroWords text={t.titleTop} />
             <HeroWords text={t.titleBottom} wordClassName="text-rosa" />
@@ -121,7 +126,7 @@ function HeroScene({ copy, cta }: Props) {
             {t.trust.map((text, i) => {
               const Icon = TRUST_ICONS[i]
               return (
-                <li key={text} className="flex items-center gap-1.5">
+                <li key={i} className="flex items-center gap-1.5">
                   <Icon aria-hidden="true" className="h-4 w-4 text-rosa" />
                   {text}
                 </li>

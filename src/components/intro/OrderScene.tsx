@@ -207,7 +207,7 @@ function OrderScene({ copy }: { copy: IntroCopy }) {
           <ul className="mt-3 grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-2.5">
             {cards.map((card, i) => (
               <li
-                key={card.name}
+                key={i}
                 style={{ '--i': i } as CSSProperties}
                 className="order-card flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]"
               >

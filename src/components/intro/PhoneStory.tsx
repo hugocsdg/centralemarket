@@ -19,17 +19,13 @@ function PhoneStory({ copy }: { copy: IntroCopy }) {
         <div className="order-last md:order-first">
           {/* Puntos de progreso: en qué paso estás */}
           <ol aria-hidden="true" className="mb-5 flex gap-2">
-            {t.steps.map((step) => (
-              <li
-                key={step.title}
-                data-step-dot
-                className="h-1 w-8 rounded-full bg-white/15 transition-colors duration-500"
-              />
+            {t.steps.map((_, i) => (
+              <li key={i} data-step-dot className="h-1 w-8 rounded-full bg-white/15 transition-colors duration-500" />
             ))}
           </ol>
           <div className="story-captions phone-captions">
             {t.steps.map((step, i) => (
-              <div key={step.title} data-phone-caption className={`story-caption ${i === 0 ? 'is-active' : ''}`}>
+              <div key={i} data-phone-caption className={`story-caption ${i === 0 ? 'is-active' : ''}`}>
                 <p className="font-display text-sm font-semibold text-rosa tabular-nums">
                   {t.stepLabel} {i + 1}/{t.steps.length}
                 </p>

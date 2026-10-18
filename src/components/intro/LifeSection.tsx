@@ -17,8 +17,8 @@ function LifeSection({ copy }: { copy: IntroCopy }) {
       </h2>
 
       <div className="mt-14 grid gap-10 md:mt-20 md:grid-cols-3 md:gap-8">
-        {t.moments.map((moment) => (
-          <article key={moment.title} data-reveal>
+        {t.moments.map((moment, i) => (
+          <article key={i} data-reveal>
             <span
               aria-hidden="true"
               data-draw
