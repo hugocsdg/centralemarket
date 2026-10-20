@@ -7,12 +7,12 @@ const NOISE =
 
 function Background() {
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-noche">
+    <div aria-hidden="true" className="app-bg pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-noche">
       {/* Luces suaves */}
-      <div className="absolute -top-[25vh] -left-[15vw] h-[70vh] w-[70vh] animate-aurora-1 rounded-full bg-carmin/[0.14] blur-[130px]" />
-      <div className="absolute top-[10vh] -right-[20vw] h-[80vh] w-[80vh] animate-aurora-2 rounded-full bg-zinc-500/[0.10] blur-[140px]" />
-      <div className="absolute -bottom-[30vh] left-[20vw] h-[70vh] w-[70vh] animate-aurora-3 rounded-full bg-zinc-300/[0.06] blur-[150px]" />
-      <div className="absolute top-[50vh] left-[50vw] h-[35vh] w-[35vh] animate-aurora-1 rounded-full bg-rojo/[0.10] blur-[120px] [animation-delay:-8s]" />
+      <div className="bg-aurora absolute -top-[25vh] -left-[15vw] h-[70vh] w-[70vh] animate-aurora-1 rounded-full bg-carmin/[0.14] blur-[130px]" />
+      <div className="bg-aurora absolute top-[10vh] -right-[20vw] h-[80vh] w-[80vh] animate-aurora-2 rounded-full bg-zinc-500/[0.10] blur-[140px]" />
+      <div className="bg-aurora absolute -bottom-[30vh] left-[20vw] h-[70vh] w-[70vh] animate-aurora-3 rounded-full bg-zinc-300/[0.06] blur-[150px]" />
+      <div className="bg-aurora absolute top-[50vh] left-[50vw] h-[35vh] w-[35vh] animate-aurora-1 rounded-full bg-rojo/[0.10] blur-[120px] [animation-delay:-8s]" />
 
       {/* Rejilla que se desvanece hacia los bordes */}
       <div
@@ -27,7 +27,7 @@ function Background() {
       />
 
       {/* Grano */}
-      <div className="absolute inset-0 opacity-[0.07] mix-blend-overlay" style={{ backgroundImage: NOISE }} />
+      <div className="bg-grain absolute inset-0 opacity-[0.07] mix-blend-overlay" style={{ backgroundImage: NOISE }} />
 
       {/* Viñeta: oscurece los bordes para centrar la atención */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(9_9_11/0.85))]" />

@@ -455,3 +455,37 @@ h3 {
     transform: none;
   }
 }
+
+/* ---------- Móviles y tablets: rendimiento ----------
+   En el iPhone, los desenfoques (cristal de las tarjetas) encima del fondo animado obligan a
+   recalcular cada tarjeta en cada fotograma y al hacer scroll: la app iba a tirones y no
+   respondía a los toques. Aquí se cambian por fondos oscuros sólidos que se ven casi igual,
+   y el fondo deja de moverse. En ordenador todo sigue como antes. */
+@media (pointer: coarse), (max-width: 767px) {
+  .glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.075), rgb(255 255 255 / 0.025)),
+      rgb(17 17 21 / 0.94);
+  }
+  [class*='backdrop-blur'] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  [class*='drop-shadow-'] {
+    filter: none !important;
+  }
+  /* Fondo: las manchas de luz quietas y sin desenfoque en tiempo real (un degradado hace lo mismo) */
+  .bg-aurora,
+  .bg-grain {
+    display: none;
+  }
+  .app-bg {
+    background:
+      radial-gradient(70vh 70vh at 10% 0%, rgb(224 21 63 / 0.12), transparent 70%),
+      radial-gradient(80vh 80vh at 100% 35%, rgb(113 113 122 / 0.08), transparent 70%),
+      radial-gradient(60vh 60vh at 55% 100%, rgb(181 18 39 / 0.07), transparent 70%),
+      #09090b;
+  }
+}
