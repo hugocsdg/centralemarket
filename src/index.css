@@ -100,7 +100,7 @@ h3 {
 
 /* Botón principal: degradado rojo con resplandor */
 @utility btn-primary {
-  background-image: linear-gradient(135deg, #ff3b62 0%, var(--color-carmin) 35%, var(--color-rojo) 100%);
+  background-image: linear-gradient(135deg, #ff3b62 0%, var(--color-carmin) 18%, #c8172f 55%, var(--color-rojo) 100%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.25),
     0 8px 24px -6px rgb(224 21 63 / 0.6);
@@ -218,6 +218,22 @@ h3 {
 .story-caption + .story-caption {
   margin-top: 1.5rem;
 }
+/* Campus sin animación (reducir movimiento): el mapa arriba, quieto, y los textos debajo */
+[data-campus-scene]:not(.is-animated) {
+  height: auto;
+}
+[data-campus-scene]:not(.is-animated) .campus-stage {
+  position: relative;
+  height: 75svh;
+}
+[data-campus-scene]:not(.is-animated) .campus-copy {
+  position: relative;
+  inset: auto;
+  width: auto;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 0 1rem 4rem;
+}
 .is-animated .story-captions {
   position: relative;
   height: 7.5rem;
@@ -260,27 +276,6 @@ h3 {
   padding-block: 0;
 }
 
-/* Escena del MacBook */
-.is-animated[data-mac-scene] {
-  height: 100svh;
-  min-height: 0;
-  padding-block: 0;
-}
-.is-animated[data-mac-scene] [data-mac-headline] {
-  position: absolute;
-  inset-inline: 0;
-  top: 11svh;
-}
-.is-animated[data-mac-scene] .mac-stage {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  align-items: center;
-  padding-top: 16svh;
-}
-[data-mac-scene]:not(.is-animated) .mac-full {
-  display: none;
-}
 .is-animated .campus-captions {
   height: 9rem;
 }
@@ -289,26 +284,162 @@ h3 {
     height: 11rem;
   }
 }
-.is-animated .mac-captions {
-  height: 12.5rem;
-}
 
-/* Móvil sin animación: solo se ve la pantalla de la web ordenada */
-[data-phone-scene]:not(.is-animated) [data-screen]:not([data-screen='order']) {
+/* Móvil sin animación: se ve la última pantalla (vendido) */
+[data-phone-scene]:not(.is-animated) [data-screen]:not([data-screen='sold']) {
   display: none;
 }
 
-/* Viaje horizontal: sin animación se desliza con el dedo; con animación lo mueve el scroll */
-.journey-track {
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
+/* Curva de salida suave (empieza rápido y frena despacio) para las transiciones de la intro */
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
-.journey-track > * {
-  scroll-snap-align: start;
+
+/* El vídeo con scroll no se usa en móvil, tablets en vertical ni con "reducir movimiento"
+   (mismas condiciones que STATIC_QUERY en components/intro/ScrubVideo.tsx) */
+@media (max-width: 720px), (orientation: portrait) and (max-width: 1024px), (orientation: portrait) and (pointer: coarse),
+  (orientation: landscape) and (pointer: coarse) and (max-height: 560px), (prefers-reduced-motion: reduce) {
+  .scrub-video {
+    display: none;
+  }
 }
-.is-animated .journey-track {
-  width: max-content;
-  overflow: visible;
+
+/* ---------- Portada: el campus de noche ----------
+   Modo vídeo (.is-scrubbing, solo escritorio): fija, de alto la ventana, titular en el cielo.
+   Imagen fija (móvil, reducir movimiento): titular arriba y el campus debajo. */
+.hero-scene {
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+}
+.hero-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-top: 6.5rem;
+  padding-bottom: 2.5rem;
+}
+@media (min-width: 721px) {
+  .hero-copy {
+    padding-top: 15svh;
+    padding-bottom: 9svh;
+  }
+}
+.hero-scene.is-scrubbing {
+  height: 100svh;
+}
+.hero-scene:not(.is-scrubbing) .hero-windows {
+  display: none;
+}
+.hero-scrim {
+  background:
+    linear-gradient(to bottom, rgb(9 9 11 / 0.55), transparent 22%, transparent 50%, rgb(9 9 11 / 0.75) 78%, var(--color-noche) 100%),
+    radial-gradient(ellipse 60% 45% at 15% 28%, rgb(9 9 11 / 0.55), transparent 70%);
+}
+
+/* ---------- La galería ---------- */
+.gallery-stage {
+  position: relative;
+  height: 58svh;
+}
+.gallery-copy {
+  padding-block: 2.5rem 5rem;
+}
+.gallery-price {
+  display: none;
+}
+.gallery-scrim {
+  background: linear-gradient(to bottom, var(--color-noche), transparent 20%, transparent 75%, var(--color-noche));
+}
+@media (min-width: 721px) {
+  .gallery-stage {
+    height: 78svh;
+  }
+}
+.gallery-scene.is-scrubbing {
+  height: 100svh;
+}
+.is-scrubbing .gallery-stage {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+.is-scrubbing .gallery-scrim {
+  background:
+    linear-gradient(90deg, rgb(9 9 11 / 0.9) 0%, rgb(9 9 11 / 0.6) 32%, transparent 58%),
+    linear-gradient(to bottom, var(--color-noche), transparent 18%, transparent 80%, var(--color-noche));
+}
+.is-scrubbing .gallery-copy {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 5rem 2rem;
+}
+.is-scrubbing .gallery-copy > * {
+  max-width: 27rem;
+}
+.is-scrubbing .gallery-price {
+  display: block;
+  margin-top: 1.5rem;
+}
+.is-scrubbing .gallery-cards {
+  margin-top: 1.25rem;
+}
+
+/* ---------- WhatsApp frente a "en orden" (mantener pulsado) ---------- */
+.order-title-chaos,
+.order-title-order,
+.order-chaos,
+.order-tidy,
+.order-card {
+  transition:
+    opacity 0.6s var(--ease-out-expo),
+    transform 0.8s var(--ease-out-expo);
+}
+[data-state='chaos'] .order-title-order,
+[data-state='order'] .order-title-chaos {
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+}
+[data-state='chaos'] .order-tidy {
+  opacity: 0;
+  pointer-events: none;
+}
+[data-state='chaos'] .order-card {
+  opacity: 0;
+  transform: translateY(18px) scale(0.94);
+}
+[data-state='order'] .order-chaos {
+  opacity: 0;
+  transform: scale(0.94);
+}
+[data-state='order'] .order-card {
+  transition-delay: calc(var(--i) * 90ms + 180ms);
+}
+.order-chat {
+  animation: order-scroll 38s linear infinite;
+}
+[data-state='order'] .order-chat {
+  animation-play-state: paused;
+}
+@keyframes order-scroll {
+  to {
+    transform: translateY(-50%);
+  }
+}
+.hold-fill {
+  transform: scaleX(var(--hold, 0));
+}
+.hold-dot {
+  transform: scale(calc(1 + var(--hold, 0) * 0.8));
+}
+.hold-button:focus-visible {
+  outline-offset: 4px;
 }
 
 /* Quien prefiere menos movimiento (ajuste del sistema) no ve animaciones */

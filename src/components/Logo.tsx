@@ -2,9 +2,9 @@ type LogoMarkProps = {
   className?: string
 }
 
-// Símbolo "CM": la imagen original del logo, recortada y sin fondo (public/logo-mark.png).
+// Símbolo "CM": la imagen original del logo, recortada y sin fondo (public/logo-mark.webp; el original en PNG sigue en public/).
 export function LogoMark({ className = 'h-9 w-auto' }: LogoMarkProps) {
-  return <img src="/logo-mark.png" alt="" className={className} />
+  return <img src="/logo-mark.webp" alt="" width={360} height={202} className={className} />
 }
 
 // Logo completo grande (símbolo + nombre), para la portada.

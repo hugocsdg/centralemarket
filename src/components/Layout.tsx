@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import Background from './Background'
 import Header from './Header'
@@ -22,7 +22,10 @@ function Layout() {
       <Background />
       <Header unread={unread} />
       <main className="mx-auto max-w-6xl px-4 pt-24 pb-32 md:pt-28 md:pb-16">
-        <Outlet />
+        {/* Mientras llega el código de la página, la cabecera y el menú se quedan */}
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </main>
       <footer className="hidden border-t border-white/5 py-8 text-center text-xs text-white/60 md:block">
         An independent student initiative for the CentraleSupélec community. ·{' '}

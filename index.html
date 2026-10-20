@@ -22,6 +22,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <!-- En la intro (sin sesión), pedir la imagen de la portada cuanto antes: es lo primero que se ve -->
+    <script>
+      ;(function () {
+        var path = location.pathname
+        if (path !== '/welcome' && path !== '/') return
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (/^sb-.*-auth-token$/.test(localStorage.key(i) || '') && path === '/') return
+          }
+        } catch (e) {}
+        var link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'image'
+        link.fetchPriority = 'high'
+        link.setAttribute('imagesrcset', matchMedia('(max-width: 720px)').matches
+          ? '/intro/campus-night-mobile.webp'
+          : '/intro/campus-night-1280.webp 1280w, /intro/campus-night-1920.webp 1920w')
+        link.setAttribute('imagesizes', '100vw')
+        document.head.appendChild(link)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

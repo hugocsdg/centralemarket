@@ -1,21 +1,25 @@
-import { Navigate, Route, Routes } from 'react-router'
+import { lazy, Suspense } from 'react'
 import type { ReactNode } from 'react'
+import { Navigate, Route, Routes } from 'react-router'
 import Layout from './components/Layout'
 import RequireAuth from './components/RequireAuth'
-import HomePage from './pages/HomePage'
-import ExplorePage from './pages/ExplorePage'
-import ProductPage from './pages/ProductPage'
-import LoginPage from './pages/LoginPage'
-import ProfilePage from './pages/ProfilePage'
-import SellPage from './pages/SellPage'
-import MessagesPage from './pages/MessagesPage'
-import ChatPage from './pages/ChatPage'
-import EditListingPage from './pages/EditListingPage'
-import ComingSoonPage from './pages/ComingSoonPage'
-import NotFoundPage from './pages/NotFoundPage'
-import IntroPage from './pages/IntroPage'
 import { useAuth } from './lib/auth'
 import { introSeen } from './lib/intro'
+
+// Cada página se descarga solo cuando hace falta (así la intro no carga el código de la app,
+// y la app no carga las animaciones de la intro).
+const HomePage = lazy(() => import('./pages/HomePage'))
+const ExplorePage = lazy(() => import('./pages/ExplorePage'))
+const ProductPage = lazy(() => import('./pages/ProductPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const SellPage = lazy(() => import('./pages/SellPage'))
+const MessagesPage = lazy(() => import('./pages/MessagesPage'))
+const ChatPage = lazy(() => import('./pages/ChatPage'))
+const EditListingPage = lazy(() => import('./pages/EditListingPage'))
+const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
+const IntroPage = lazy(() => import('./pages/IntroPage'))
 
 // El "mapa" de la web: qué página se enseña para cada URL.
 // Todas van dentro de <Layout>, que pone la cabecera y el menú.
@@ -23,71 +27,73 @@ import { introSeen } from './lib/intro'
 // La portada "/" depende de si has entrado: sin sesión ves la introducción, con sesión la web.
 function App() {
   return (
-    <Routes>
-      <Route path="/welcome" element={<IntroPage />} />
-      <Route element={<Layout />}>
-        <Route
-          path="/"
-          element={
-            <IntroGate>
-              <HomePage />
-            </IntroGate>
-          }
-        />
-        <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/item/:id" element={<ProductPage />} />
-        <Route
-          path="/item/:id/edit"
-          element={
-            <RequireAuth>
-              <EditListingPage />
-            </RequireAuth>
-          }
-        />
-        <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/sell"
-          element={
-            <RequireAuth>
-              <SellPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/favorites"
-          element={
-            <RequireAuth>
-              <ComingSoonPage title="Favorites" description="Save items you like and find them here later." />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/messages"
-          element={
-            <RequireAuth>
-              <MessagesPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/messages/:id"
-          element={
-            <RequireAuth>
-              <ChatPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <RequireAuth>
-              <ProfilePage />
-            </RequireAuth>
-          }
-        />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+    <Suspense fallback={null}>
+      <Routes>
+        <Route path="/welcome" element={<IntroPage />} />
+        <Route element={<Layout />}>
+          <Route
+            path="/"
+            element={
+              <IntroGate>
+                <HomePage />
+              </IntroGate>
+            }
+          />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/item/:id" element={<ProductPage />} />
+          <Route
+            path="/item/:id/edit"
+            element={
+              <RequireAuth>
+                <EditListingPage />
+              </RequireAuth>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/sell"
+            element={
+              <RequireAuth>
+                <SellPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <RequireAuth>
+                <ComingSoonPage title="Favorites" description="Save items you like and find them here later." />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <RequireAuth>
+                <MessagesPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/messages/:id"
+            element={
+              <RequireAuth>
+                <ChatPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <ProfilePage />
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </Suspense>
   )
 }
 
