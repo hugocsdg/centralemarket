@@ -26,7 +26,10 @@ export const CONDITIONS: Condition[] = ['New', 'Like new', 'Good', 'Fair']
 const BUCKET = 'listing-images'
 
 // Cada anuncio viene con su vendedor y sus fotos, en una sola petición.
-export const SELECT = '*, seller:profiles(display_name, created_at), images:listing_images(path, position)'
+// "!listings_seller_id_fkey" = el perfil del VENDEDOR (desde que existe la tabla de favoritos hay
+// otro camino de anuncio a perfil, el de quien lo guardó, y Supabase necesita saber cuál queremos).
+export const SELECT =
+  '*, seller:profiles!listings_seller_id_fkey(display_name, created_at), images:listing_images(path, position)'
 
 export function withSortedImages(listing: Listing): Listing {
   return { ...listing, images: [...(listing.images ?? [])].sort((a, b) => a.position - b.position) }
