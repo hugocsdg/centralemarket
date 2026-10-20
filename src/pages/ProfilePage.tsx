@@ -6,6 +6,7 @@ import {
   ChevronRight,
   CircleHelp,
   Heart,
+  KeyRound,
   Languages,
   LogOut,
   Mail,
@@ -43,6 +44,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     title: 'Settings',
     items: [
       { icon: Bell, label: 'Notifications', to: '/notifications' },
+      { icon: KeyRound, label: 'Password', to: '/profile/password' },
       { icon: Languages, label: 'Language', soon: true },
     ],
   },

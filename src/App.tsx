@@ -15,6 +15,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const MyProfilePage = lazy(() => import('./pages/MyProfilePage'))
 const DeleteAccountPage = lazy(() => import('./pages/DeleteAccountPage'))
+const PasswordPage = lazy(() => import('./pages/PasswordPage'))
 const InfoPage = lazy(() => import('./pages/InfoPage'))
 const SellPage = lazy(() => import('./pages/SellPage'))
 const MessagesPage = lazy(() => import('./pages/MessagesPage'))
@@ -113,6 +114,14 @@ function App() {
             element={
               <RequireAuth>
                 <MyProfilePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile/password"
+            element={
+              <RequireAuth>
+                <PasswordPage />
               </RequireAuth>
             }
           />
