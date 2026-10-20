@@ -1,205 +1,145 @@
 import { useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
-import { Link } from 'react-router'
-import { Camera, LoaderCircle, LogOut, Plus } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Link, useNavigate } from 'react-router'
+import {
+  Bell,
+  ChevronRight,
+  CircleHelp,
+  Heart,
+  Languages,
+  LogOut,
+  Mail,
+  ScrollText,
+  ShieldCheck,
+  Lock,
+  Tag,
+  Trash2,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import Avatar from '../components/Avatar'
-import { removeAvatar, uploadAvatar } from '../lib/avatars'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
-import type { Profile } from '../lib/auth'
-import { fetchListings } from '../lib/listings'
-import { useQuery } from '../lib/useQuery'
-import ProductGrid from '../components/ProductGrid'
 
-// Tu perfil: ver tus datos, cambiar tu nombre, ver tus anuncios y cerrar sesión.
-// (Tus anuncios aparecerán aquí cuando exista "Vender").
+// Profile: un menú ordenado por secciones (como Vinted).
+// Arriba tu tarjeta (lleva a My profile); luego tus cosas, ajustes, ayuda, legal y, al final, la cuenta.
+
+type Item = {
+  icon: LucideIcon
+  label: string
+  to?: string
+  soon?: boolean // aún no disponible: se ve, pero no se puede abrir
+}
+
+const SECTIONS: { title: string; items: Item[] }[] = [
+  {
+    title: 'My stuff',
+    items: [
+      { icon: Heart, label: 'Favourite items', to: '/favorites' },
+      { icon: Tag, label: 'My listings', to: '/profile/me#listings' },
+    ],
+  },
+  {
+    title: 'Settings',
+    items: [
+      { icon: Bell, label: 'Notifications', soon: true },
+      { icon: Languages, label: 'Language', soon: true },
+    ],
+  },
+  {
+    title: 'Help',
+    items: [
+      { icon: CircleHelp, label: 'How CentraleMarket works', to: '/info/how-it-works' },
+      { icon: ShieldCheck, label: 'Safety tips', to: '/info/safety' },
+      { icon: Mail, label: 'Contact us', soon: true },
+    ],
+  },
+  {
+    title: 'Legal',
+    items: [
+      { icon: ScrollText, label: 'Community rules', to: '/info/rules' },
+      { icon: Lock, label: 'Privacy policy', to: '/info/privacy' },
+    ],
+  },
+]
+
+const rowClass = 'flex min-h-14 w-full items-center gap-4 px-5 py-3 text-left transition'
+
 function ProfilePage() {
-  const { session, profile, refreshProfile, signOut } = useAuth()
+  const { profile, signOut } = useAuth()
+  const navigate = useNavigate()
+  const [leaving, setLeaving] = useState(false)
 
   if (!profile) {
     return <p className="py-20 text-center text-white/60">Loading your profile…</p>
   }
 
-  return (
-    <ProfileView profile={profile} email={session?.user.email ?? ''} onSaved={refreshProfile} onSignOut={signOut} />
-  )
-}
-
-type ProfileViewProps = {
-  profile: Profile
-  email: string
-  onSaved: () => Promise<void>
-  onSignOut: () => Promise<void>
-}
-
-function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
-  // El formulario empieza con los datos que ya hay en Supabase.
-  const [name, setName] = useState(profile.display_name)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [error, setError] = useState('')
-  const myListings = useQuery(`mine|${profile.id}`, () => fetchListings({ sellerId: profile.id, includeSold: true }))
-  const [tab, setTab] = useState<'active' | 'sold'>('active')
-  const active = myListings.data?.filter((listing) => listing.status !== 'sold')
-  const sold = myListings.data?.filter((listing) => listing.status === 'sold')
-
-  async function save(event: FormEvent) {
-    event.preventDefault()
-    setStatus('saving')
-    setError('')
-    const { error } = await supabase.from('profiles').update({ display_name: name.trim() }).eq('id', profile.id)
-    if (error) {
-      setStatus('error')
-      setError('Could not save. Please try again.')
-      return
-    }
-    await onSaved()
-    setStatus('saved')
+  async function logOut() {
+    setLeaving(true)
+    await signOut()
+    navigate('/welcome', { replace: true })
   }
 
-  const memberSince = new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="flex items-center gap-4">
-        <ProfilePhoto profile={profile} onSaved={onSaved} />
-        <div>
-          <h1 className="text-2xl font-bold">{profile.display_name}</h1>
-          <p className="text-sm text-white/60">{email}</p>
-          <p className="text-xs text-white/60">Member since {memberSince}</p>
+    <div className="mx-auto max-w-xl space-y-6">
+      <h1 className="text-3xl font-bold">Profile</h1>
+
+      {/* Tu tarjeta: lleva a My profile */}
+      <Link to="/profile/me" className="flex items-center gap-4 rounded-3xl glass p-4 transition hover:bg-white/10">
+        <Avatar name={profile.display_name} url={profile.avatar_url} className="h-16 w-16 text-2xl" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-lg font-bold">{profile.display_name}</p>
+          <p className="text-sm text-white/60">View my profile</p>
         </div>
-      </div>
+        <ChevronRight aria-hidden="true" className="h-5 w-5 text-white/60" />
+      </Link>
 
-      <form onSubmit={save} className="space-y-4 rounded-3xl glass p-6 backdrop-blur-sm">
-        <h2 className="text-lg font-bold">Profile settings</h2>
+      {SECTIONS.map((section) => (
+        <MenuGroup key={section.title} title={section.title}>
+          {section.items.map((item) =>
+            item.to && !item.soon ? (
+              <Link key={item.label} to={item.to} className={`${rowClass} hover:bg-white/5`}>
+                <item.icon aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
+                <span className="flex-1 font-medium">{item.label}</span>
+                <ChevronRight aria-hidden="true" className="h-5 w-5 text-white/60" />
+              </Link>
+            ) : (
+              <div key={item.label} className={`${rowClass} text-white/60`} aria-disabled="true">
+                <item.icon aria-hidden="true" className="h-5 w-5 shrink-0" />
+                <span className="flex-1 font-medium">{item.label}</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white/70">Soon</span>
+              </div>
+            ),
+          )}
+        </MenuGroup>
+      ))}
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-white/80">Display name</span>
-          <input
-            required
-            maxLength={50}
-            value={name}
-            onChange={(event) => {
-              setName(event.target.value)
-              setStatus('idle')
-            }}
-            className={inputClass}
-          />
-        </label>
-
-        {status === 'error' && <p className="rounded-xl bg-rojo/20 px-4 py-2 text-sm text-rosa">{error}</p>}
-
-        <button
-          disabled={status === 'saving'}
-          className="rounded-full btn-primary px-5 py-2.5 font-semibold disabled:opacity-50"
-        >
-          {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save changes'}
+      <MenuGroup title="Account">
+        <button type="button" onClick={logOut} disabled={leaving} className={`${rowClass} hover:bg-white/5`}>
+          <LogOut aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
+          <span className="flex-1 font-medium">{leaving ? 'Logging out…' : 'Log out'}</span>
         </button>
-      </form>
+        <Link to="/profile/delete" className={`${rowClass} text-rosa hover:bg-rojo/10`}>
+          <Trash2 aria-hidden="true" className="h-5 w-5 shrink-0" />
+          <span className="flex-1 font-medium">Delete account</span>
+          <ChevronRight aria-hidden="true" className="h-5 w-5 opacity-70" />
+        </Link>
+      </MenuGroup>
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">My listings</h2>
-          <Link to="/sell" className="flex items-center gap-1 rounded-full btn-primary px-4 py-2 text-sm font-semibold">
-            <Plus className="h-4 w-4" /> Sell an item
-          </Link>
-        </div>
-        <div className="flex gap-2">
-          {(
-            [
-              ['active', `Active${active ? ` (${active.length})` : ''}`],
-              ['sold', `Sold${sold ? ` (${sold.length})` : ''}`],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              onClick={() => setTab(value)}
-              className={`min-h-11 rounded-full px-4 py-1.5 text-sm font-medium ${
-                tab === value ? 'btn-primary text-white' : 'glass text-white/80 hover:bg-white/10'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-white/50">Open a listing to edit it, mark it as reserved or sold, or delete it.</p>
-        <ProductGrid
-          listings={tab === 'active' ? active : sold}
-          loading={myListings.loading}
-          error={myListings.error}
-          empty={tab === 'active' ? "You don't have any active listings." : 'Nothing sold yet.'}
-        />
-      </section>
-
-      <button
-        onClick={onSignOut}
-        className="flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-sm font-semibold text-white/80 hover:border-white/40 hover:text-white"
-      >
-        <LogOut className="h-4 w-4" /> Log out
-      </button>
+      <p className="pb-4 text-center text-xs text-white/60">
+        CentraleMarket · Beta
+        <br />
+        An independent student initiative for the CentraleSupélec community.
+      </p>
     </div>
   )
 }
 
-const inputClass =
-  'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/50 focus:border-rosa'
-
-// Tu foto de perfil: tocarla abre la galería del móvil (o el selector de archivos en el ordenador).
-function ProfilePhoto({ profile, onSaved }: { profile: Profile; onSaved: () => Promise<void> }) {
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-
-  async function run(task: () => Promise<unknown>) {
-    setBusy(true)
-    setError('')
-    try {
-      await task()
-      await onSaved()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  function onPick(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    event.target.value = '' // para poder elegir la misma foto otra vez
-    if (file) run(() => uploadAvatar(profile.id, file))
-  }
-
+// Un grupo del menú: título pequeño encima y las filas dentro de una tarjeta, separadas por líneas finas.
+function MenuGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="flex shrink-0 flex-col items-center gap-1">
-      <label className="group relative block cursor-pointer rounded-full focus-within:ring-2 focus-within:ring-rosa">
-        <span className="sr-only">{profile.avatar_url ? 'Change profile photo' : 'Add a profile photo'}</span>
-        <input type="file" accept="image/*" onChange={onPick} disabled={busy} className="sr-only" />
-        <Avatar name={profile.display_name} url={profile.avatar_url} className="h-20 w-20 text-3xl" />
-        <span
-          aria-hidden="true"
-          className="absolute -right-1 -bottom-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-noche bg-white text-noche transition group-hover:scale-110"
-        >
-          <Camera className="h-4 w-4" />
-        </span>
-        {busy && (
-          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-noche/70">
-            <LoaderCircle aria-label="Uploading" className="h-6 w-6 animate-spin" />
-          </span>
-        )}
-      </label>
-      {profile.avatar_url && !busy && (
-        <button
-          type="button"
-          onClick={() => run(() => removeAvatar(profile.id))}
-          className="min-h-11 px-2 text-xs font-medium text-white/60 transition hover:text-white"
-        >
-          Remove photo
-        </button>
-      )}
-      {error && (
-        <p role="alert" className="max-w-40 text-center text-xs text-rosa">
-          {error}
-        </p>
-      )}
-    </div>
+    <section>
+      <h2 className="mb-2 px-1 text-sm font-semibold text-white/60">{title}</h2>
+      <div className="divide-y divide-white/10 overflow-hidden rounded-3xl glass">{children}</div>
+    </section>
   )
 }
 

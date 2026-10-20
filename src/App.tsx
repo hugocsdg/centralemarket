@@ -13,6 +13,9 @@ const ExplorePage = lazy(() => import('./pages/ExplorePage'))
 const ProductPage = lazy(() => import('./pages/ProductPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const MyProfilePage = lazy(() => import('./pages/MyProfilePage'))
+const DeleteAccountPage = lazy(() => import('./pages/DeleteAccountPage'))
+const InfoPage = lazy(() => import('./pages/InfoPage'))
 const SellPage = lazy(() => import('./pages/SellPage'))
 const MessagesPage = lazy(() => import('./pages/MessagesPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
@@ -105,6 +108,24 @@ function App() {
               </RequireAuth>
             }
           />
+          <Route
+            path="/profile/me"
+            element={
+              <RequireAuth>
+                <MyProfilePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile/delete"
+            element={
+              <RequireAuth>
+                <DeleteAccountPage />
+              </RequireAuth>
+            }
+          />
+          {/* Ayuda y legal: se pueden leer sin sesión */}
+          <Route path="/info/:slug" element={<InfoPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
