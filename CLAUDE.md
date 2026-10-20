@@ -62,3 +62,13 @@ Lo construye Hugo (estudiante Erasmus de Barcelona) con un amigo. Web pública: 
 Dominio: Hugo pregunta por **Hostinger**. Recomendación dada: usarlo solo para comprar el dominio (y quizá correo profesional), apuntarlo a Vercel con DNS; **no** su hosting. Ese dominio desbloquea Resend/Brevo (punto 2).
 
 Ideas de futuro: almacén en el campus para quien se va (necesita permiso de la escuela), afinar el campus 3D con más capturas del mapa, quizá cambiar la foto del concierto por una más oscura.
+
+## Trabajar a dos (Hugo + su compañero)
+
+- El proyecto lo llevan **dos personas**, cada una con su Claude Code. La guía para arrancar está en `README.md`.
+- **Nunca trabajes directamente en `main`** (es lo publicado). Cada tarea en su rama, creada desde un `main` al día (`git switch main && git pull && git switch -c <tarea>`). Antes de empezar, `git pull`.
+- Para publicar: subir la rama (pide permiso antes de cada `git push`), abrir un **Pull Request** hacia `main` y que la otra persona mire la vista previa de Vercel. Fusionar con `main` solo cuando el dueño de la tarea lo diga.
+- Reparto por zonas para no tocar los mismos archivos: **Hugo** = intro y diseño (`src/components/intro/`, `src/pages/IntroPage.tsx`, `src/i18n/`, `public/intro/`); **su compañero** = avisos por email, emails profesionales, privacidad/normas y botón "Report" (`supabase/`, páginas nuevas). Si una tarea necesita tocar la zona del otro, avisa antes.
+- Base de datos: archivo nuevo `supabase/0X_….sql` por cambio, y avisar al otro antes de ejecutarlo en Supabase.
+- Si una rama lleva tiempo abierta, `git merge main` estando en ella antes de seguir.
+- No están en git: `.env.local` (cada uno el suyo, solo claves públicas), `review/` (originales de Higgsfield; los créditos son de la cuenta de Hugo).

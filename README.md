@@ -1,32 +1,87 @@
-# React + TypeScript + Vite
+# CentraleMarket
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Marketplace de segunda mano **solo para estudiantes de CentraleSupélec** (campus Paris-Saclay).
+Web pública: https://centralemarket.vercel.app
 
-Currently, two official plugins are available:
+El contexto completo del proyecto (qué funciona, qué falta, diseño, estructura) está en [`CLAUDE.md`](CLAUDE.md).
+Claude Code lo lee solo al abrir el proyecto.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Empezar en tu ordenador (una sola vez)
 
-## React Compiler
+1. **Acepta la invitación** de GitHub que te ha mandado Hugo (llega por email).
+2. **Instala** estas tres cosas:
+   - [Node.js](https://nodejs.org) (la versión LTS)
+   - [Git](https://git-scm.com/downloads) (en Mac ya viene; si te lo pide, acepta instalar las "Command Line Tools")
+   - [Claude](https://claude.ai/download), la app de escritorio con la pestaña **Code**
+3. **Descarga el proyecto** en una terminal:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+   ```bash
+   git clone https://github.com/hugocsdg/centralemarket.git
+   cd centralemarket
+   npm install
+   ```
 
-## Expanding the Oxlint configuration
+4. **Claves de Supabase**: copia `.env.example` como `.env.local` y pon los dos valores que te pase Hugo
+   (`VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`). Son claves públicas. Las claves secretas
+   (`sb_secret_…`, `service_role`) **no** se comparten nunca ni se ponen en ningún archivo.
+5. **Arranca la web**:
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+   ```bash
+   npm run dev
+   ```
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+   y abre http://localhost:5173.
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Ojo: la web en tu ordenador usa la **base de datos real**. Si publicas anuncios de prueba, bórralos después.
+Para entrar necesitas un email `@student-cs.fr`.
+
+## Cómo trabajamos a dos
+
+La regla de oro: **nadie trabaja directamente en `main`**. `main` es lo que está publicado: cada cambio
+que llega a `main` sale en la web en un minuto.
+
+1. **Antes de empezar**, trae lo último:
+
+   ```bash
+   git switch main
+   git pull
+   ```
+
+2. **Cada tarea en su propia rama**, con un nombre claro:
+
+   ```bash
+   git switch -c avisos-email
+   ```
+
+3. Trabaja y haz commits pequeños con mensajes claros.
+4. **Sube tu rama** (`git push -u origin avisos-email`). Vercel crea una **vista previa** con su propia
+   dirección, sin tocar la web publicada.
+5. **Abre un Pull Request** en GitHub hacia `main`. El otro mira la vista previa y, si está bien,
+   se fusiona (botón "Merge"). Entonces se publica.
+
+Con Claude Code basta con decirlo en palabras ("crea una rama para los avisos por email", "sube la rama",
+"abre un pull request"): las reglas están en `CLAUDE.md`.
+
+### Para no pisarnos
+
+- **Repartid por zonas**: si los dos tocáis el mismo archivo a la vez, al juntarlo habrá conflictos.
+  Reparto actual (cambiadlo cuando queráis):
+  - **Hugo**: la intro y el diseño (`src/components/intro/`, `src/pages/IntroPage.tsx`, `src/i18n/`, `public/intro/`).
+  - **Su compañero**: avisos por email y backend (`supabase/`, emails, Supabase), y la página de privacidad/normas con el botón "Report".
+- **Base de datos**: cada cambio va en un archivo nuevo `supabase/0X_nombre.sql`. Avisad al otro **antes**
+  de ejecutarlo en Supabase (afecta a la web publicada).
+- Si una rama lleva días abierta, tráete lo nuevo de `main` antes de seguir (`git merge main` estando en tu rama).
+
+## Lo que no está en Git
+
+- `.env.local` (claves; cada uno el suyo).
+- `review/`: originales de las imágenes y vídeos de Higgsfield (solo en el ordenador de Hugo; los créditos son de su cuenta).
+- `node_modules/` (se crea con `npm install`).
+
+## Comandos
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Web en http://localhost:5173 |
+| `npm run build` | Comprueba que todo compila (lo mismo que hace Vercel) |
+| `npm run lint` | Busca errores en el código |
