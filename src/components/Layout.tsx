@@ -6,12 +6,14 @@ import InstallAppBanner from './InstallAppBanner'
 import BottomNav from './BottomNav'
 import { useAuth } from '../lib/auth'
 import { useUnreadCount } from '../lib/useUnread'
+import { useNotificationCount } from '../lib/notifications'
 
 // El "marco" de la app: fondo, cabecera arriba, menú abajo y en medio la página actual (<Outlet />).
 function Layout() {
   const { pathname } = useLocation()
   const { session } = useAuth()
   const unread = useUnreadCount(session?.user.id)
+  const alerts = useNotificationCount(session?.user.id)
 
   // Al cambiar de página, volver arriba del todo.
   useEffect(() => {
@@ -21,7 +23,7 @@ function Layout() {
   return (
     <div className="relative min-h-screen text-white">
       <Background />
-      <Header unread={unread} />
+      <Header unread={unread} alerts={alerts} />
       <main className="mx-auto max-w-6xl px-4 pt-24 pb-32 md:pt-28 md:pb-16">
         {/* Mientras llega el código de la página, la cabecera y el menú se quedan */}
         {/* "Get the app" solo en el inicio y en el perfil (y solo en móvil, si no está instalada) */}

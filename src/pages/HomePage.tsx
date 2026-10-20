@@ -1,6 +1,18 @@
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowRight, ArrowUpRight, Camera, Handshake, Leaf, MessageCircle, Search, Sparkles, Truck } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Camera,
+  ChefHat,
+  Handshake,
+  Leaf,
+  MessageCircle,
+  Search,
+  Sparkles,
+  Ticket,
+  Truck,
+} from 'lucide-react'
 import { categories, getCategory } from '../data/categories'
 import ProductGrid from '../components/ProductGrid'
 import { LogoFull } from '../components/Logo'
@@ -20,6 +32,31 @@ const BENTO = [
   { slug: 'services', blurb: 'Tutoring, moving help & more', className: '' },
 ]
 const MORE = ['clothing', 'books', 'bikes', 'sports', 'other']
+
+// Entradas y comida tienen su propia pantalla; el resto de categorías van a Explore.
+function categoryLink(slug: string) {
+  if (slug === 'tickets') return '/events'
+  if (slug === 'food') return '/food'
+  return `/explore?category=${slug}`
+}
+
+// Accesos grandes a las pantallas de eventos y comida.
+const SPACE_CARDS = [
+  {
+    to: '/events',
+    icon: Ticket,
+    title: "What's on tonight",
+    text: 'Parties, galas and concerts — grab a ticket from a fellow student, sorted by date.',
+    cta: 'See events',
+  },
+  {
+    to: '/food',
+    icon: ChefHat,
+    title: 'Cooked on campus',
+    text: 'Homemade dishes from students around the world. Pick up a portion tonight.',
+    cta: 'See dishes',
+  },
+]
 
 const STEPS = [
   { icon: Camera, title: 'List in 60 seconds', text: 'Snap a few photos, set a price, done. Straight from your phone.' },
@@ -104,7 +141,7 @@ function HomePage() {
           {[...categories, ...categories].map(({ slug, name, icon: Icon }, index) => (
             <Link
               key={`${slug}-${index}`}
-              to={`/explore?category=${slug}`}
+              to={categoryLink(slug)}
               className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm whitespace-nowrap text-white/75 transition hover:text-white"
             >
               <Icon className="h-4 w-4 text-rosa" />
@@ -113,6 +150,31 @@ function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* ---------- Las otras dos pantallas: eventos y comida ---------- */}
+      <section className="grid gap-3 md:grid-cols-2 md:gap-4">
+        {SPACE_CARDS.map(({ to, icon: Icon, title, text, cta }, index) => (
+          <Reveal key={to} delay={index * 90}>
+            <Link
+              to={to}
+              className="glass glow-border group relative flex h-full min-h-56 flex-col justify-between overflow-hidden rounded-[2rem] p-6 transition duration-300 hover:-translate-y-1 md:min-h-64 md:p-8"
+            >
+              <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-carmin/25 blur-3xl transition duration-500 group-hover:scale-125 group-hover:bg-carmin/40" />
+              <Icon className="absolute -right-8 -bottom-10 h-52 w-52 rotate-[-10deg] text-white/[0.05] transition duration-500 group-hover:rotate-0 group-hover:text-white/[0.08]" />
+              <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-carmin to-burdeos shadow-lg shadow-rojo/30">
+                <Icon className="h-7 w-7" />
+              </span>
+              <div className="relative mt-8">
+                <h2 className="text-3xl font-bold md:text-4xl">{title}</h2>
+                <p className="mt-2 max-w-sm text-white/65">{text}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
+                  {cta} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
+              </div>
+            </Link>
+          </Reveal>
+        ))}
+      </section>
 
       {/* ---------- Categorías en "bento" ---------- */}
       <section>
@@ -127,7 +189,7 @@ function HomePage() {
             return (
               <Reveal key={slug} delay={index * 70} className={className}>
                 <Link
-                  to={`/explore?category=${slug}`}
+                  to={categoryLink(slug)}
                   className="glass glow-border group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl p-5 transition duration-300 hover:-translate-y-1"
                 >
                   <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-carmin/20 blur-2xl transition duration-500 group-hover:scale-150 group-hover:bg-carmin/35" />
@@ -158,7 +220,7 @@ function HomePage() {
             return (
               <Link
                 key={slug}
-                to={`/explore?category=${slug}`}
+                to={categoryLink(slug)}
                 className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white/75 transition hover:text-white"
               >
                 <Icon className="h-4 w-4 text-rosa" /> {category.name}

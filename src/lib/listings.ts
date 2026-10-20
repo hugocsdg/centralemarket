@@ -18,11 +18,34 @@ export type Listing = {
   status: ListingStatus
   moving_out: boolean
   created_at: string
+  // Entradas: cuándo es el evento. Comida: cuándo se recoge. (Ver supabase/07_mejoras_vinted.sql.)
+  event_at: string | null
+  ready_at: string | null
+  // Entradas que quedan o raciones disponibles.
+  quantity: number | null
+  dietary: Dietary[]
+  allergens: string | null
+  // El precio de antes si ha bajado (lo calcula la base de datos).
+  previous_price: number | null
+  // Quién lo compró (lo elige el vendedor al marcarlo como vendido).
+  sold_to: string | null
   seller: { display_name: string; created_at: string; avatar_url: string | null } | null
   images: { path: string; position: number }[]
 }
 
 export const CONDITIONS: Condition[] = ['New', 'Like new', 'Good', 'Fair']
+
+export type Dietary = 'vegetarian' | 'vegan' | 'halal' | 'gluten-free' | 'dairy-free' | 'spicy'
+export const DIETARY: { value: Dietary; label: string; emoji: string }[] = [
+  { value: 'vegetarian', label: 'Vegetarian', emoji: '🥕' },
+  { value: 'vegan', label: 'Vegan', emoji: '🌱' },
+  { value: 'halal', label: 'Halal', emoji: '☪️' },
+  { value: 'gluten-free', label: 'Gluten-free', emoji: '🌾' },
+  { value: 'dairy-free', label: 'Dairy-free', emoji: '🥛' },
+  { value: 'spicy', label: 'Spicy', emoji: '🌶️' },
+]
+
+export const LOCATIONS = ['Campus', 'Gif-sur-Yvette', 'Palaiseau', 'Orsay', 'Massy', 'Paris']
 const BUCKET = 'listing-images'
 
 // Cada anuncio viene con su vendedor y sus fotos, en una sola petición.
@@ -41,11 +64,22 @@ export function imageUrl(path: string) {
 
 export type Sort = 'newest' | 'price-asc' | 'price-desc'
 
-type ListingFilters = {
+export type ListingFilters = {
   query?: string
   category?: string
   sort?: Sort
+  // Precio por debajo de (sin incluir): para "menos de 20 €".
   maxPrice?: number
+  // Rango de precio del panel de filtros (incluidos).
+  priceFrom?: number
+  priceTo?: number
+  conditions?: Condition[]
+  location?: string
+  freeOnly?: boolean
+  hideReserved?: boolean
+  movingOut?: boolean
+  priceDrop?: boolean
+  dietary?: Dietary[]
   sellerId?: string
   includeSold?: boolean
   limit?: number
@@ -56,9 +90,19 @@ export async function fetchListings(filters: ListingFilters = {}) {
   let request = supabase.from('listings').select(SELECT)
 
   if (!includeSold) request = request.neq('status', 'sold')
+  if (filters.hideReserved) request = request.eq('status', 'available')
   if (category) request = request.eq('category', category)
   if (sellerId) request = request.eq('seller_id', sellerId)
   if (maxPrice !== undefined) request = request.lt('price', maxPrice)
+  if (filters.freeOnly) request = request.eq('price', 0)
+  if (filters.priceFrom !== undefined) request = request.gte('price', filters.priceFrom)
+  if (filters.priceTo !== undefined) request = request.lte('price', filters.priceTo)
+  if (filters.conditions?.length) request = request.in('condition', filters.conditions)
+  if (filters.location) request = request.ilike('location', `%${filters.location.replace(/[%,()*"\\]/g, ' ')}%`)
+  if (filters.movingOut) request = request.eq('moving_out', true)
+  if (filters.priceDrop) request = request.not('previous_price', 'is', null)
+  // Platos que cumplen TODAS las etiquetas elegidas (p. ej. vegano y sin gluten).
+  if (filters.dietary?.length) request = request.contains('dietary', filters.dietary)
 
   // Buscar en título y descripción (quitamos símbolos que romperían la búsqueda).
   const text = query.trim().replace(/[%,()*"\\]/g, ' ')
@@ -69,6 +113,22 @@ export async function fetchListings(filters: ListingFilters = {}) {
   else request = request.order('created_at', { ascending: false })
 
   const { data, error } = await request.limit(limit)
+  if (error) throw error
+  return (data as Listing[]).map(withSortedImages)
+}
+
+// Próximos eventos (entradas con fecha), del más cercano al más lejano.
+// Se enseñan hasta 6 horas después de empezar: una fiesta que empezó hace un rato sigue valiendo.
+export async function fetchEvents(limit = 60) {
+  const since = new Date(Date.now() - 6 * 3_600_000).toISOString()
+  const { data, error } = await supabase
+    .from('listings')
+    .select(SELECT)
+    .eq('category', 'tickets')
+    .neq('status', 'sold')
+    .gte('event_at', since)
+    .order('event_at', { ascending: true })
+    .limit(limit)
   if (error) throw error
   return (data as Listing[]).map(withSortedImages)
 }
@@ -108,6 +168,28 @@ export type NewListing = {
   condition: Condition | null
   location: string
   moving_out: boolean
+  event_at: string | null
+  ready_at: string | null
+  quantity: number | null
+  dietary: Dietary[]
+  allergens: string | null
+}
+
+// Quita los campos de entradas/comida vacíos antes de guardar. Así un mueble no envía
+// "event_at: null", y la web sigue funcionando aunque aún no se haya ejecutado 07_mejoras_vinted.sql.
+// (En entradas y comida sí se envían vacíos: así, al editar, se puede borrar un dato.)
+function compact(listing: NewListing) {
+  const row: Partial<NewListing> = { ...listing }
+  const isTicket = listing.category === 'tickets'
+  const isFood = listing.category === 'food'
+  if (!isTicket) delete row.event_at
+  if (!isTicket && !isFood) delete row.quantity
+  if (!isFood) {
+    delete row.ready_at
+    delete row.allergens
+    delete row.dietary
+  }
+  return row
 }
 
 // Una foto del formulario: o ya estaba subida (al editar) o es nueva del móvil/ordenador.
@@ -143,7 +225,7 @@ export async function createListing(
   onProgress?: (message: string) => void,
 ) {
   onProgress?.('Creating your listing…')
-  const { data, error } = await supabase.from('listings').insert(listing).select('id').single()
+  const { data, error } = await supabase.from('listings').insert(compact(listing)).select('id').single()
   if (error) throw error
   const listingId = data.id as number
   const uploaded: string[] = []
@@ -172,7 +254,7 @@ export async function updateListing(
   onProgress?: (message: string) => void,
 ) {
   onProgress?.('Saving changes…')
-  const { error } = await supabase.from('listings').update(listing).eq('id', listingId)
+  const { error } = await supabase.from('listings').update(compact(listing)).eq('id', listingId)
   if (error) throw error
 
   const newFiles = photos.flatMap((photo) => (photo.kind === 'new' ? [photo.file] : []))
@@ -199,9 +281,14 @@ export async function updateListing(
   if (removed.length) await supabase.storage.from(BUCKET).remove(removed)
 }
 
-// Cambiar a disponible, reservado o vendido.
-export async function setListingStatus(listingId: number, status: ListingStatus) {
-  const { error } = await supabase.from('listings').update({ status }).eq('id', listingId)
+// Cambiar a disponible, reservado o vendido. Al venderlo, "soldTo" es quién lo compró
+// (alguien que te escribió por el chat), para que pueda valorarte. null = fuera de CentraleMarket.
+export async function setListingStatus(listingId: number, status: ListingStatus, soldTo: string | null = null) {
+  const { error } = await supabase
+    .from('listings')
+    // Al volver a disponible o reservado, la base de datos borra el comprador sola.
+    .update(soldTo && status === 'sold' ? { status, sold_to: soldTo } : { status })
+    .eq('id', listingId)
   if (error) throw error
 }
 

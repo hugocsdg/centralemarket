@@ -1,11 +1,28 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
-import { ArrowLeft, CheckCircle2, Clock, ImageOff, MapPin, MessageCircle, Share2, Tag } from 'lucide-react'
-import { fetchListing, fetchListings, imageUrl } from '../lib/listings'
+import {
+  ArrowLeft,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  HandCoins,
+  ImageOff,
+  MapPin,
+  MessageCircle,
+  Share2,
+  Tag,
+  TrendingDown,
+  TriangleAlert,
+  Users,
+} from 'lucide-react'
+import { DIETARY, fetchListing, fetchListings, imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import OwnerPanel from '../components/OwnerPanel'
 import FavoriteButton from '../components/FavoriteButton'
-import { formatPosted, formatPrice } from '../lib/format'
+import { formatEventDate, formatPosted, formatPrice, formatReady } from '../lib/format'
+import { fetchMyReview, fetchSellerRating } from '../lib/reviews'
+import { RateSellerForm, RatingSummary, Stars } from '../components/Rating'
 import { getCategory } from '../data/categories'
 import { useAuth } from '../lib/auth'
 import { useQuery } from '../lib/useQuery'
@@ -61,19 +78,31 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
   const [contactError, setContactError] = useState('')
   const [selected, setSelected] = useState(0)
   const [shareMessage, setShareMessage] = useState('')
+  const [params] = useSearchParams()
   const category = getCategory(listing.category)
+  const isTicket = listing.category === 'tickets'
+  const isFood = listing.category === 'food'
+  const rating = useQuery(`rating|${listing.seller_id}`, () => fetchSellerRating(listing.seller_id))
+  // ¿Lo compré yo? Entonces puedo valorar al vendedor (una vez).
+  const boughtByMe = listing.status === 'sold' && listing.sold_to === userId
+  const myReview = useQuery(boughtByMe ? `my-review|${listing.id}` : null, () => fetchMyReview(listing.id, userId))
+  const tags = DIETARY.filter((tag) => listing.dietary?.includes(tag.value))
+  // En la comida no se regatea: son raciones de pocos euros.
+  const canOffer = !isOwner && !isFood && listing.status !== 'sold' && listing.price > 0
+  const dropped = listing.previous_price !== null && listing.previous_price !== undefined && listing.previous_price > listing.price
   const similar = useQuery(`similar|${listing.id}`, () => fetchListings({ category: listing.category, limit: 5 }))
   const similarListings = similar.data?.filter((item) => item.id !== listing.id).slice(0, 4)
 
   const image = listing.images[selected] ?? listing.images[0]
 
   // Abre el chat con el vendedor (o el que ya teníais sobre este anuncio).
-  async function contactSeller() {
+  // Con "offer", el chat se abre con el panel de oferta ya desplegado.
+  async function contactSeller(offer = false) {
     setOpening(true)
     setContactError('')
     try {
       const conversationId = await startConversation(listing.id, userId)
-      navigate(`/messages/${conversationId}`)
+      navigate(`/messages/${conversationId}${offer ? '?offer=1' : ''}`)
     } catch {
       setOpening(false)
       setContactError('Could not open the chat. Please try again.')
@@ -103,8 +132,11 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
         </p>
       )}
 
-      <Link to="/explore" className="inline-flex items-center gap-1 text-sm font-medium text-white/60 hover:text-white">
-        <ArrowLeft className="h-4 w-4" /> Back to explore
+      <Link
+        to={isTicket ? '/events' : isFood ? '/food' : '/explore'}
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-white/60 hover:text-white"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to {isTicket ? 'events' : isFood ? 'food' : 'market'}
       </Link>
 
       <div className="grid gap-6 md:grid-cols-2 md:gap-10">
@@ -143,6 +175,11 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
                   {listing.status}
                 </span>
               )}
+              {dropped && (
+                <span className="flex items-center gap-1 rounded-full bg-carmin/20 px-3 py-1 text-xs font-semibold text-rosa ring-1 ring-rosa/40">
+                  <TrendingDown className="h-3.5 w-3.5" /> Price drop
+                </span>
+              )}
               {listing.moving_out && (
                 <span className="rounded-full bg-burdeos px-3 py-1 text-xs font-medium ring-1 ring-white/20">Moving out</span>
               )}
@@ -151,13 +188,60 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
               )}
             </div>
             <h1 className="mt-3 text-3xl font-bold">{listing.title}</h1>
-            <p className="mt-1 text-3xl font-bold text-rosa">{formatPrice(listing.price, listing.price_unit)}</p>
+            <p className="mt-1 flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-rosa">
+                {formatPrice(listing.price, listing.price_unit)}
+                {(isFood || isTicket) && listing.price > 0 && (
+                  <span className="ml-1 text-sm font-medium text-white/60">{isFood ? '/ portion' : '/ ticket'}</span>
+                )}
+              </span>
+              {dropped && <span className="text-lg text-white/50 line-through">{formatPrice(listing.previous_price!)}</span>}
+            </p>
           </div>
+
+          {/* Evento o plato: lo más importante, en grande */}
+          {((isTicket && listing.event_at) || (isFood && (listing.ready_at || listing.quantity))) && (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {isTicket && listing.event_at && (
+                <InfoTile icon={CalendarDays} label="When" value={formatEventDate(listing.event_at)} />
+              )}
+              {isFood && listing.ready_at && <InfoTile icon={Clock} label="Pickup" value={formatReady(listing.ready_at)} />}
+              {listing.quantity ? (
+                <InfoTile
+                  icon={Users}
+                  label="Left"
+                  value={`${listing.quantity} ${isFood ? (listing.quantity === 1 ? 'portion' : 'portions') : listing.quantity === 1 ? 'ticket' : 'tickets'}`}
+                />
+              ) : null}
+            </div>
+          )}
+
+          {isFood && (tags.length > 0 || listing.allergens) && (
+            <div className="space-y-2">
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <span key={tag.value} className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/85">
+                      {tag.emoji} {tag.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {listing.allergens && (
+                <p className="flex items-start gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm text-white/80">
+                  <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-rosa" />
+                  <span>
+                    <span className="font-semibold">Allergens:</span> {listing.allergens}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
 
           <ul className="space-y-2 text-sm text-white/80">
             <li className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-white/60" />
-              {listing.category === 'services' ? listing.location : `Pickup in ${listing.location}`}
+              {listing.category === 'services' || isTicket ? listing.location : `Pickup in ${listing.location}`}
             </li>
             {category && (
               <li className="flex items-center gap-2">
@@ -176,22 +260,62 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
             <p className="leading-relaxed whitespace-pre-line text-white/80">{listing.description}</p>
           )}
 
-          <div className="flex items-center gap-3 rounded-2xl glass p-4">
+          <Link
+            to={`/user/${listing.seller_id}`}
+            className="flex items-center gap-3 rounded-2xl glass p-4 transition hover:bg-white/10"
+          >
             <Avatar name={listing.seller?.display_name} url={listing.seller?.avatar_url} className="h-10 w-10 text-base" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-medium">{isOwner ? 'You' : listing.seller?.display_name}</p>
-              <p className="text-xs text-white/50">CentraleSupélec student</p>
+              {rating.data !== undefined ? (
+                <RatingSummary rating={rating.data} />
+              ) : (
+                <p className="text-xs text-white/50">CentraleSupélec student</p>
+              )}
             </div>
-          </div>
+            <ChevronRight className="h-5 w-5 text-white/40" />
+          </Link>
+
+          {/* Lo compraste: valora al vendedor */}
+          {boughtByMe && myReview.data === null && (
+            <RateSellerForm
+              listingId={listing.id}
+              sellerName={listing.seller?.display_name ?? 'the seller'}
+              onDone={() => {
+                myReview.reload()
+                rating.reload()
+              }}
+            />
+          )}
+          {boughtByMe && myReview.data && (
+            <p className="flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/80">
+              You rated this purchase <Stars value={myReview.data.rating} />
+            </p>
+          )}
+          {params.has('rate') && !boughtByMe && (
+            <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/70">
+              Only the buyer picked by the seller can rate this sale.
+            </p>
+          )}
 
           <div className="flex flex-col gap-2 sm:flex-row">
             {isOwner ? null : (
               <button
-                onClick={contactSeller}
+                onClick={() => contactSeller()}
                 disabled={opening}
                 className="flex flex-1 items-center justify-center gap-2 rounded-full btn-primary px-5 py-3 font-semibold  disabled:opacity-60"
               >
-                <MessageCircle className="h-5 w-5" /> {opening ? 'Opening chat…' : 'Message seller'}
+                <MessageCircle className="h-5 w-5" />{' '}
+                {opening ? 'Opening chat…' : isTicket ? 'Get this ticket' : isFood ? 'Order this dish' : 'Message seller'}
+              </button>
+            )}
+            {canOffer && (
+              <button
+                onClick={() => contactSeller(true)}
+                disabled={opening}
+                className="flex items-center justify-center gap-2 rounded-full border border-rosa/50 bg-rojo/10 px-5 py-3 font-semibold transition hover:bg-rojo/20 disabled:opacity-60"
+              >
+                <HandCoins className="h-5 w-5" /> Make an offer
               </button>
             )}
             {!isOwner && <FavoriteButton listingId={listing.id} title={listing.title} variant="page" />}
@@ -214,6 +338,20 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
           <ProductGrid listings={similarListings} />
         </section>
       )}
+    </div>
+  )
+}
+
+function InfoTile({ icon: Icon, label, value }: { icon: typeof Clock; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl glass p-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-carmin to-burdeos">
+        <Icon className="h-5 w-5" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs text-white/60">{label}</p>
+        <p className="truncate font-semibold">{value}</p>
+      </div>
     </div>
   )
 }
