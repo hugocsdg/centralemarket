@@ -11,6 +11,7 @@ function Splash() {
       <p className="cm-splash-name">
         Centrale<span>Market</span>
       </p>
+      <p className="cm-splash-tagline">Your campus. Your marketplace.</p>
       <div className="cm-splash-bar" />
     </div>
   )

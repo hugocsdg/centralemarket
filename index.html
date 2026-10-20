@@ -99,6 +99,15 @@
       .cm-splash-name span {
         color: #e0153f;
       }
+      .cm-splash-tagline {
+        margin: -14px 0 0;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        color: rgb(255 255 255 / 0.65);
+        animation: cm-rise 0.7s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
       .cm-splash-bar {
         position: relative;
         width: 120px;
@@ -119,6 +128,7 @@
       }
       .cm-splash-continue .cm-splash-logo,
       .cm-splash-continue .cm-splash-name,
+      .cm-splash-continue .cm-splash-tagline,
       .cm-splash-continue .cm-splash-bar {
         animation-name: none;
       }
@@ -161,6 +171,7 @@
       <div class="cm-splash" role="status" aria-label="Loading CentraleMarket">
         <div class="cm-splash-logo"><img src="/logo-mark.webp" alt="" width="360" height="202" /></div>
         <p class="cm-splash-name">Centrale<span>Market</span></p>
+        <p class="cm-splash-tagline">Your campus. Your marketplace.</p>
         <div class="cm-splash-bar"></div>
       </div>
     </div>
