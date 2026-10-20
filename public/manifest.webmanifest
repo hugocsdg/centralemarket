@@ -1,0 +1,19 @@
+{
+  "name": "CentraleMarket",
+  "short_name": "CentraleMarket",
+  "description": "Buy and sell with CentraleSupélec students. Hand it over on campus.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09090B",
+  "theme_color": "#09090B",
+  "lang": "en",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    { "src": "/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

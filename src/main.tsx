@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import AuthProvider from './components/AuthProvider'
 import { LangProvider } from './i18n/lang'
+import './lib/install' // escucha desde el principio el aviso de instalación de Android
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -17,3 +18,9 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
+// Registrar el service worker (public/sw.js): necesario para instalar la web como app en el móvil.
+// Solo en la web publicada; en local (npm run dev) no hace falta.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+}

@@ -2,6 +2,7 @@ import { Suspense, useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import Background from './Background'
 import Header from './Header'
+import InstallAppBanner from './InstallAppBanner'
 import BottomNav from './BottomNav'
 import { useAuth } from '../lib/auth'
 import { useUnreadCount } from '../lib/useUnread'
@@ -23,6 +24,8 @@ function Layout() {
       <Header unread={unread} />
       <main className="mx-auto max-w-6xl px-4 pt-24 pb-32 md:pt-28 md:pb-16">
         {/* Mientras llega el código de la página, la cabecera y el menú se quedan */}
+        {/* "Get the app" solo en el inicio y en el perfil (y solo en móvil, si no está instalada) */}
+        {(pathname === '/' || pathname === '/profile') && <InstallAppBanner />}
         <Suspense fallback={null}>
           <Outlet />
         </Suspense>
