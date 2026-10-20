@@ -164,7 +164,7 @@ function CategoryCard({ category }: { category: Category }) {
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute right-1 bottom-1 h-[62%] w-auto object-contain transition duration-500 group-hover:scale-105 group-hover:-rotate-3"
+          className="absolute right-2 bottom-2 h-[64%] max-w-[70%] object-contain object-right-bottom drop-shadow-[0_12px_18px_rgb(0_0_0/0.45)] transition duration-500 group-hover:scale-105 group-hover:-rotate-3"
         />
       ) : (
         <span className="absolute right-3 bottom-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-carmin to-burdeos shadow-lg shadow-rojo/30 transition duration-500 group-hover:scale-105 group-hover:-rotate-6 sm:h-20 sm:w-20">

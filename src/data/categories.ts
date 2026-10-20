@@ -22,17 +22,17 @@ export type Category = {
 }
 
 export const categories: Category[] = [
-  { slug: 'furniture', name: 'Furniture & Room', icon: Sofa },
-  { slug: 'electronics', name: 'Electronics', icon: Laptop },
-  { slug: 'kitchen', name: 'Kitchen & Appliances', icon: CookingPot },
-  { slug: 'food', name: 'Food & Specialties', icon: UtensilsCrossed },
-  { slug: 'tickets', name: 'Events & Tickets', icon: Ticket },
-  { slug: 'clothing', name: 'Clothing', icon: Shirt },
-  { slug: 'books', name: 'Books & Study', icon: BookOpen },
-  { slug: 'bikes', name: 'Bikes & Transport', icon: Bike },
-  { slug: 'sports', name: 'Sports & Leisure', icon: Dumbbell },
-  { slug: 'services', name: 'Services', icon: HandHelping },
-  { slug: 'other', name: 'Other', icon: Package },
+  { slug: 'furniture', name: 'Furniture & Room', icon: Sofa, image: '/categories/furniture.webp' },
+  { slug: 'electronics', name: 'Electronics', icon: Laptop, image: '/categories/electronics.webp' },
+  { slug: 'kitchen', name: 'Kitchen & Appliances', icon: CookingPot, image: '/categories/kitchen.webp' },
+  { slug: 'food', name: 'Food & Specialties', icon: UtensilsCrossed, image: '/categories/food.webp' },
+  { slug: 'tickets', name: 'Events & Tickets', icon: Ticket, image: '/categories/tickets.webp' },
+  { slug: 'clothing', name: 'Clothing', icon: Shirt, image: '/categories/clothing.webp' },
+  { slug: 'books', name: 'Books & Study', icon: BookOpen, image: '/categories/books.webp' },
+  { slug: 'bikes', name: 'Bikes & Transport', icon: Bike, image: '/categories/bikes.webp' },
+  { slug: 'sports', name: 'Sports & Leisure', icon: Dumbbell, image: '/categories/sports.webp' },
+  { slug: 'services', name: 'Services', icon: HandHelping, image: '/categories/services.webp' },
+  { slug: 'other', name: 'Other', icon: Package, image: '/categories/other.webp' },
 ]
 
 export function getCategory(slug: string) {
