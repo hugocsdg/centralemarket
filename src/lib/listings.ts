@@ -18,7 +18,7 @@ export type Listing = {
   status: ListingStatus
   moving_out: boolean
   created_at: string
-  seller: { display_name: string; created_at: string } | null
+  seller: { display_name: string; created_at: string; avatar_url: string | null } | null
   images: { path: string; position: number }[]
 }
 
@@ -29,7 +29,7 @@ const BUCKET = 'listing-images'
 // "!listings_seller_id_fkey" = el perfil del VENDEDOR (desde que existe la tabla de favoritos hay
 // otro camino de anuncio a perfil, el de quien lo guardó, y Supabase necesita saber cuál queremos).
 export const SELECT =
-  '*, seller:profiles!listings_seller_id_fkey(display_name, created_at), images:listing_images(path, position)'
+  '*, seller:profiles!listings_seller_id_fkey(display_name, created_at, avatar_url), images:listing_images(path, position)'
 
 export function withSortedImages(listing: Listing): Listing {
   return { ...listing, images: [...(listing.images ?? [])].sort((a, b) => a.position - b.position) }

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router'
 import { Heart, MessageCircle, Plus, Search, User } from 'lucide-react'
 import Logo from './Logo'
+import Avatar from './Avatar'
 import { useAuth } from '../lib/auth'
 
 // Cabecera flotante de cristal. Al hacer scroll se vuelve un poco más opaca.
@@ -85,9 +86,13 @@ function Header({ unread }: { unread: number }) {
             <NavLink
               to="/profile"
               aria-label="Profile"
-              className="mx-1 flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos text-sm font-bold ring-2 ring-white/10 transition hover:ring-rosa/50"
+              className="mx-1 flex h-11 w-11 items-center justify-center rounded-full ring-2 ring-white/10 transition hover:ring-rosa/50"
             >
-              {profile?.display_name[0]?.toUpperCase() ?? <User className="h-4 w-4" />}
+              {profile ? (
+                <Avatar name={profile.display_name} url={profile.avatar_url} className="h-11 w-11 text-sm" />
+              ) : (
+                <User className="h-4 w-4" />
+              )}
             </NavLink>
           ) : (
             <Link

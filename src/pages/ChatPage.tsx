@@ -8,6 +8,7 @@ import { imageUrl } from '../lib/listings'
 import { formatPrice } from '../lib/format'
 import { useAuth } from '../lib/auth'
 import { useQuery } from '../lib/useQuery'
+import Avatar from '../components/Avatar'
 import NotFoundPage from './NotFoundPage'
 
 function ChatPage() {
@@ -97,12 +98,17 @@ function ChatView({ conversation, userId }: { conversation: Conversation; userId
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <Link to={`/item/${conversation.listing_id}`} className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-white/5">
-            {cover ? (
-              <img src={imageUrl(cover.path)} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <ImageOff className="absolute inset-0 m-auto h-4 w-4 text-white/20" />
-            )}
+          <div className="relative h-11 w-11 shrink-0">
+            <div className="relative h-11 w-11 overflow-hidden rounded-lg bg-white/5">
+              {cover ? (
+                <img src={imageUrl(cover.path)} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <ImageOff className="absolute inset-0 m-auto h-4 w-4 text-white/20" />
+              )}
+            </div>
+            <span className="absolute -right-1.5 -bottom-1.5 rounded-full border-2 border-noche">
+              <Avatar name={other?.display_name} url={other?.avatar_url} className="h-6 w-6 text-[11px]" />
+            </span>
           </div>
           <div className="min-w-0">
             <p className="truncate font-semibold">{other?.display_name}</p>

@@ -18,8 +18,8 @@ export type Conversation = {
     status: string
     images: { path: string; position: number }[]
   } | null
-  buyer: { display_name: string } | null
-  seller: { display_name: string } | null
+  buyer: { display_name: string; avatar_url: string | null } | null
+  seller: { display_name: string; avatar_url: string | null } | null
 }
 
 export type Message = {
@@ -34,8 +34,8 @@ export type Message = {
 const CONVERSATION_SELECT = `
   id, listing_id, buyer_id, seller_id, last_message, last_sender_id, last_message_at,
   listing:listings(id, title, price, price_unit, status, images:listing_images(path, position)),
-  buyer:profiles!conversations_buyer_fk(display_name),
-  seller:profiles!conversations_seller_fk(display_name)
+  buyer:profiles!conversations_buyer_fk(display_name, avatar_url),
+  seller:profiles!conversations_seller_fk(display_name, avatar_url)
 `
 
 // Abre (o reutiliza) la conversación con el vendedor de un anuncio.

@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import { Link } from 'react-router'
-import { LogOut, Plus } from 'lucide-react'
+import { Camera, LoaderCircle, LogOut, Plus } from 'lucide-react'
+import Avatar from '../components/Avatar'
+import { removeAvatar, uploadAvatar } from '../lib/avatars'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { Profile } from '../lib/auth'
@@ -19,12 +21,7 @@ function ProfilePage() {
   }
 
   return (
-    <ProfileView
-      profile={profile}
-      email={session?.user.email ?? ''}
-      onSaved={refreshProfile}
-      onSignOut={signOut}
-    />
+    <ProfileView profile={profile} email={session?.user.email ?? ''} onSaved={refreshProfile} onSignOut={signOut} />
   )
 }
 
@@ -49,10 +46,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
     event.preventDefault()
     setStatus('saving')
     setError('')
-    const { error } = await supabase
-      .from('profiles')
-      .update({ display_name: name.trim() })
-      .eq('id', profile.id)
+    const { error } = await supabase.from('profiles').update({ display_name: name.trim() }).eq('id', profile.id)
     if (error) {
       setStatus('error')
       setError('Could not save. Please try again.')
@@ -67,9 +61,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-4">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos text-2xl font-bold">
-          {profile.display_name[0]?.toUpperCase()}
-        </span>
+        <ProfilePhoto profile={profile} onSaved={onSaved} />
         <div>
           <h1 className="text-2xl font-bold">{profile.display_name}</h1>
           <p className="text-sm text-white/60">{email}</p>
@@ -94,7 +86,6 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
           />
         </label>
 
-
         {status === 'error' && <p className="rounded-xl bg-rojo/20 px-4 py-2 text-sm text-rosa">{error}</p>}
 
         <button
@@ -108,10 +99,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">My listings</h2>
-          <Link
-            to="/sell"
-            className="flex items-center gap-1 rounded-full btn-primary px-4 py-2 text-sm font-semibold"
-          >
+          <Link to="/sell" className="flex items-center gap-1 rounded-full btn-primary px-4 py-2 text-sm font-semibold">
             <Plus className="h-4 w-4" /> Sell an item
           </Link>
         </div>
@@ -126,9 +114,7 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
               key={value}
               onClick={() => setTab(value)}
               className={`min-h-11 rounded-full px-4 py-1.5 text-sm font-medium ${
-                tab === value
-                  ? 'btn-primary text-white'
-                  : 'glass text-white/80 hover:bg-white/10'
+                tab === value ? 'btn-primary text-white' : 'glass text-white/80 hover:bg-white/10'
               }`}
             >
               {label}
@@ -156,5 +142,65 @@ function ProfileView({ profile, email, onSaved, onSignOut }: ProfileViewProps) {
 
 const inputClass =
   'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/50 focus:border-rosa'
+
+// Tu foto de perfil: tocarla abre la galería del móvil (o el selector de archivos en el ordenador).
+function ProfilePhoto({ profile, onSaved }: { profile: Profile; onSaved: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function run(task: () => Promise<unknown>) {
+    setBusy(true)
+    setError('')
+    try {
+      await task()
+      await onSaved()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function onPick(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = '' // para poder elegir la misma foto otra vez
+    if (file) run(() => uploadAvatar(profile.id, file))
+  }
+
+  return (
+    <div className="flex shrink-0 flex-col items-center gap-1">
+      <label className="group relative block cursor-pointer rounded-full focus-within:ring-2 focus-within:ring-rosa">
+        <span className="sr-only">{profile.avatar_url ? 'Change profile photo' : 'Add a profile photo'}</span>
+        <input type="file" accept="image/*" onChange={onPick} disabled={busy} className="sr-only" />
+        <Avatar name={profile.display_name} url={profile.avatar_url} className="h-20 w-20 text-3xl" />
+        <span
+          aria-hidden="true"
+          className="absolute -right-1 -bottom-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-noche bg-white text-noche transition group-hover:scale-110"
+        >
+          <Camera className="h-4 w-4" />
+        </span>
+        {busy && (
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-noche/70">
+            <LoaderCircle aria-label="Uploading" className="h-6 w-6 animate-spin" />
+          </span>
+        )}
+      </label>
+      {profile.avatar_url && !busy && (
+        <button
+          type="button"
+          onClick={() => run(() => removeAvatar(profile.id))}
+          className="min-h-11 px-2 text-xs font-medium text-white/60 transition hover:text-white"
+        >
+          Remove photo
+        </button>
+      )}
+      {error && (
+        <p role="alert" className="max-w-40 text-center text-xs text-rosa">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
 
 export default ProfilePage

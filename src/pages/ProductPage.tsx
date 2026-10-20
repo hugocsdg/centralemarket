@@ -12,6 +12,7 @@ import { useQuery } from '../lib/useQuery'
 import { startConversation } from '../lib/chat'
 import ProductGrid from '../components/ProductGrid'
 import LoginPrompt from '../components/LoginPrompt'
+import Avatar from '../components/Avatar'
 import NotFoundPage from './NotFoundPage'
 
 function ProductPage() {
@@ -176,9 +177,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
           )}
 
           <div className="flex items-center gap-3 rounded-2xl glass p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-carmin to-burdeos font-bold">
-              {listing.seller?.display_name[0]?.toUpperCase() ?? '?'}
-            </span>
+            <Avatar name={listing.seller?.display_name} url={listing.seller?.avatar_url} className="h-10 w-10 text-base" />
             <div>
               <p className="font-medium">{isOwner ? 'You' : listing.seller?.display_name}</p>
               <p className="text-xs text-white/50">CentraleSupélec student</p>

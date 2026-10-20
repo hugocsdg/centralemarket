@@ -4,6 +4,7 @@ import { fetchConversations, fetchUnreadConversationIds } from '../lib/chat'
 import { imageUrl } from '../lib/listings'
 import { formatPosted } from '../lib/format'
 import { useAuth } from '../lib/auth'
+import Avatar from '../components/Avatar'
 import { useQuery } from '../lib/useQuery'
 
 // Bandeja de entrada: todas tus conversaciones, como compradora o como vendedora.
@@ -30,10 +31,7 @@ function MessagesPage() {
         <div className="rounded-3xl glass p-10 text-center">
           <MessageCircle className="mx-auto h-8 w-8 text-rosa" />
           <p className="mt-3 text-white/70">No conversations yet. Find something you like and message the seller.</p>
-          <Link
-            to="/explore"
-            className="mt-5 inline-block rounded-full btn-primary px-5 py-2.5 text-sm font-semibold"
-          >
+          <Link to="/explore" className="mt-5 inline-block rounded-full btn-primary px-5 py-2.5 text-sm font-semibold">
             Explore the marketplace
           </Link>
         </div>
@@ -53,12 +51,18 @@ function MessagesPage() {
                 to={`/messages/${conversation.id}`}
                 className="flex items-center gap-3 rounded-2xl glass p-3 transition hover:bg-white/10"
               >
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
-                  {cover ? (
-                    <img src={imageUrl(cover.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
-                  ) : (
-                    <ImageOff className="absolute inset-0 m-auto h-5 w-5 text-white/20" />
-                  )}
+                <div className="relative h-14 w-14 shrink-0">
+                  <div className="relative h-14 w-14 overflow-hidden rounded-xl bg-white/5">
+                    {cover ? (
+                      <img src={imageUrl(cover.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <ImageOff className="absolute inset-0 m-auto h-5 w-5 text-white/20" />
+                    )}
+                  </div>
+                  {/* La foto de la otra persona, encima de la esquina de la foto del anuncio */}
+                  <span className="absolute -right-1.5 -bottom-1.5 rounded-full border-2 border-noche">
+                    <Avatar name={other?.display_name} url={other?.avatar_url} className="h-7 w-7 text-xs" />
+                  </span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
