@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router'
-import { Heart, MessageCircle, Plus, Search, User } from 'lucide-react'
+import { Bell, Heart, MessageCircle, Plus, Search, User } from 'lucide-react'
 import Logo from './Logo'
 import Avatar from './Avatar'
 import { useAuth } from '../lib/auth'
+import { SPACES } from '../data/spaces'
 
 // Cabecera flotante de cristal. Al hacer scroll se vuelve un poco más opaca.
-function Header({ unread }: { unread: number }) {
+// "unread" = conversaciones sin leer; "alerts" = avisos sin leer (la campana).
+function Header({ unread, alerts }: { unread: number; alerts: number }) {
   const [query, setQuery] = useState('')
   const [scrolled, setScrolled] = useState(() => window.scrollY > 12)
   const navigate = useNavigate()
@@ -49,15 +51,28 @@ function Header({ unread }: { unread: number }) {
         </form>
 
         <nav className="ml-auto hidden items-center gap-1 md:flex">
+          {SPACES.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium transition ${
+                  isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
+                }`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
           <NavLink
-            to="/explore"
+            to="/notifications"
+            aria-label={alerts ? `Notifications (${alerts} new)` : 'Notifications'}
             className={({ isActive }) =>
-              `flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium transition ${
-                isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'
-              }`
+              `relative flex h-11 w-11 items-center justify-center rounded-full transition ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`
             }
           >
-            Explore
+            <Bell className="h-5 w-5" />
+            {alerts > 0 && <Badge count={alerts} />}
           </NavLink>
           <NavLink
             to="/favorites"
@@ -113,22 +128,32 @@ function Header({ unread }: { unread: number }) {
 
         <div className="ml-auto flex items-center gap-1 md:hidden">
           <Link
+            to="/notifications"
+            aria-label={alerts ? `Notifications (${alerts} new)` : 'Notifications'}
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80"
+          >
+            <Bell className="h-5 w-5" />
+            {alerts > 0 && <Badge count={alerts} />}
+          </Link>
+          <Link
             to="/favorites"
             aria-label="Favorites"
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80"
           >
             <Heart className="h-5 w-5" />
           </Link>
-          <Link
-            to="/explore"
-            aria-label="Search"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80"
-          >
-            <Search className="h-5 w-5" />
-          </Link>
         </div>
       </div>
     </header>
+  )
+}
+
+// Numerito rojo encima de un icono.
+function Badge({ count }: { count: number }) {
+  return (
+    <span className="absolute top-0 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-carmin px-1 text-[11px] font-bold text-white shadow-[0_0_12px_rgb(224_21_63/0.8)]">
+      {count > 9 ? '9+' : count}
+    </span>
   )
 }
 

@@ -16,6 +16,8 @@ export type Conversation = {
     price: number
     price_unit: string | null
     status: string
+    // A quién se vendió (supabase/06_mejoras_vinted.sql); undefined si aún no se ejecutó.
+    sold_to?: string | null
     images: { path: string; position: number }[]
   } | null
   buyer: { display_name: string; avatar_url: string | null } | null
@@ -29,11 +31,14 @@ export type Message = {
   content: string
   created_at: string
   read_at: string | null
+  // Ofertas de precio (supabase/06_mejoras_vinted.sql). Vacío = mensaje normal.
+  offer_amount: number | null
+  offer_status: 'pending' | 'accepted' | 'declined' | 'replaced' | null
 }
 
 const CONVERSATION_SELECT = `
   id, listing_id, buyer_id, seller_id, last_message, last_sender_id, last_message_at,
-  listing:listings(id, title, price, price_unit, status, images:listing_images(path, position)),
+  listing:listings(*, images:listing_images(path, position)),
   buyer:profiles!conversations_buyer_fk(display_name, avatar_url),
   seller:profiles!conversations_seller_fk(display_name, avatar_url)
 `
@@ -91,6 +96,29 @@ export async function sendMessage(conversationId: number, content: string) {
     .single()
   if (error) throw error
   return data as Message
+}
+
+// Una oferta es un mensaje con importe. La base de datos la pone "pendiente"
+// y marca como "sustituida" la oferta anterior que siguiera pendiente.
+export async function sendOffer(conversationId: number, amount: number) {
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      conversation_id: conversationId,
+      content: `Offered ${amount.toLocaleString('fr-FR')} €`,
+      offer_amount: amount,
+    })
+    .select('*')
+    .single()
+  if (error) throw error
+  return data as Message
+}
+
+// Aceptar o rechazar una oferta que me han hecho. Si la acepto, el anuncio pasa a "reservado"
+// y la base de datos envía un mensaje automático (llega por el tiempo real).
+export async function respondToOffer(offerId: number, accept: boolean) {
+  const { error } = await supabase.rpc('respond_to_offer', { offer_id: offerId, accept })
+  if (error) throw error
 }
 
 // Marca como leídos los mensajes que me han enviado en esta conversación.

@@ -18,6 +18,10 @@ const MessagesPage = lazy(() => import('./pages/MessagesPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const EditListingPage = lazy(() => import('./pages/EditListingPage'))
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage'))
+const EventsPage = lazy(() => import('./pages/EventsPage'))
+const FoodPage = lazy(() => import('./pages/FoodPage'))
+const UserPage = lazy(() => import('./pages/UserPage'))
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const IntroPage = lazy(() => import('./pages/IntroPage'))
 
@@ -40,6 +44,17 @@ function App() {
             }
           />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/food" element={<FoodPage />} />
+          <Route path="/user/:id" element={<UserPage />} />
+          <Route
+            path="/notifications"
+            element={
+              <RequireAuth>
+                <NotificationsPage />
+              </RequireAuth>
+            }
+          />
           <Route path="/item/:id" element={<ProductPage />} />
           <Route
             path="/item/:id/edit"
