@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-// Valoraciones: el comprador puntúa al vendedor de 1 a 5 estrellas (supabase/06_mejoras_vinted.sql).
+// Valoraciones: el comprador puntúa al vendedor de 1 a 5 estrellas (supabase/07_mejoras_vinted.sql).
 // Solo puede valorar quien el vendedor marcó como comprador al poner el anuncio en "Sold".
 
 export type Review = {

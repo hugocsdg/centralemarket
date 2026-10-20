@@ -18,7 +18,7 @@ export type Listing = {
   status: ListingStatus
   moving_out: boolean
   created_at: string
-  // Entradas: cuándo es el evento. Comida: cuándo se recoge. (Ver supabase/06_mejoras_vinted.sql.)
+  // Entradas: cuándo es el evento. Comida: cuándo se recoge. (Ver supabase/07_mejoras_vinted.sql.)
   event_at: string | null
   ready_at: string | null
   // Entradas que quedan o raciones disponibles.
@@ -176,7 +176,7 @@ export type NewListing = {
 }
 
 // Quita los campos de entradas/comida vacíos antes de guardar. Así un mueble no envía
-// "event_at: null", y la web sigue funcionando aunque aún no se haya ejecutado 06_mejoras_vinted.sql.
+// "event_at: null", y la web sigue funcionando aunque aún no se haya ejecutado 07_mejoras_vinted.sql.
 // (En entradas y comida sí se envían vacíos: así, al editar, se puede borrar un dato.)
 function compact(listing: NewListing) {
   const row: Partial<NewListing> = { ...listing }

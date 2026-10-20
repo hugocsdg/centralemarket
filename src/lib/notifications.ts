@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import { supabase } from './supabase'
 
-// Avisos dentro de la app (la campana). Los crea la base de datos (supabase/06_mejoras_vinted.sql):
+// Avisos dentro de la app (la campana). Los crea la base de datos (supabase/07_mejoras_vinted.sql):
 // - price_drop: algo que tienes en favoritos ha bajado de precio
 // - rate_seller: el vendedor te marcó como comprador → valórale
 // - new_review: alguien te ha valorado

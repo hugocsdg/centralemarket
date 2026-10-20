@@ -24,8 +24,10 @@ async function fetchPublicProfile(id: string) {
 
 // Perfil público de un estudiante: su nota, lo que opinan sus compradores y lo que vende.
 function UserPage() {
-  const { id = '' } = useParams()
+  const { id: param = '' } = useParams()
   const { session } = useAuth()
+  // "/user/me" = mi propio perfil público (desde Profile → My reviews).
+  const id = param === 'me' ? (session?.user.id ?? '') : param
   const signedIn = Boolean(session)
   const profile = useQuery(signedIn ? `user|${id}` : null, () => fetchPublicProfile(id))
   const rating = useQuery(signedIn ? `rating|${id}` : null, () => fetchSellerRating(id))
@@ -61,7 +63,7 @@ function UserPage() {
         </div>
         {isMe && (
           <Link
-            to="/profile"
+            to="/profile/me"
             className="flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-semibold hover:border-white/40"
           >
             <Pencil className="h-4 w-4" /> Edit profile

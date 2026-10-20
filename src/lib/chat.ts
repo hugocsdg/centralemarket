@@ -16,7 +16,7 @@ export type Conversation = {
     price: number
     price_unit: string | null
     status: string
-    // A quién se vendió (supabase/06_mejoras_vinted.sql); undefined si aún no se ejecutó.
+    // A quién se vendió (supabase/07_mejoras_vinted.sql); undefined si aún no se ejecutó.
     sold_to?: string | null
     images: { path: string; position: number }[]
   } | null
@@ -31,7 +31,7 @@ export type Message = {
   content: string
   created_at: string
   read_at: string | null
-  // Ofertas de precio (supabase/06_mejoras_vinted.sql). Vacío = mensaje normal.
+  // Ofertas de precio (supabase/07_mejoras_vinted.sql). Vacío = mensaje normal.
   offer_amount: number | null
   offer_status: 'pending' | 'accepted' | 'declined' | 'replaced' | null
 }
