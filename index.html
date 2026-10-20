@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="/logo-mark.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CentraleMarket — Your campus. Your marketplace.</title>
     <meta name="description" content="Buy, sell and discover great deals from fellow CentraleSupélec students." />
@@ -49,9 +50,120 @@
         document.head.appendChild(link)
       })()
     </script>
+    <!-- Pantalla de carga: se ve AL INSTANTE (no espera al código de la app). React usa la misma
+         (components/Splash.tsx) mientras comprueba la sesión y descarga la página, así no hay saltos. -->
+    <style>
+      html,
+      body {
+        background: #09090b;
+      }
+      .cm-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        background: radial-gradient(60vmax 60vmax at 50% 42%, rgb(224 21 63 / 0.1), transparent 60%), #09090b;
+        font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
+      }
+      .cm-splash-logo {
+        position: relative;
+        width: 112px;
+        animation: cm-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .cm-splash-logo::before {
+        content: '';
+        position: absolute;
+        inset: -40%;
+        border-radius: 50%;
+        background: radial-gradient(closest-side, rgb(224 21 63 / 0.45), transparent);
+        animation: cm-breathe 2.4s ease-in-out infinite;
+      }
+      .cm-splash-logo img {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .cm-splash-name {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: #fff;
+        animation: cm-rise 0.7s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .cm-splash-name span {
+        color: #e0153f;
+      }
+      .cm-splash-bar {
+        position: relative;
+        width: 120px;
+        height: 2px;
+        overflow: hidden;
+        border-radius: 2px;
+        background: rgb(255 255 255 / 0.1);
+        animation: cm-rise 0.7s 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .cm-splash-bar::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        width: 40%;
+        border-radius: 2px;
+        background: linear-gradient(90deg, transparent, #e0153f, #ff3b62);
+        animation: cm-slide 1.1s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+      .cm-splash-continue .cm-splash-logo,
+      .cm-splash-continue .cm-splash-name,
+      .cm-splash-continue .cm-splash-bar {
+        animation-name: none;
+      }
+      @keyframes cm-rise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+      }
+      @keyframes cm-breathe {
+        0%,
+        100% {
+          opacity: 0.55;
+          transform: scale(0.92);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.06);
+        }
+      }
+      @keyframes cm-slide {
+        from {
+          transform: translateX(-110%);
+        }
+        to {
+          transform: translateX(260%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cm-splash *,
+        .cm-splash *::before,
+        .cm-splash *::after {
+          animation: none !important;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="cm-splash" role="status" aria-label="Loading CentraleMarket">
+        <div class="cm-splash-logo"><img src="/logo-mark.webp" alt="" width="360" height="202" /></div>
+        <p class="cm-splash-name">Centrale<span>Market</span></p>
+        <div class="cm-splash-bar"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

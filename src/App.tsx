@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import Layout from './components/Layout'
 import RequireAuth from './components/RequireAuth'
 import { useAuth } from './lib/auth'
+import Splash from './components/Splash'
 import { introSeen } from './lib/intro'
 
 // Cada página se descarga solo cuando hace falta (así la intro no carga el código de la app,
@@ -35,7 +36,7 @@ const IntroPage = lazy(() => import('./pages/IntroPage'))
 // La portada "/" depende de si has entrado: sin sesión ves la introducción, con sesión la web.
 function App() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<Splash />}>
       <Routes>
         <Route path="/welcome" element={<IntroPage />} />
         <Route element={<Layout />}>
@@ -144,7 +145,7 @@ function App() {
 
 function IntroGate({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth()
-  if (loading) return null
+  if (loading) return <Splash />
   // Sin sesión, siempre la introducción. Con sesión, solo la primera vez en este dispositivo.
   return session && introSeen() ? children : <IntroRedirect />
 }
