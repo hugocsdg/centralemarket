@@ -12,6 +12,7 @@ import {
   ScrollText,
   ShieldCheck,
   Lock,
+  Star,
   Tag,
   Trash2,
 } from 'lucide-react'
@@ -35,12 +36,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { icon: Heart, label: 'Favourite items', to: '/favorites' },
       { icon: Tag, label: 'My listings', to: '/profile/me#listings' },
+      { icon: Star, label: 'My reviews', to: '/user/me' },
     ],
   },
   {
     title: 'Settings',
     items: [
-      { icon: Bell, label: 'Notifications', soon: true },
+      { icon: Bell, label: 'Notifications', to: '/notifications' },
       { icon: Languages, label: 'Language', soon: true },
     ],
   },

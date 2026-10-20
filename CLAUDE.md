@@ -42,8 +42,10 @@ Lo construye Hugo (estudiante Erasmus de Barcelona) con un amigo. Web pública: 
 - Orden de la intro (v2, ~14 pantallas en ordenador, ~12 en móvil): portada con vídeo → campus 3D (#campus) → galería (#market) → WhatsApp/en orden (#order) → iPhone (#how) + botón → Arrive/Stay/Leave (#life) → [prueba social] → final con la ventana (#join) → pie. Índice de capítulos a la derecha (escritorio), "Skip intro" en la cabecera (escritorio) o pastilla flotante (móvil). Para saltar a un capítulo: `scrollToSection(id)` de `useIntroAnimations.ts`.
 - Los `ScrollTrigger` que dependen de posiciones (índice, pastilla) se crean **después** de las escenas fijadas; si no, calculan mal las posiciones.
 - Las escenas fijadas (pin) van envueltas en un `<div>` propio en `IntroPage`: sin él, React falla al salir de la página.
-- Datos: `src/lib/listings.ts` (anuncios, fotos, publicar/editar/borrar), `src/lib/chat.ts` (chat), `src/lib/auth.ts` + `components/AuthProvider.tsx` (sesión), `src/lib/useQuery.ts` (pedir datos).
-- Base de datos: `supabase/schema.sql` y `supabase/02_chat.sql`. **Hugo los ejecuta a mano** en Supabase → SQL Editor (cópiale el SQL al portapapeles con `pbcopy`). Cualquier cambio nuevo de base de datos va en un archivo nuevo `supabase/03_….sql`.
+- Datos: `src/lib/listings.ts` (anuncios, fotos, publicar/editar/borrar, filtros, eventos), `src/lib/chat.ts` (chat y ofertas), `src/lib/reviews.ts` (valoraciones y "vendido a"), `src/lib/notifications.ts` (campana), `src/lib/filters.ts` (filtros de Explore en la URL), `src/lib/auth.ts` + `components/AuthProvider.tsx` (sesión), `src/lib/useQuery.ts` (pedir datos).
+- Tres "pantallas" (`src/data/spaces.ts`, pestañas `SpaceTabs` en móvil y enlaces en la cabecera en escritorio): **Market** (`/explore`, con panel `FilterSheet`), **Events** (`/events`, carteles `EventCard` por fecha, anuncios de categoría `tickets` con `event_at`) y **Food** (`/food`, `FoodCard`, categoría `food` con `ready_at`, raciones, `dietary` y alérgenos). Perfil público en `/user/:id`, avisos en `/notifications`.
+- Base de datos: `supabase/schema.sql`, `02_chat.sql`, `04_favorites.sql`, `05_avatars.sql`, `06_delete_account.sql` y `07_mejoras_vinted.sql` (ofertas, valoraciones, "vendido a", bajadas de precio, avisos, campos de eventos y comida; se puede ejecutar dos veces sin problema). **Hugo los ejecuta a mano** en Supabase → SQL Editor (cópiale el SQL al portapapeles con `pbcopy` en Mac o `Get-Content … | Set-Clipboard` en Windows). Cualquier cambio nuevo de base de datos va en un archivo nuevo `supabase/0X_….sql`.
+- Las reglas de seguridad nuevas (ofertas, valoraciones, avisos) se probaron con Postgres en memoria (`@electric-sql/pglite`) simulando usuarios; las pantallas, con un Supabase de mentira y Chrome sin ventana. Lo que pide sesión real hay que probarlo con cuentas de verdad.
 
 ## Funciona ya (probado por Hugo)
 
@@ -59,7 +61,7 @@ Lo construye Hugo (estudiante Erasmus de Barcelona) con un amigo. Web pública: 
 2. Servicio de emails profesional (Resend o Brevo) + dominio propio: Gmail limita a 30 emails/hora en Supabase.
 3. Página de privacidad/normas + botón "Report" para anuncios.
 4. Prueba con 5–10 amigos (iPhone y Android).
-5. Quitar o terminar "Favorites" (ahora es "Coming soon").
+5. Rama `mejoras-vinted`: ejecutar `supabase/07_mejoras_vinted.sql` **antes** de fusionar y probar con dos cuentas: oferta → aceptar, marcar vendido a alguien → valorar, bajar el precio de un favorito → aviso. Avisos solo dentro de la app (no por email).
 6. Rendimiento: ya partido por páginas (intro v2). En móvil la nota de Lighthouse sigue en ~50: lo que más pesa es el JS principal (Supabase + React).
 
 Dominio: Hugo pregunta por **Hostinger**. Recomendación dada: usarlo solo para comprar el dominio (y quizá correo profesional), apuntarlo a Vercel con DNS; **no** su hosting. Ese dominio desbloquea Resend/Brevo (punto 2).

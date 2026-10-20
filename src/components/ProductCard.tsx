@@ -13,6 +13,8 @@ type ProductCardProps = {
 // El corazón va encima de la tarjeta (no dentro del enlace: un botón no puede ir dentro de un enlace).
 function ProductCard({ listing }: ProductCardProps) {
   const cover = listing.images[0]
+  // Ha bajado de precio (la base de datos guarda el precio de antes).
+  const dropped = listing.previous_price != null && listing.previous_price > listing.price
   return (
     <div className="group relative transition duration-300 hover:-translate-y-1.5">
       <Link
@@ -42,6 +44,9 @@ function ProductCard({ listing }: ProductCardProps) {
             {listing.price === 0 && (
               <span className="btn-primary rounded-full px-2.5 py-0.5 text-[11px] font-bold">FREE</span>
             )}
+            {dropped && (
+              <span className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-carmin">Price drop</span>
+            )}
             {listing.moving_out && (
               <span className="rounded-full bg-noche/70 px-2.5 py-0.5 text-[11px] font-semibold backdrop-blur-md">
                 Moving out
@@ -49,8 +54,11 @@ function ProductCard({ listing }: ProductCardProps) {
             )}
           </div>
 
-          <p className="absolute bottom-2.5 left-3 font-display text-xl font-bold drop-shadow-lg">
+          <p className="absolute bottom-2.5 left-3 flex items-baseline gap-1.5 font-display text-xl font-bold drop-shadow-lg">
             {formatPrice(listing.price, listing.price_unit)}
+            {dropped && (
+              <span className="font-sans text-xs font-medium text-white/70 line-through">{formatPrice(listing.previous_price!)}</span>
+            )}
           </p>
         </div>
 
