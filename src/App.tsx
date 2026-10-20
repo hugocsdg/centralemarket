@@ -17,7 +17,7 @@ const SellPage = lazy(() => import('./pages/SellPage'))
 const MessagesPage = lazy(() => import('./pages/MessagesPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const EditListingPage = lazy(() => import('./pages/EditListingPage'))
-const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'))
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const IntroPage = lazy(() => import('./pages/IntroPage'))
 
@@ -62,7 +62,7 @@ function App() {
             path="/favorites"
             element={
               <RequireAuth>
-                <ComingSoonPage title="Favorites" description="Save items you like and find them here later." />
+                <FavoritesPage />
               </RequireAuth>
             }
           />

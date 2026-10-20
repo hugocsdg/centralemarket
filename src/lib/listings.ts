@@ -26,9 +26,9 @@ export const CONDITIONS: Condition[] = ['New', 'Like new', 'Good', 'Fair']
 const BUCKET = 'listing-images'
 
 // Cada anuncio viene con su vendedor y sus fotos, en una sola petición.
-const SELECT = '*, seller:profiles(display_name, created_at), images:listing_images(path, position)'
+export const SELECT = '*, seller:profiles(display_name, created_at), images:listing_images(path, position)'
 
-function withSortedImages(listing: Listing): Listing {
+export function withSortedImages(listing: Listing): Listing {
   return { ...listing, images: [...(listing.images ?? [])].sort((a, b) => a.position - b.position) }
 }
 

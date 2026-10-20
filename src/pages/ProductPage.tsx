@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Clock, ImageOff, MapPin, MessageCircle, Share2
 import { fetchListing, fetchListings, imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import OwnerPanel from '../components/OwnerPanel'
+import FavoriteButton from '../components/FavoriteButton'
 import { formatPosted, formatPrice } from '../lib/format'
 import { getCategory } from '../data/categories'
 import { useAuth } from '../lib/auth'
@@ -194,6 +195,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
                 <MessageCircle className="h-5 w-5" /> {opening ? 'Opening chat…' : 'Message seller'}
               </button>
             )}
+            {!isOwner && <FavoriteButton listingId={listing.id} title={listing.title} variant="page" />}
             <button
               onClick={handleShare}
               className="flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 font-semibold hover:border-white/40"

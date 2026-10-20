@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router'
-import { MessageCircle, Plus, Search, User } from 'lucide-react'
+import { Heart, MessageCircle, Plus, Search, User } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '../lib/auth'
 
@@ -59,6 +59,15 @@ function Header({ unread }: { unread: number }) {
             Explore
           </NavLink>
           <NavLink
+            to="/favorites"
+            aria-label="Favorites"
+            className={({ isActive }) =>
+              `flex h-11 w-11 items-center justify-center rounded-full transition ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`
+            }
+          >
+            <Heart className="h-5 w-5" />
+          </NavLink>
+          <NavLink
             to="/messages"
             aria-label="Messages"
             className={({ isActive }) =>
@@ -81,23 +90,38 @@ function Header({ unread }: { unread: number }) {
               {profile?.display_name[0]?.toUpperCase() ?? <User className="h-4 w-4" />}
             </NavLink>
           ) : (
-            <Link to="/login" className="flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium text-white/70 hover:text-white">
+            <Link
+              to="/login"
+              className="flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium text-white/70 hover:text-white"
+            >
               Log in
             </Link>
           )}
-          <Link to="/sell" className="btn-primary flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold">
+          <Link
+            to="/sell"
+            className="btn-primary flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold"
+          >
             <Plus className="h-4 w-4" />
             Sell
           </Link>
         </nav>
 
-        <Link
-          to="/explore"
-          aria-label="Search"
-          className="ml-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80 md:hidden"
-        >
-          <Search className="h-5 w-5" />
-        </Link>
+        <div className="ml-auto flex items-center gap-1 md:hidden">
+          <Link
+            to="/favorites"
+            aria-label="Favorites"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80"
+          >
+            <Heart className="h-5 w-5" />
+          </Link>
+          <Link
+            to="/explore"
+            aria-label="Search"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80"
+          >
+            <Search className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
     </header>
   )
