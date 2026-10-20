@@ -1,10 +1,24 @@
-import { Bike, BookOpen, CookingPot, Dumbbell, HandHelping, Laptop, Package, Shirt, Sofa, Ticket, UtensilsCrossed } from 'lucide-react'
+import {
+  Bike,
+  BookOpen,
+  CookingPot,
+  Dumbbell,
+  HandHelping,
+  Laptop,
+  Package,
+  Shirt,
+  Sofa,
+  Ticket,
+  UtensilsCrossed,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export type Category = {
   slug: string
   name: string
   icon: LucideIcon
+  // Dibujo para la tarjeta de Explore (public/categories/<slug>.webp). Sin dibujo, se usa el icono.
+  image?: string
 }
 
 export const categories: Category[] = [
