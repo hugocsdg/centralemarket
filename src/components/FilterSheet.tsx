@@ -232,7 +232,7 @@ function Toggle({ checked, onChange, children }: { checked: boolean; onChange: (
       {/* Interruptor tipo iPhone */}
       <span
         aria-hidden="true"
-        className="relative h-7 w-12 shrink-0 rounded-full bg-white/15 transition peer-checked:bg-carmin peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-rosa after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"
+        className="relative h-7 w-12 shrink-0 rounded-full bg-white/15 transition peer-checked:bg-carmin peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-rosa after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-[#fff] after:shadow-sm after:transition-transform peer-checked:after:translate-x-5"
       />
     </label>
   )

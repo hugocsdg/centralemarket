@@ -2,14 +2,32 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import { supabase } from './supabase'
 
-// Avisos dentro de la app (la campana). Los crea la base de datos (supabase/07_mejoras_vinted.sql):
+// Avisos dentro de la app (la campana). Los crea la base de datos (supabase/07_mejoras_vinted.sql y 09_push.sql):
 // - price_drop: algo que tienes en favoritos ha bajado de precio
+// - back_available: algo de tus favoritos estaba reservado y vuelve a estar disponible
+// - saved_search: alguien ha publicado algo que coincide con una búsqueda guardada
+// - offer_reminder: tienes una oferta sin responder desde hace 24 h
 // - rate_seller: el vendedor te marcó como comprador → valórale
 // - new_review: alguien te ha valorado
+// - event_tomorrow: el evento de tu entrada es mañana
+// - likes: cuántas personas guardaron tus anuncios hoy
+// - stale_listing: un anuncio tuyo lleva 2 semanas sin moverse
+// Además, cada aviso llega al móvil si lo tienes activado (supabase/functions/send-push).
 
 export type Notification = {
   id: number
-  kind: 'price_drop' | 'rate_seller' | 'new_review'
+  kind:
+    | 'price_drop'
+    | 'back_available'
+    | 'saved_search'
+    | 'offer_reminder'
+    | 'rate_seller'
+    | 'new_review'
+    | 'event_tomorrow'
+    | 'likes'
+    | 'stale_listing'
+  conversation_id?: number | null
+  amount?: number | null
   listing_id: number | null
   old_price: number | null
   new_price: number | null

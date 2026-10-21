@@ -7,6 +7,7 @@ import { useAuth } from '../lib/auth'
 import Avatar from '../components/Avatar'
 import { useQuery } from '../lib/useQuery'
 import { useT } from '../i18n/lang'
+import PushPrompt from '../components/PushPrompt'
 
 // Bandeja de entrada: todas tus conversaciones, como compradora o como vendedora.
 function MessagesPage() {
@@ -19,6 +20,7 @@ function MessagesPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <h1 className="text-3xl font-bold">{t('Messages')}</h1>
+      {conversations.data && conversations.data.length > 0 && <PushPrompt />}
 
       {conversations.error && <p className="text-rosa">{t(conversations.error)}</p>}
       {conversations.loading && (

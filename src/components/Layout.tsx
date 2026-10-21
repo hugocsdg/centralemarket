@@ -7,7 +7,8 @@ import BottomNav from './BottomNav'
 import { useAuth } from '../lib/auth'
 import { useUnreadCount } from '../lib/useUnread'
 import { useNotificationCount } from '../lib/notifications'
-import { useT } from '../i18n/lang'
+import { useLang } from '../i18n/lang'
+import { syncPushLanguage } from '../lib/push'
 
 // El "marco" de la app: fondo, cabecera arriba, menú abajo y en medio la página actual (<Outlet />).
 function Layout() {
@@ -15,7 +16,12 @@ function Layout() {
   const { session } = useAuth()
   const unread = useUnreadCount(session?.user.id)
   const alerts = useNotificationCount(session?.user.id)
-  const t = useT()
+  const { t, lang } = useLang()
+
+  // Si cambias el idioma, los avisos del móvil llegan en el idioma nuevo.
+  useEffect(() => {
+    if (session) syncPushLanguage(lang)
+  }, [lang, session])
 
   // Al cambiar de página, volver arriba del todo.
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { Fragment, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { Bell, ImageOff, Star, TrendingDown } from 'lucide-react'
+import { Bell, CalendarClock, Heart, Hourglass, ImageOff, Lightbulb, RotateCcw, Search, Settings, Star, TrendingDown } from 'lucide-react'
 import { fetchNotifications, markAllNotificationsRead } from '../lib/notifications'
 import type { Notification } from '../lib/notifications'
 import { imageUrl } from '../lib/listings'
@@ -9,6 +9,7 @@ import { formatPosted, formatPrice } from '../lib/format'
 import { useQuery } from '../lib/useQuery'
 import { useAuth } from '../lib/auth'
 import { useT } from '../i18n/lang'
+import PushPrompt from '../components/PushPrompt'
 
 // Qué dice cada aviso y adónde lleva al tocarlo.
 // Rellena una frase traducida con trozos con estilo: rich('{title} dropped', { title: <b>…</b> }).
@@ -19,7 +20,7 @@ function rich(text: string, parts: Record<string, ReactNode>) {
   })
 }
 
-function describe(notification: Notification, userId: string, t: (text: string) => string) {
+function describe(notification: Notification, userId: string, t: (text: string, vars?: Record<string, string | number>) => string) {
   const title = notification.listing?.title ?? t('A listing')
   switch (notification.kind) {
     case 'price_drop':
@@ -44,6 +45,55 @@ function describe(notification: Notification, userId: string, t: (text: string) 
         ),
         to: `/item/${notification.listing_id}?rate=1`,
       }
+    case 'back_available':
+      return {
+        icon: RotateCcw,
+        text: <>{rich(t('{title} is available again.'), { title: <span className="font-semibold">{title}</span> })}</>,
+        to: `/item/${notification.listing_id}`,
+      }
+    case 'saved_search':
+      return {
+        icon: Search,
+        text: <>{rich(t('New match for your saved search: {title}'), { title: <span className="font-semibold">{title}</span> })}</>,
+        to: `/item/${notification.listing_id}`,
+      }
+    case 'offer_reminder':
+      return {
+        icon: Hourglass,
+        text: (
+          <>
+            {rich(t('An offer of {amount} for {title} is waiting for your answer.'), {
+              amount: <span className="font-semibold text-rosa">{formatPrice(Number(notification.new_price))}</span>,
+              title: <span className="font-semibold">{title}</span>,
+            })}
+          </>
+        ),
+        to: notification.conversation_id ? `/messages/${notification.conversation_id}` : `/item/${notification.listing_id}`,
+      }
+    case 'event_tomorrow':
+      return {
+        icon: CalendarClock,
+        text: <>{rich(t('{title} is tomorrow. Don’t forget your ticket!'), { title: <span className="font-semibold">{title}</span> })}</>,
+        to: `/item/${notification.listing_id}`,
+      }
+    case 'likes':
+      return {
+        icon: Heart,
+        text: <>{t(notification.amount === 1 ? '1 person saved your listings today.' : '{n} people saved your listings today.', { n: notification.amount ?? 0 })}</>,
+        to: `/item/${notification.listing_id}`,
+      }
+    case 'stale_listing':
+      return {
+        icon: Lightbulb,
+        text: (
+          <>
+            {rich(t('Is {title} still available? Lower the price or mark it as sold.'), {
+              title: <span className="font-semibold">{title}</span>,
+            })}
+          </>
+        ),
+        to: `/item/${notification.listing_id}`,
+      }
     case 'new_review':
       return {
         icon: Star,
@@ -60,7 +110,7 @@ function describe(notification: Notification, userId: string, t: (text: string) 
   }
 }
 
-// La campana: bajadas de precio de tus favoritos, compras que puedes valorar y valoraciones nuevas.
+// La campana: todos los avisos (ver lib/notifications.ts). Arriba, la invitación a recibirlos en el móvil.
 // Al abrirla, todo queda marcado como leído.
 function NotificationsPage() {
   const { session } = useAuth()
@@ -74,7 +124,18 @@ function NotificationsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-3xl font-bold">{t('Notifications')}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold">{t('Notifications')}</h1>
+        <Link
+          to="/profile/notifications"
+          aria-label={t('Notification settings')}
+          className="flex h-11 w-11 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+        >
+          <Settings aria-hidden="true" className="h-5 w-5" />
+        </Link>
+      </div>
+
+      <PushPrompt />
 
       {notifications.error && (
         <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{t(notifications.error)}</p>

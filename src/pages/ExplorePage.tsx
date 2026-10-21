@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { ArrowLeft, LayoutGrid, Search, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowLeft, BellPlus, BellRing, LayoutGrid, Search, SlidersHorizontal, X } from 'lucide-react'
 import { categories, getCategory } from '../data/categories'
 import type { Category } from '../data/categories'
 import { fetchListings } from '../lib/listings'
@@ -13,6 +13,8 @@ import SpaceTabs from '../components/SpaceTabs'
 import FilterSheet from '../components/FilterSheet'
 import { countFilters, readFilters } from '../lib/filters'
 import { useT } from '../i18n/lang'
+import { deleteSavedSearch, fetchSavedSearches, sameSearch, saveSearch } from '../lib/savedSearches'
+import type { SavedSearch, SearchCriteria } from '../lib/savedSearches'
 
 // Market tiene dos vistas:
 // - Sin búsqueda, categoría ni filtros: la cuadrícula de categorías con sus dibujos (como Vinted).
@@ -201,10 +203,21 @@ function ExplorePage() {
             <LoginPrompt />
           ) : (
             <>
-              <p className="text-sm text-white/60">
-                {count}
-                {category && data && ` · ${t(getCategory(category)?.name ?? category)}`}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-white/60">
+                  {count}
+                  {category && data && ` · ${t(getCategory(category)?.name ?? category)}`}
+                </p>
+                {(query.trim() || category || filters.max) && (
+                  <SaveSearchButton
+                    criteria={{
+                      query: query.trim(),
+                      category: category || null,
+                      max_price: filters.max && !Number.isNaN(Number(filters.max)) ? Number(filters.max) : null,
+                    }}
+                  />
+                )}
+              </div>
 
               <ProductGrid
                 listings={data}
@@ -281,6 +294,58 @@ function CategoryCard({ category }: { category: Category }) {
         </span>
       )}
     </Link>
+  )
+}
+
+// "Guardar búsqueda": te avisamos cuando alguien publique algo que coincida.
+function SaveSearchButton({ criteria }: { criteria: SearchCriteria }) {
+  const t = useT()
+  const [saved, setSaved] = useState<SavedSearch[] | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchSavedSearches()
+      .then(setSaved)
+      .catch(() => setSaved([]))
+  }, [])
+
+  const match = saved?.find((search) => sameSearch(search, criteria))
+
+  async function toggle() {
+    setBusy(true)
+    setError('')
+    try {
+      if (match) {
+        await deleteSavedSearch(match.id)
+        setSaved((current) => current?.filter((search) => search.id !== match.id) ?? null)
+      } else {
+        const created = await saveSearch(criteria)
+        setSaved((current) => [created, ...(current ?? [])])
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save the search.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {error && <span className="text-xs text-rosa">{t(error)}</span>}
+      <button
+        type="button"
+        onClick={toggle}
+        disabled={busy || saved === null}
+        aria-pressed={Boolean(match)}
+        className={`flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition disabled:opacity-60 ${
+          match ? 'border border-rosa/50 bg-rojo/15 text-white' : 'glass text-white/85 hover:bg-white/10'
+        }`}
+      >
+        {match ? <BellRing aria-hidden="true" className="h-4 w-4 text-rosa" /> : <BellPlus aria-hidden="true" className="h-4 w-4" />}
+        {t(match ? 'Search saved' : 'Save search')}
+      </button>
+    </div>
   )
 }
 

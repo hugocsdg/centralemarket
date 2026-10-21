@@ -52,7 +52,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
   {
     title: 'Settings',
     items: [
-      { icon: Bell, label: 'Notifications', to: '/notifications' },
+      { icon: Bell, label: 'Notifications', to: '/profile/notifications' },
       { icon: KeyRound, label: 'Password', to: '/profile/password' },
     ],
   },

@@ -27,6 +27,7 @@ const EventsPage = lazy(() => import('./pages/EventsPage'))
 const FoodPage = lazy(() => import('./pages/FoodPage'))
 const UserPage = lazy(() => import('./pages/UserPage'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
+const NotificationSettingsPage = lazy(() => import('./pages/NotificationSettingsPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const IntroPage = lazy(() => import('./pages/IntroPage'))
 
@@ -115,6 +116,14 @@ function App() {
             element={
               <RequireAuth>
                 <MyProfilePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile/notifications"
+            element={
+              <RequireAuth>
+                <NotificationSettingsPage />
               </RequireAuth>
             }
           />
