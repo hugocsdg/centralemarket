@@ -59,6 +59,10 @@ export const INFO_PAGES: Record<string, InfoPage> = {
         title: 'Trust your instincts',
         body: 'If a deal feels wrong (a price too good to be true, pressure to hurry), walk away.',
       },
+      {
+        title: 'Report problems',
+        body: 'Use “Report this listing” at the bottom of any listing, or “Report” on a student’s profile. Reports are anonymous and we review every one.',
+      },
     ],
   },
   rules: {
@@ -96,7 +100,7 @@ export const INFO_PAGES: Record<string, InfoPage> = {
       },
       {
         title: 'What happens if rules are broken',
-        body: 'We can remove listings and suspend or delete accounts that break these rules.',
+        body: 'Anyone can report a listing or a student. A listing reported by several students is hidden until we review it. We can remove listings and suspend or delete accounts that break these rules.',
       },
     ],
   },

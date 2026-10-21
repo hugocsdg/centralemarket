@@ -19,6 +19,7 @@ import {
 import { DIETARY, fetchListing, fetchListings, imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import OwnerPanel from '../components/OwnerPanel'
+import ReportButton from '../components/ReportButton'
 import FavoriteButton from '../components/FavoriteButton'
 import { formatEventDate, formatPosted, formatPrice, formatReady } from '../lib/format'
 import { fetchMyReview, fetchSellerRating } from '../lib/reviews'
@@ -327,6 +328,11 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
             </button>
           </div>
           {contactError && <p className="text-sm text-rosa">{contactError}</p>}
+          {!isOwner && (
+            <div className="-ml-2">
+              <ReportButton target={{ listingId: listing.id }} label="Report this listing" />
+            </div>
+          )}
 
           {isOwner && <OwnerPanel listing={listing} onChanged={onChanged} />}
         </div>

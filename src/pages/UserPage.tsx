@@ -10,6 +10,7 @@ import Avatar from '../components/Avatar'
 import ProductGrid from '../components/ProductGrid'
 import LoginPrompt from '../components/LoginPrompt'
 import { RatingSummary, Stars } from '../components/Rating'
+import ReportButton from '../components/ReportButton'
 import NotFoundPage from './NotFoundPage'
 
 async function fetchPublicProfile(id: string) {
@@ -108,6 +109,12 @@ function UserPage() {
           empty="Nothing on sale right now."
         />
       </section>
+
+      {!isMe && (
+        <div className="-ml-2">
+          <ReportButton target={{ userId: person.id }} label={`Report ${person.display_name}`} />
+        </div>
+      )}
     </div>
   )
 }
