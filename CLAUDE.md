@@ -38,7 +38,7 @@ Lo construye Hugo (estudiante Erasmus de Barcelona) con un amigo. Web pública: 
 - `src/pages/` páginas: `IntroPage` (/welcome), `HomePage` (/), `ExplorePage`, `ProductPage` (/item/:id), `SellPage`, `EditListingPage`, `MessagesPage`, `ChatPage`, `ProfilePage`, `LoginPage`.
 - `src/components/intro/` escenas de la intro: `HeroScene` (vídeo «campus de noche»), `CampusScene` (3D real), `GalleryScene` (vídeo «la galería» + precios), `OrderScene` (WhatsApp → «en orden», mantener pulsado), `PhoneStory` (4 pasos en el iPhone), `LifeSection` (Arrive/Stay/Leave + Campus Storage), `ScrubVideo` (vídeo que avanza con el scroll; en móvil y con reducir movimiento, imagen fija; condición en `src/lib/scrub.ts`). Animaciones generales en `src/lib/useIntroAnimations.ts`; 3D en `src/lib/campus3d.ts`.
 - Campus 3D: geometría real de OpenStreetMap en `src/data/campus.json`, generada con `node scripts/campus-from-osm.mjs` (no se llama a OSM desde la web). El crédito «© OpenStreetMap contributors» del pie es obligatorio.
-- Textos de la intro en `src/i18n/intro.ts` (inglés y francés); idioma en `src/i18n/lang.tsx` (según el navegador, se recuerda; selector `LangSwitch`). El resto de la web sigue solo en inglés.
+- **Idiomas: inglés, francés, español, italiano y portugués (de Brasil)** en toda la web. Los textos se escriben en inglés en el código con `const t = useT()` → `t('Message seller')` o `t('{n} days ago', { n })`; fuera de React, `translate()` de `src/i18n/core.ts`. Las traducciones están en `src/i18n/locales/<idioma>.ts` (`app`: frase inglesa → traducción; `intro`: textos de /welcome, en inglés en `src/i18n/intro.ts`). Cada idioma se descarga solo si se elige (~16 KB). Al añadir o cambiar un texto, tradúcelo en los 4 archivos y pasa `npm run i18n` (dice qué falta; lo que falte se ve en inglés). Selector: Profile → Language, `LangSwitch` en login e intro; se elige según el móvil la primera vez y se recuerda. Fechas con `currentLocale()`. Los mensajes automáticos de ofertas (los escribe la base de datos en inglés) se traducen al mostrarlos en `ChatPage`.
 - Prueba social: `src/data/socialProof.ts`, oculta hasta tener datos reales (no inventar).
 - Orden de la intro (v2, ~14 pantallas en ordenador, ~12 en móvil): portada con vídeo → campus 3D (#campus) → galería (#market) → WhatsApp/en orden (#order) → iPhone (#how) + botón → Arrive/Stay/Leave (#life) → [prueba social] → final con la ventana (#join) → pie. Índice de capítulos a la derecha (escritorio), "Skip intro" en la cabecera (escritorio) o pastilla flotante (móvil). Para saltar a un capítulo: `scrollToSection(id)` de `useIntroAnimations.ts`.
 - Los `ScrollTrigger` que dependen de posiciones (índice, pastilla) se crean **después** de las escenas fijadas; si no, calculan mal las posiciones.
@@ -66,6 +66,8 @@ Lo construye Hugo (estudiante Erasmus de Barcelona) con un amigo. Web pública: 
 6. Rendimiento: ya partido por páginas (intro v2). En móvil la nota de Lighthouse sigue en ~50: lo que más pesa es el JS principal (Supabase + React).
 
 Dominio: Hugo pregunta por **Hostinger**. Recomendación dada: usarlo solo para comprar el dominio (y quizá correo profesional), apuntarlo a Vercel con DNS; **no** su hosting. Ese dominio desbloquea Resend/Brevo (punto 2).
+
+Pendiente de idiomas: los emails de Supabase (código de acceso) siguen en inglés; los textos legales traducidos son un borrador.
 
 Ideas de futuro: almacén en el campus para quien se va (necesita permiso de la escuela), afinar el campus 3D con más capturas del mapa, quizá cambiar la foto del concierto por una más oscura.
 

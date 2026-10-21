@@ -6,6 +6,7 @@ import Logo from './Logo'
 import Avatar from './Avatar'
 import { useAuth } from '../lib/auth'
 import { SPACES } from '../data/spaces'
+import { useT } from '../i18n/lang'
 
 // Cabecera flotante de cristal. Al hacer scroll se vuelve un poco más opaca.
 // "unread" = conversaciones sin leer; "alerts" = avisos sin leer (la campana).
@@ -14,6 +15,7 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
   const [scrolled, setScrolled] = useState(() => window.scrollY > 12)
   const navigate = useNavigate()
   const { session, profile } = useAuth()
+  const t = useT()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -33,7 +35,7 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
           scrolled ? 'bg-noche/70' : ''
         }`}
       >
-        <Link to="/" aria-label="CentraleMarket home" className="shrink-0">
+        <Link to="/" aria-label={t('CentraleMarket home')} className="shrink-0">
           <Logo />
         </Link>
 
@@ -43,8 +45,8 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              aria-label="Search listings"
-              placeholder="Search lamps, bikes, tickets…"
+              aria-label={t('Search listings')}
+              placeholder={t('Search lamps, bikes, tickets…')}
               className="w-full bg-transparent text-sm outline-none placeholder:text-white/50"
             />
           </label>
@@ -61,12 +63,12 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
                 }`
               }
             >
-              {label}
+              {t(label)}
             </NavLink>
           ))}
           <NavLink
             to="/notifications"
-            aria-label={alerts ? `Notifications (${alerts} new)` : 'Notifications'}
+            aria-label={alerts ? t('Notifications ({n} new)', { n: alerts }) : t('Notifications')}
             className={({ isActive }) =>
               `relative flex h-11 w-11 items-center justify-center rounded-full transition ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`
             }
@@ -76,7 +78,7 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
           </NavLink>
           <NavLink
             to="/favorites"
-            aria-label="Favorites"
+            aria-label={t('Favorites')}
             className={({ isActive }) =>
               `flex h-11 w-11 items-center justify-center rounded-full transition ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`
             }
@@ -85,7 +87,7 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
           </NavLink>
           <NavLink
             to="/messages"
-            aria-label="Messages"
+            aria-label={t('Messages')}
             className={({ isActive }) =>
               `relative flex h-11 w-11 items-center justify-center rounded-full transition ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`
             }
@@ -100,7 +102,7 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
           {session ? (
             <NavLink
               to="/profile"
-              aria-label="Profile"
+              aria-label={t('Profile')}
               className="mx-1 flex h-11 w-11 items-center justify-center rounded-full ring-2 ring-white/10 transition hover:ring-rosa/50"
             >
               {profile ? (
@@ -114,7 +116,7 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
               to="/login"
               className="flex min-h-11 items-center rounded-full px-3 py-2 text-sm font-medium text-white/70 hover:text-white"
             >
-              Log in
+              {t('Log in')}
             </Link>
           )}
           <Link
@@ -122,14 +124,14 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
             className="btn-primary flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold"
           >
             <Plus className="h-4 w-4" />
-            Sell
+            {t('Sell')}
           </Link>
         </nav>
 
         <div className="ml-auto flex items-center gap-1 md:hidden">
           <Link
             to="/notifications"
-            aria-label={alerts ? `Notifications (${alerts} new)` : 'Notifications'}
+            aria-label={alerts ? t('Notifications ({n} new)', { n: alerts }) : t('Notifications')}
             className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80"
           >
             <Bell className="h-5 w-5" />
@@ -137,7 +139,7 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
           </Link>
           <Link
             to="/favorites"
-            aria-label="Favorites"
+            aria-label={t('Favorites')}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-white/80"
           >
             <Heart className="h-5 w-5" />

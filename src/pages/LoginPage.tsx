@@ -5,6 +5,8 @@ import { ArrowLeft, Eye, EyeOff, Mail } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { isAllowedEmail, useAuth } from '../lib/auth'
 import { LogoMark } from '../components/Logo'
+import { useT } from '../i18n/lang'
+import LangSwitch from '../components/LangSwitch'
 
 // Entrar en CentraleMarket:
 // - Lo normal: email de la uni + contraseña.
@@ -46,6 +48,7 @@ function LoginPage() {
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const t = useT()
 
   // Si ya tienes sesión, no tiene sentido estar aquí.
   if (session) return <Navigate to={afterLogin} replace />
@@ -53,7 +56,7 @@ function LoginPage() {
   function cleanEmail() {
     const value = email.trim().toLowerCase()
     if (!isAllowedEmail(value)) {
-      setError('Use your CentraleSupélec student email (@student-cs.fr).')
+      setError(t('Use your CentraleSupélec student email (@student-cs.fr).'))
       return null
     }
     return value
@@ -75,7 +78,7 @@ function LoginPage() {
     setAfterLogin(next)
     const { error } = await supabase.auth.signInWithPassword({ email: value, password })
     setBusy(false)
-    if (error) setError(friendlyError(error.message))
+    if (error) setError(t(friendlyError(error.message)))
   }
 
   async function sendCode(event: FormEvent) {
@@ -94,7 +97,7 @@ function LoginPage() {
     })
     setBusy(false)
     if (error) {
-      setError(friendlyError(error.message, purpose))
+      setError(t(friendlyError(error.message, purpose)))
       return
     }
     setEmail(value)
@@ -113,12 +116,12 @@ function LoginPage() {
     )
     const { error } = await supabase.auth.verifyOtp({ email, token: code.trim(), type: 'email' })
     setBusy(false)
-    if (error) setError(friendlyError(error.message))
+    if (error) setError(t(friendlyError(error.message)))
     // Si va bien, AuthProvider detecta la sesión y el <Navigate> de arriba te lleva a "afterLogin".
   }
 
   const emailField = (
-    <Field label="Student email">
+    <Field label={t('Student email')}>
       <input
         type="email"
         required
@@ -133,25 +136,29 @@ function LoginPage() {
 
   return (
     <div className="mx-auto max-w-md rounded-3xl glass p-8 backdrop-blur-sm">
-      <LogoMark className="mx-auto h-14 w-auto" />
+      <div className="flex items-start justify-between">
+        <span className="w-11" aria-hidden="true" />
+        <LogoMark className="h-14 w-auto" />
+        <LangSwitch label={t('Language')} className="-mt-1 -mr-2 border-transparent px-2" />
+      </div>
 
       {mode === 'password' && (
         <>
           <form onSubmit={logInWithPassword} className="mt-6 space-y-4">
             <div className="text-center">
-              <h1 className="text-2xl font-bold">Welcome back</h1>
-              <p className="mt-1 text-sm text-white/60">Log in with your student email and password.</p>
+              <h1 className="text-2xl font-bold">{t('Welcome back')}</h1>
+              <p className="mt-1 text-sm text-white/60">{t('Log in with your student email and password.')}</p>
             </div>
 
             {emailField}
 
-            <Field label="Password">
+            <Field label={t('Password')}>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   autoComplete="current-password"
-                  aria-label="Password"
+                  aria-label={t('Password')}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   className={`${inputClass} pr-12`}
@@ -159,7 +166,7 @@ function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={t(showPassword ? 'Hide password' : 'Show password')}
                   className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-white/60 hover:text-white"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -170,27 +177,27 @@ function LoginPage() {
             {error && <ErrorMessage text={error} />}
 
             <button disabled={busy} className={buttonClass}>
-              {busy ? 'Logging in…' : 'Log in'}
+              {t(busy ? 'Logging in…' : 'Log in')}
             </button>
 
             <div className="flex flex-wrap items-center justify-between gap-x-4 text-sm">
               <button type="button" onClick={() => goTo('code-email', 'reset')} className={linkClass}>
-                Forgot password?
+                {t('Forgot password?')}
               </button>
               <button type="button" onClick={() => goTo('code-email', 'login')} className={linkClass}>
-                Log in with a code instead
+                {t('Log in with a code instead')}
               </button>
             </div>
           </form>
 
           <div className="mt-6 border-t border-white/10 pt-6 text-center">
-            <p className="text-sm text-white/60">New to CentraleMarket?</p>
+            <p className="text-sm text-white/60">{t('New to CentraleMarket?')}</p>
             <button
               type="button"
               onClick={() => goTo('code-email', 'signup')}
               className="mt-3 min-h-12 w-full rounded-full border border-white/20 px-5 font-semibold text-white transition hover:border-white/40"
             >
-              Create your account
+              {t('Create your account')}
             </button>
           </div>
         </>
@@ -199,20 +206,20 @@ function LoginPage() {
       {mode === 'code-email' && (
         <form onSubmit={sendCode} className="mt-6 space-y-4">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">{TITLES[purpose].title}</h1>
-            <p className="mt-1 text-sm text-white/60">{TITLES[purpose].text}</p>
+            <h1 className="text-2xl font-bold">{t(TITLES[purpose].title)}</h1>
+            <p className="mt-1 text-sm text-white/60">{t(TITLES[purpose].text)}</p>
           </div>
 
           {emailField}
 
           {purpose === 'signup' && (
-            <Field label="Your name" hint="Other students will see it. You can change it later.">
+            <Field label={t('Your name')} hint={t('Other students will see it. You can change it later.')}>
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 maxLength={50}
                 autoComplete="name"
-                placeholder="e.g. Hugo M."
+                placeholder={t('e.g. Hugo M.')}
                 className={inputClass}
               />
             </Field>
@@ -221,9 +228,9 @@ function LoginPage() {
           {error && <ErrorMessage text={error} />}
 
           <button disabled={busy} className={buttonClass}>
-            {busy ? 'Sending…' : TITLES[purpose].button}
+            {t(busy ? 'Sending…' : TITLES[purpose].button)}
           </button>
-          <BackButton onClick={() => goTo('password')}>Back to log in</BackButton>
+          <BackButton onClick={() => goTo('password')}>{t('Back to log in')}</BackButton>
         </form>
       )}
 
@@ -231,14 +238,14 @@ function LoginPage() {
         <form onSubmit={verifyCode} className="mt-6 space-y-4">
           <div className="text-center">
             <Mail className="mx-auto h-8 w-8 text-rosa" />
-            <h1 className="mt-2 text-2xl font-bold">Check your inbox</h1>
+            <h1 className="mt-2 text-2xl font-bold">{t('Check your inbox')}</h1>
             <p className="mt-1 text-sm text-white/60">
-              We sent a code to <span className="font-semibold text-white">{email}</span>. It may take a minute — check
-              your spam folder too.
+              {t('We sent a code to')} <span className="font-semibold text-white">{email}</span>.{' '}
+              {t('It may take a minute — check your spam folder too.')}
             </p>
           </div>
 
-          <Field label="Code">
+          <Field label={t('Code')}>
             <input
               required
               inputMode="numeric"
@@ -254,9 +261,9 @@ function LoginPage() {
           {error && <ErrorMessage text={error} />}
 
           <button disabled={busy || code.length < 6} className={buttonClass}>
-            {busy ? 'Checking…' : purpose === 'login' ? 'Log in' : 'Continue'}
+            {t(busy ? 'Checking…' : purpose === 'login' ? 'Log in' : 'Continue')}
           </button>
-          <BackButton onClick={() => goTo('code-email')}>Use another email</BackButton>
+          <BackButton onClick={() => goTo('code-email')}>{t('Use another email')}</BackButton>
         </form>
       )}
     </div>

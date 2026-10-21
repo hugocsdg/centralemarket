@@ -5,6 +5,7 @@ import { categories } from '../data/categories'
 import { CONDITIONS, DIETARY, LOCATIONS } from '../lib/listings'
 import type { Condition, Dietary, Listing, NewListing, PhotoItem } from '../lib/listings'
 import { imageUrl } from '../lib/listings'
+import { useT } from '../i18n/lang'
 
 const MAX_PHOTOS = 6
 
@@ -55,6 +56,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
   const [error, setError] = useState('')
   const [progress, setProgress] = useState('')
   const errorRef = useRef<HTMLDivElement>(null)
+  const t = useT()
 
   const isService = category === 'services'
   const isTicket = category === 'tickets'
@@ -76,7 +78,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
   function addPhotos(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? [])
     const room = MAX_PHOTOS - photos.length
-    if (files.length > room) setError(`You can add up to ${MAX_PHOTOS} photos.`)
+    if (files.length > room) setError(t('You can add up to {n} photos.', { n: MAX_PHOTOS }))
     const added = files
       .slice(0, room)
       .map((file): PhotoItem => ({ kind: 'new', file, preview: URL.createObjectURL(file) }))
@@ -97,25 +99,25 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
     // Comprobamos todo nosotros (no el navegador) y decimos TODO lo que falta de una vez.
     const numericPrice = isFree ? 0 : Number(price.replace(',', '.'))
     const problems: string[] = []
-    if (photos.length === 0) problems.push('Add at least one photo.')
-    if (title.trim().length < 3) problems.push('Write a title (at least 3 characters).')
-    if (!category) problems.push('Choose a category.')
-    if (hasCondition && !condition) problems.push('Choose the condition (New, Like new, Good or Fair).')
-    if (isTicket && !eventAt) problems.push('Add the date and time of the event.')
-    if (isTicket && eventAt && !listing && new Date(eventAt) < new Date()) problems.push('The event date is in the past.')
+    if (photos.length === 0) problems.push(t('Add at least one photo.'))
+    if (title.trim().length < 3) problems.push(t('Write a title (at least 3 characters).'))
+    if (!category) problems.push(t('Choose a category.'))
+    if (hasCondition && !condition) problems.push(t('Choose the condition (New, Like new, Good or Fair).'))
+    if (isTicket && !eventAt) problems.push(t('Add the date and time of the event.'))
+    if (isTicket && eventAt && !listing && new Date(eventAt) < new Date()) problems.push(t('The event date is in the past.'))
     const numericQuantity = quantity ? Number(quantity) : null
     if (numericQuantity !== null && (!Number.isInteger(numericQuantity) || numericQuantity < 1 || numericQuantity > 500)) {
-      problems.push(isFood ? 'Portions must be a whole number between 1 and 500.' : 'Tickets must be a whole number between 1 and 500.')
+      problems.push(t(isFood ? 'Portions must be a whole number between 1 and 500.' : 'Tickets must be a whole number between 1 and 500.'))
     }
-    if (isFood && !allergens.trim()) problems.push('List the allergens (or write "none").')
+    if (isFood && !allergens.trim()) problems.push(t('List the allergens (or write "none").'))
     if (!isFree && (!price || Number.isNaN(numericPrice) || numericPrice < 0)) {
-      problems.push('Enter a price, or tick "Give it away for free".')
+      problems.push(t('Enter a price, or tick "Give it away for free".'))
     }
-    if (numericPrice > 10000) problems.push('Price must be under 10 000 €.')
+    if (numericPrice > 10000) problems.push(t('Price must be under 10 000 €.'))
     if (location.trim().length < 2) {
-      problems.push(isService ? 'Say where you offer it.' : isTicket ? 'Add the venue.' : 'Add a pickup location.')
+      problems.push(t(isService ? 'Say where you offer it.' : isTicket ? 'Add the venue.' : 'Add a pickup location.'))
     }
-    if (needsConfirmation && !confirmed) problems.push('Tick the confirmation box for this category.')
+    if (needsConfirmation && !confirmed) problems.push(t('Tick the confirmation box for this category.'))
 
     if (problems.length > 0) {
       setError(problems.join('\n'))
@@ -146,7 +148,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
       )
     } catch (failure) {
       setProgress('')
-      setError(failure instanceof Error ? failure.message : 'Something went wrong. Please try again.')
+      setError(t(failure instanceof Error ? failure.message : 'Something went wrong. Please try again.'))
       requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
     }
   }
@@ -156,25 +158,25 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
   return (
     <form onSubmit={submit} noValidate className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">{heading}</h1>
-        <p className="mt-1 text-white/60">{subheading}</p>
+        <h1 className="text-3xl font-bold">{t(heading)}</h1>
+        <p className="mt-1 text-white/60">{t(subheading)}</p>
       </div>
 
       {/* Fotos */}
-      <Section title="Photos" hint={`Up to ${MAX_PHOTOS}. The first one is the cover.`}>
+      <Section title={t('Photos')} hint={t('Up to {n}. The first one is the cover.', { n: MAX_PHOTOS })}>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
           {photos.map((photo, index) => (
             <div key={photo.preview} className="relative aspect-square overflow-hidden rounded-xl border border-white/10">
               <img src={photo.preview} alt="" className="h-full w-full object-cover" />
               {index === 0 && (
                 <span className="keep-dark absolute bottom-1 left-1 rounded-full bg-noche/80 px-2 py-0.5 text-[11px] font-semibold">
-                  Cover
+                  {t('Cover')}
                 </span>
               )}
               <button
                 type="button"
                 onClick={() => removePhoto(index)}
-                aria-label="Remove photo"
+                aria-label={t('Remove photo')}
                 className="keep-dark absolute top-1 right-1 rounded-full bg-noche/80 p-1 after:absolute after:-inset-2 hover:bg-rojo"
               >
                 <X className="h-3.5 w-3.5" />
@@ -184,7 +186,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
           {photos.length < MAX_PHOTOS && (
             <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-white/20 text-white/60 hover:border-rosa hover:text-white">
               <Camera className="h-6 w-6" />
-              <span className="text-xs font-medium">Add photos</span>
+              <span className="text-xs font-medium">{t('Add photos')}</span>
               <input type="file" accept="image/*" multiple onChange={addPhotos} className="hidden" />
             </label>
           )}
@@ -192,28 +194,28 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
       </Section>
 
       {/* Información principal */}
-      <Section title="Details">
-        <Field label="Title">
+      <Section title={t('Details')}>
+        <Field label={t('Title')}>
           <input
             required
             minLength={3}
             maxLength={80}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder={
+            placeholder={t(
               isService
                 ? 'e.g. Maths tutoring'
                 : isTicket
                   ? 'e.g. Gala night — 1 ticket'
                   : isFood
                     ? 'e.g. Homemade lasagna'
-                    : 'e.g. IKEA desk lamp'
-            }
+                    : 'e.g. IKEA desk lamp',
+            )}
             className={inputClass}
           />
         </Field>
 
-        <Field label="Category">
+        <Field label={t('Category')}>
           <select
             required
             value={category}
@@ -224,18 +226,18 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
             className={`${inputClass} [&>option]:bg-noche`}
           >
             <option value="" disabled>
-              Choose a category
+              {t('Choose a category')}
             </option>
             {categories.map((item) => (
               <option key={item.slug} value={item.slug}>
-                {item.name}
+                {t(item.name)}
               </option>
             ))}
           </select>
         </Field>
 
         {hasCondition && (
-          <Field label="Condition">
+          <Field label={t('Condition')}>
             <div className="flex flex-wrap gap-2">
               {CONDITIONS.map((option) => (
                 <button
@@ -248,7 +250,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
                       : 'border border-white/15 bg-white/5 text-white/80 hover:bg-white/10'
                   }`}
                 >
-                  {option}
+                  {t(option)}
                 </button>
               ))}
             </div>
@@ -256,14 +258,14 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
         )}
 
         <Field
-          label="Description"
-          hint={
+          label={t('Description')}
+          hint={t(
             isTicket
               ? 'Line-up, dress code, how you hand over the ticket…'
               : isFood
                 ? 'Ingredients, portion size, whether to bring a container…'
-                : "Size, brand, what's included, any defects…"
-          }
+                : "Size, brand, what's included, any defects…",
+          )}
         >
           <textarea
             rows={4}
@@ -277,17 +279,17 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
 
       {/* Evento: fecha y entradas */}
       {isTicket && (
-        <Section title="Event" hint="It shows up in the Events tab, sorted by date.">
+        <Section title={t('Event')} hint={t('It shows up in the Events tab, sorted by date.')}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Date & time">
+            <Field label={t('Date & time')}>
               <input
                 type="datetime-local"
                 value={eventAt}
                 onChange={(event) => setEventAt(event.target.value)}
-                className={`${inputClass} [color-scheme:dark]`}
+                className={`${inputClass}`}
               />
             </Field>
-            <Field label="Tickets available" hint="Optional">
+            <Field label={t('Tickets available')} hint={t('Optional')}>
               <input
                 inputMode="numeric"
                 value={quantity}
@@ -302,17 +304,17 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
 
       {/* Comida: cuándo, cuánto y qué lleva */}
       {isFood && (
-        <Section title="The dish" hint="It shows up in the Food tab.">
+        <Section title={t('The dish')} hint={t('It shows up in the Food tab.')}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Ready for pickup" hint="Optional">
+            <Field label={t('Ready for pickup')} hint={t('Optional')}>
               <input
                 type="datetime-local"
                 value={readyAt}
                 onChange={(event) => setReadyAt(event.target.value)}
-                className={`${inputClass} [color-scheme:dark]`}
+                className={`${inputClass}`}
               />
             </Field>
-            <Field label="Portions available" hint="Optional">
+            <Field label={t('Portions available')} hint={t('Optional')}>
               <input
                 inputMode="numeric"
                 value={quantity}
@@ -323,7 +325,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
             </Field>
           </div>
           <div>
-            <span className="mb-1 block text-sm font-medium text-white/80">Good to know</span>
+            <span className="mb-1 block text-sm font-medium text-white/80">{t('Good to know')}</span>
             <div className="flex flex-wrap gap-2">
               {DIETARY.map((tag) => {
                 const on = dietary.includes(tag.value)
@@ -339,18 +341,18 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
                       on ? 'btn-primary text-white' : 'border border-white/15 bg-white/5 text-white/80 hover:bg-white/10'
                     }`}
                   >
-                    {tag.emoji} {tag.label}
+                    {tag.emoji} {t(tag.label)}
                   </button>
                 )
               })}
             </div>
           </div>
-          <Field label="Allergens" hint='e.g. "nuts, eggs, milk" — write "none" if there are none.'>
+          <Field label={t('Allergens')} hint={t('e.g. "nuts, eggs, milk" — write "none" if there are none.')}>
             <input
               maxLength={200}
               value={allergens}
               onChange={(event) => setAllergens(event.target.value)}
-              placeholder="nuts, eggs…"
+              placeholder={t('nuts, eggs…')}
               className={inputClass}
             />
           </Field>
@@ -358,7 +360,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
       )}
 
       {/* Precio */}
-      <Section title="Price">
+      <Section title={t('Price')}>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-40">
             <input
@@ -371,27 +373,27 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
             />
             <span className="absolute top-1/2 right-4 -translate-y-1/2 text-white/60">€</span>
           </div>
-          {(isFood || isTicket) && <span className="text-sm text-white/60">{isFood ? 'per portion' : 'per ticket'}</span>}
+          {(isFood || isTicket) && <span className="text-sm text-white/60">{t(isFood ? 'per portion' : 'per ticket')}</span>}
           {isService && !isFree && (
             <select
               value={priceUnit}
               onChange={(event) => setPriceUnit(event.target.value)}
               className={`${inputClass} w-auto [&>option]:bg-noche`}
             >
-              <option value="/h">per hour</option>
-              <option value="/session">per session</option>
-              <option value="">fixed price</option>
+              <option value="/h">{t('per hour')}</option>
+              <option value="/session">{t('per session')}</option>
+              <option value="">{t('fixed price')}</option>
             </select>
           )}
           <Check checked={isFree} onChange={setIsFree}>
-            Give it away for free
+            {t('Give it away for free')}
           </Check>
         </div>
       </Section>
 
       {/* Entrega */}
-      <Section title={isService || isTicket ? 'Where' : 'Pickup'}>
-        <Field label={isService ? 'Where do you offer it?' : isTicket ? 'Venue' : 'Pickup location'}>
+      <Section title={t(isService || isTicket ? 'Where' : 'Pickup')}>
+        <Field label={t(isService ? 'Where do you offer it?' : isTicket ? 'Venue' : 'Pickup location')}>
           <input
             required
             minLength={2}
@@ -399,7 +401,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
             list="locations"
             value={location}
             onChange={(event) => setLocation(event.target.value)}
-            placeholder={isService ? 'e.g. Campus or online' : isTicket ? 'e.g. Campus, Paris…' : 'e.g. Gif-sur-Yvette'}
+            placeholder={t(isService ? 'e.g. Campus or online' : isTicket ? 'e.g. Campus, Paris…' : 'e.g. Gif-sur-Yvette')}
             className={inputClass}
           />
           <datalist id="locations">
@@ -410,22 +412,24 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
         </Field>
         {hasCondition && (
           <Check checked={movingOut} onChange={setMovingOut}>
-            I'm leaving campus soon (adds a "Moving out" badge)
+            {t('I\'m leaving campus soon (adds a "Moving out" badge)')}
           </Check>
         )}
       </Section>
 
       {needsConfirmation && (
         <Check checked={confirmed} onChange={setConfirmed}>
-          {category === 'food'
-            ? 'I confirm this food is freshly made, stored safely and that the allergens above are correct.'
-            : 'I confirm that reselling this ticket is allowed by the event organiser.'}
+          {t(
+            category === 'food'
+              ? 'I confirm this food is freshly made, stored safely and that the allergens above are correct.'
+              : 'I confirm that reselling this ticket is allowed by the event organiser.',
+          )}
         </Check>
       )}
 
       {error && (
         <div ref={errorRef} role="alert" className="rounded-xl border border-rojo/50 bg-rojo/20 px-4 py-3 text-sm text-rosa">
-          <p className="font-semibold">Almost there! Please fix:</p>
+          <p className="font-semibold">{t('Almost there! Please fix:')}</p>
           <ul className="mt-1 list-disc space-y-0.5 pl-5">
             {error.split('\n').map((problem) => (
               <li key={problem}>{problem}</li>
@@ -438,7 +442,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
         disabled={busy}
         className="w-full rounded-full btn-primary px-5 py-3.5 font-semibold  disabled:opacity-60"
       >
-        {busy ? progress : submitLabel}
+        {t(busy ? progress : submitLabel)}
       </button>
     </form>
   )

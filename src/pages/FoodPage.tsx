@@ -9,6 +9,7 @@ import SpaceTabs from '../components/SpaceTabs'
 import FoodCard from '../components/FoodCard'
 import LoginPrompt from '../components/LoginPrompt'
 import { Pill } from '../components/FilterSheet'
+import { useT } from '../i18n/lang'
 
 // Comida casera de estudiantes. Los filtros (vegano, halal…, "listo hoy") viven en la URL.
 function FoodPage() {
@@ -16,6 +17,7 @@ function FoodPage() {
   const [params, setParams] = useSearchParams()
   const diet = (params.get('diet')?.split(',') ?? []).filter((d): d is Dietary => DIETARY.some((tag) => tag.value === d))
   const today = params.has('today')
+  const t = useT()
 
   const { data, loading, error } = useQuery(session ? `food|${diet.join(',')}` : null, () =>
     fetchListings({ category: 'food', dietary: diet }),
@@ -40,34 +42,35 @@ function FoodPage() {
 
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold md:text-4xl">Food</h1>
-          <p className="mt-1 text-sm text-white/60">Home-cooked by students, picked up on campus.</p>
+          <h1 className="text-3xl font-bold md:text-4xl">{t('Food')}</h1>
+          <p className="mt-1 text-sm text-white/60">{t('Home-cooked by students, picked up on campus.')}</p>
         </div>
         <Link
           to="/sell?category=food"
           className="btn-primary flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-semibold"
         >
-          <Plus className="h-4 w-4" /> Sell<span className="hidden sm:inline">&nbsp;a dish</span>
+          <Plus className="h-4 w-4" /> <span className="sm:hidden">{t('Sell')}</span>
+          <span className="hidden sm:inline">{t('Sell a dish')}</span>
         </Link>
       </div>
 
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
         <Pill active={today} onClick={() => set('today', today ? '' : '1')}>
-          🕒 Ready today
+          🕒 {t('Ready today')}
         </Pill>
         {DIETARY.map((tag) => (
           <Pill key={tag.value} active={diet.includes(tag.value)} onClick={() => toggleDiet(tag.value)}>
             <span className="whitespace-nowrap">
-              {tag.emoji} {tag.label}
+              {tag.emoji} {t(tag.label)}
             </span>
           </Pill>
         ))}
       </div>
 
       {!session ? (
-        <LoginPrompt title="See what's cooking on campus" />
+        <LoginPrompt title={t("See what's cooking on campus")} />
       ) : error ? (
-        <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{error}</p>
+        <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{t(error)}</p>
       ) : loading || !shown ? (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 4 }, (_, i) => (
@@ -78,13 +81,13 @@ function FoodPage() {
         <div className="glass rounded-3xl p-10 text-center">
           <ChefHat className="mx-auto h-9 w-9 text-rosa" />
           <h2 className="mt-3 text-xl font-bold">
-            {diet.length || today ? 'No dishes match these filters' : 'The kitchen is empty (for now)'}
+            {t(diet.length || today ? 'No dishes match these filters' : 'The kitchen is empty (for now)')}
           </h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-white/60">
-            Cooked too much? Share your best dish from home — a few euros a portion is a great deal for everyone.
+            {t('Cooked too much? Share your best dish from home — a few euros a portion is a great deal for everyone.')}
           </p>
           <Link to="/sell?category=food" className="btn-primary mt-5 inline-block rounded-full px-5 py-2.5 text-sm font-semibold">
-            Sell a dish
+            {t('Sell a dish')}
           </Link>
         </div>
       ) : (
@@ -96,7 +99,7 @@ function FoodPage() {
       )}
 
       <p className="text-center text-xs text-white/60">
-        Dishes are cooked by students, not professional kitchens. Check the allergens and ask the cook if you're unsure.
+        {t("Dishes are cooked by students, not professional kitchens. Check the allergens and ask the cook if you're unsure.")}
       </p>
     </div>
   )

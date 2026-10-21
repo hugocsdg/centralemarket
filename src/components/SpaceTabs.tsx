@@ -1,10 +1,12 @@
 import { NavLink } from 'react-router'
 import { SPACES } from '../data/spaces'
+import { useT } from '../i18n/lang'
 
 // Selector tipo iPhone para saltar de una pantalla a otra.
 function SpaceTabs() {
+  const t = useT()
   return (
-    <nav aria-label="Sections" className="glass grid grid-cols-3 gap-1 rounded-full p-1 md:hidden">
+    <nav aria-label={t('Sections')} className="glass grid grid-cols-3 gap-1 rounded-full p-1 md:hidden">
       {SPACES.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
@@ -16,7 +18,7 @@ function SpaceTabs() {
           }
         >
           <Icon className="h-4 w-4" aria-hidden="true" />
-          {label}
+          {t(label)}
         </NavLink>
       ))}
     </nav>

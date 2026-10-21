@@ -3,11 +3,13 @@ import type { FormEvent } from 'react'
 import { Star } from 'lucide-react'
 import { createReview } from '../lib/reviews'
 import type { Rating } from '../lib/reviews'
+import { useT } from '../i18n/lang'
 
 // Estrellas de solo lectura: ★★★★☆ (la media se redondea a media estrella).
 export function Stars({ value, className = 'h-4 w-4' }: { value: number; className?: string }) {
+  const t = useT()
   return (
-    <span className="flex items-center gap-0.5" aria-label={`${value} out of 5 stars`} role="img">
+    <span className="flex items-center gap-0.5" aria-label={t('{n} out of 5 stars', { n: value })} role="img">
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
@@ -21,13 +23,14 @@ export function Stars({ value, className = 'h-4 w-4' }: { value: number; classNa
 
 // "★ 4.8 (12)" o "No reviews yet".
 export function RatingSummary({ rating }: { rating: Rating | null | undefined }) {
-  if (!rating) return <span className="text-xs text-white/60">No reviews yet</span>
+  const t = useT()
+  if (!rating) return <span className="text-xs text-white/60">{t('No reviews yet')}</span>
   return (
     <span className="flex items-center gap-1.5 text-xs text-white/80">
       <Star className="h-3.5 w-3.5 fill-carmin text-carmin" aria-hidden="true" />
       <span className="font-semibold">{rating.average.toFixed(1)}</span>
       <span className="text-white/60">
-        ({rating.total} {rating.total === 1 ? 'review' : 'reviews'})
+        ({t(rating.total === 1 ? '{n} review' : '{n} reviews', { n: rating.total })})
       </span>
     </span>
   )
@@ -51,6 +54,7 @@ export function RateSellerForm({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const shown = hover || rating
+  const t = useT()
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -69,18 +73,18 @@ export function RateSellerForm({
   return (
     <form onSubmit={submit} className="space-y-3 rounded-2xl border border-rosa/30 bg-rojo/10 p-4">
       <div>
-        <p className="font-semibold">How was it with {sellerName}?</p>
-        <p className="text-xs text-white/60">Your rating helps other students buy with confidence.</p>
+        <p className="font-semibold">{t('How was it with {name}?', { name: sellerName })}</p>
+        <p className="text-xs text-white/60">{t('Your rating helps other students buy with confidence.')}</p>
       </div>
       <div className="flex items-center gap-3">
-        <div className="flex" role="radiogroup" aria-label="Rating" onMouseLeave={() => setHover(0)}>
+        <div className="flex" role="radiogroup" aria-label={t('Rating')} onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
               role="radio"
               aria-checked={rating === star}
-              aria-label={`${star} ${star === 1 ? 'star' : 'stars'}`}
+              aria-label={t(star === 1 ? '{n} star' : '{n} stars', { n: star })}
               onClick={() => setRating(star)}
               onMouseEnter={() => setHover(star)}
               className="flex h-11 w-11 items-center justify-center"
@@ -92,20 +96,20 @@ export function RateSellerForm({
             </button>
           ))}
         </div>
-        <span className="text-sm font-medium text-white/80">{LABELS[shown]}</span>
+        <span className="text-sm font-medium text-white/80">{shown ? t(LABELS[shown]) : ''}</span>
       </div>
       <textarea
         rows={2}
         maxLength={500}
         value={comment}
         onChange={(event) => setComment(event.target.value)}
-        placeholder="Optional: on time, item as described, friendly…"
-        aria-label="Comment"
+        placeholder={t('Optional: on time, item as described, friendly…')}
+        aria-label={t('Comment')}
         className="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/50 focus:border-rosa"
       />
-      {error && <p className="text-sm text-rosa">{error}</p>}
+      {error && <p className="text-sm text-rosa">{t(error)}</p>}
       <button disabled={busy} className="btn-primary min-h-11 rounded-full px-5 text-sm font-semibold disabled:opacity-60">
-        {busy ? 'Saving…' : 'Send rating'}
+        {t(busy ? 'Saving…' : 'Send rating')}
       </button>
     </form>
   )

@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { Heart } from 'lucide-react'
 import { useFavorites } from '../lib/favorites'
+import { useT } from '../i18n/lang'
 
 type FavoriteButtonProps = {
   listingId: number
@@ -17,6 +18,7 @@ function FavoriteButton({ listingId, title, variant = 'card' }: FavoriteButtonPr
   const navigate = useNavigate()
   const location = useLocation()
   const [failed, setFailed] = useState(false)
+  const t = useT()
   const saved = ids.has(listingId)
 
   async function onClick(event: MouseEvent) {
@@ -53,7 +55,7 @@ function FavoriteButton({ listingId, title, variant = 'card' }: FavoriteButtonPr
         className="flex min-h-12 items-center justify-center gap-2 rounded-full glass px-5 py-3 font-semibold transition hover:bg-white/10"
       >
         {icon}
-        {failed ? 'Could not save' : saved ? 'Saved' : 'Save'}
+        {t(failed ? 'Could not save' : saved ? 'Saved' : 'Save')}
       </button>
     )
   }
@@ -63,8 +65,8 @@ function FavoriteButton({ listingId, title, variant = 'card' }: FavoriteButtonPr
       type="button"
       onClick={onClick}
       aria-pressed={saved}
-      aria-label={saved ? `Remove ${title} from favorites` : `Save ${title} to favorites`}
-      title={failed ? 'Could not save. Try again.' : undefined}
+      aria-label={t(saved ? 'Remove {title} from favorites' : 'Save {title} to favorites', { title })}
+      title={failed ? t('Could not save. Try again.') : undefined}
       className="flex h-11 w-11 items-center justify-center rounded-full"
     >
       <span className="keep-dark flex h-9 w-9 items-center justify-center rounded-full bg-noche/60 backdrop-blur-md transition hover:bg-noche/80">

@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router'
 import { Compass, Home, MessageCircle, Plus, User } from 'lucide-react'
+import { useT } from '../i18n/lang'
 
 const items = [
   { to: '/', label: 'Home', icon: Home },
@@ -11,6 +12,7 @@ const items = [
 
 // Menú inferior flotante de cristal: solo se ve en móvil (md:hidden).
 function BottomNav({ unread }: { unread: number }) {
+  const t = useT()
   return (
     <nav className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 md:hidden">
       <ul className="glass grid grid-cols-5 rounded-[28px] bg-noche/60 px-1 py-1.5">
@@ -42,7 +44,7 @@ function BottomNav({ unread }: { unread: number }) {
                       )}
                     </span>
                   )}
-                  {label}
+                  {t(label)}
                 </>
               )}
             </NavLink>

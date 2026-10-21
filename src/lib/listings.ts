@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { translate } from '../i18n/core'
 
 // Todo lo que la web hace con los anuncios en Supabase: leer, buscar y publicar.
 
@@ -146,7 +147,7 @@ export async function prepareImage(file: File): Promise<Blob> {
   try {
     bitmap = await createImageBitmap(file)
   } catch {
-    throw new Error(`"${file.name}" can't be read. Please use a JPG, PNG or WebP photo.`)
+    throw new Error(translate('"{file}" can\'t be read. Please use a JPG, PNG or WebP photo.', { file: file.name }))
   }
   const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height))
   const canvas = document.createElement('canvas')
@@ -206,7 +207,7 @@ async function uploadPhotos(
   onProgress?: (message: string) => void,
 ) {
   for (const [index, file] of files.entries()) {
-    onProgress?.(`Uploading photo ${index + 1} of ${files.length}…`)
+    onProgress?.(translate('Uploading photo {n} of {total}…', { n: index + 1, total: files.length }))
     const blob = await prepareImage(file)
     // Cada usuario sube a su propia carpeta (lo exige la regla de seguridad del almacén).
     const path = `${userId}/${listingId}/${crypto.randomUUID()}.jpg`

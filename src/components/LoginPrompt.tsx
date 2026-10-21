@@ -1,23 +1,24 @@
 import { Link, useLocation } from 'react-router'
 import { Lock } from 'lucide-react'
+import { useT } from '../i18n/lang'
 
 // Se muestra en lugar de los anuncios cuando no has iniciado sesión:
 // el mercado es solo para estudiantes de CentraleSupélec.
 function LoginPrompt({ title = 'Students only' }: { title?: string }) {
   const location = useLocation()
+  const t = useT()
   return (
     <div className="rounded-3xl glass p-8 text-center backdrop-blur-sm">
       <Lock className="mx-auto h-8 w-8 text-rosa" />
-      <h2 className="mt-3 text-xl font-bold">{title}</h2>
+      <h2 className="mt-3 text-xl font-bold">{t(title)}</h2>
       <p className="mx-auto mt-1 max-w-sm text-sm text-white/60">
-        Log in with your @student-cs.fr email to see what fellow students are selling. It takes 30 seconds, no password
-        needed.
+        {t('Log in with your @student-cs.fr email to see what fellow students are selling. It takes 30 seconds.')}
       </p>
       <Link
         to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`}
         className="mt-5 inline-block rounded-full btn-primary px-5 py-2.5 text-sm font-semibold shadow-lg shadow-rojo/30"
       >
-        Log in to browse
+        {t('Log in to browse')}
       </Link>
     </div>
   )

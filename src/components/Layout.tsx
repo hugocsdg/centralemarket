@@ -7,6 +7,7 @@ import BottomNav from './BottomNav'
 import { useAuth } from '../lib/auth'
 import { useUnreadCount } from '../lib/useUnread'
 import { useNotificationCount } from '../lib/notifications'
+import { useT } from '../i18n/lang'
 
 // El "marco" de la app: fondo, cabecera arriba, menú abajo y en medio la página actual (<Outlet />).
 function Layout() {
@@ -14,6 +15,7 @@ function Layout() {
   const { session } = useAuth()
   const unread = useUnreadCount(session?.user.id)
   const alerts = useNotificationCount(session?.user.id)
+  const t = useT()
 
   // Al cambiar de página, volver arriba del todo.
   useEffect(() => {
@@ -33,9 +35,9 @@ function Layout() {
         </Suspense>
       </main>
       <footer className="hidden border-t border-white/5 py-8 text-center text-xs text-white/60 md:block">
-        An independent student initiative for the CentraleSupélec community. ·{' '}
+        {t('An independent student initiative for the CentraleSupélec community.')} ·{' '}
         <Link to="/welcome" className="underline-offset-4 hover:text-white hover:underline">
-          About CentraleMarket
+          {t('About CentraleMarket')}
         </Link>
       </footer>
       <BottomNav unread={unread} />

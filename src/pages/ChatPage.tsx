@@ -18,14 +18,17 @@ import { useAuth } from '../lib/auth'
 import { useQuery } from '../lib/useQuery'
 import Avatar from '../components/Avatar'
 import NotFoundPage from './NotFoundPage'
+import { useT } from '../i18n/lang'
+import { currentLocale } from '../i18n/core'
 
 function ChatPage() {
   const { id } = useParams()
   const { session } = useAuth()
+  const t = useT()
   const conversation = useQuery(`conversation|${id}`, () => fetchConversation(Number(id)))
 
-  if (conversation.loading) return <p className="py-20 text-center text-white/60">Loading…</p>
-  if (conversation.error) return <p className="py-20 text-center text-rosa">{conversation.error}</p>
+  if (conversation.loading) return <p className="py-20 text-center text-white/60">{t('Loading…')}</p>
+  if (conversation.error) return <p className="py-20 text-center text-rosa">{t(conversation.error)}</p>
   if (!conversation.data) return <NotFoundPage />
 
   // "key" hace que al cambiar de conversación el chat empiece de cero.
@@ -54,6 +57,7 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
   const [error, setError] = useState('')
   // Desde "Make an offer" en el anuncio se llega con ?offer=1 y el panel ya abierto.
   const [offerOpen, setOfferOpen] = useState(params.has('offer'))
+  const t = useT()
   const bottomRef = useRef<HTMLDivElement>(null)
   // Guardado en una "ref" para no volver a conectar el tiempo real en cada pintado.
   const listingChangedRef = useRef(onListingChanged)
@@ -110,7 +114,7 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
       upsert(await sendMessage(conversation.id, text))
       setText('')
     } catch {
-      setError('Message not sent. Please try again.')
+      setError(t('Message not sent. Please try again.'))
     } finally {
       setSending(false)
     }
@@ -134,7 +138,7 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
       upsert({ ...offer, offer_status: accept ? 'accepted' : 'declined' })
       if (accept) onListingChanged()
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'Could not answer the offer. Please try again.')
+      setError(t(failure instanceof Error ? failure.message : 'Could not answer the offer. Please try again.'))
     }
   }
 
@@ -150,7 +154,7 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
     <div className="mx-auto flex h-[calc(100dvh-14rem)] max-w-2xl flex-col md:h-[calc(100dvh-11rem)]">
       {/* Cabecera: con quién hablas y de qué anuncio */}
       <div className="flex items-center gap-3 border-b border-white/10 pb-3">
-        <Link to="/messages" aria-label="Back to messages" className="rounded-full p-2 hover:bg-white/10">
+        <Link to="/messages" aria-label={t('Back to messages')} className="rounded-full p-2 hover:bg-white/10">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <Link to={`/item/${conversation.listing_id}`} className="flex min-w-0 flex-1 items-center gap-3">
@@ -170,7 +174,7 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
             <p className="truncate font-semibold">{other?.display_name}</p>
             <p className="truncate text-xs text-white/60">
               {listing?.title} · {listing && formatPrice(listing.price, listing.price_unit)}
-              {listing && listing.status !== 'available' && ` · ${listing.status}`}
+              {listing && listing.status !== 'available' && ` · ${t(listing.status === 'sold' ? 'Sold' : 'Reserved')}`}
             </p>
           </div>
         </Link>
@@ -184,19 +188,22 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
         >
           <Star className="h-5 w-5 shrink-0 fill-carmin text-carmin" />
           <span>
-            <span className="font-semibold">You bought this.</span> How was it with {other?.display_name}? Leave a rating.
+            <span className="font-semibold">{t('You bought this.')}</span>{' '}
+            {t('How was it with {name}? Leave a rating.', { name: other?.display_name ?? '' })}
           </span>
         </Link>
       )}
 
       {/* Mensajes */}
       <div className="flex-1 space-y-2 overflow-y-auto py-4">
-        {messages === null && !error && <p className="text-center text-sm text-white/50">Loading messages…</p>}
+        {messages === null && !error && <p className="text-center text-sm text-white/50">{t('Loading messages…')}</p>}
         {messages?.length === 0 && (
           <p className="mx-auto max-w-xs text-center text-sm text-white/50">
             {iAmSeller
-              ? 'No messages yet.'
-              : `Say hi to ${other?.display_name}! Ask if it's still available, make an offer or propose a pickup time.`}
+              ? t('No messages yet.')
+              : t("Say hi to {name}! Ask if it's still available, make an offer or propose a pickup time.", {
+                  name: other?.display_name ?? '',
+                })}
           </p>
         )}
         {messages?.map((message) => {
@@ -219,10 +226,10 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
                   mine ? 'rounded-br-md bg-gradient-to-br from-rojo to-carmin' : 'rounded-bl-md bg-white/10'
                 }`}
               >
-                <p className="break-words whitespace-pre-line">{message.content}</p>
+                <p className="break-words whitespace-pre-line">{systemText(message.content, t)}</p>
                 <p className={`mt-0.5 text-right text-[11px] ${mine ? 'text-white/70' : 'text-white/60'}`}>
-                  {new Date(message.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                  {mine && (message.read_at ? ' · Seen' : '')}
+                  {new Date(message.created_at).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' })}
+                  {mine && (message.read_at ? ` · ${t('Seen')}` : '')}
                 </p>
               </div>
             </div>
@@ -231,7 +238,7 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
         <div ref={bottomRef} />
       </div>
 
-      {error && <p className="mb-2 rounded-xl bg-rojo/20 px-4 py-2 text-sm text-rosa">{error}</p>}
+      {error && <p className="mb-2 rounded-xl bg-rojo/20 px-4 py-2 text-sm text-rosa">{t(error)}</p>}
 
       {offerOpen && canOffer && listing && (
         <OfferPanel listPrice={listing.price} onSend={makeOffer} onClose={() => setOfferOpen(false)} />
@@ -243,9 +250,9 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
           <button
             type="button"
             onClick={() => setOfferOpen((open) => !open)}
-            aria-label="Make an offer"
+            aria-label={t('Make an offer')}
             aria-expanded={offerOpen}
-            title="Make an offer"
+            title={t('Make an offer')}
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${
               offerOpen ? 'border-rosa bg-rojo/20 text-white' : 'border-white/15 bg-white/5 text-white/80 hover:bg-white/10'
             }`}
@@ -259,13 +266,13 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
           value={text}
           onChange={(event) => setText(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Write a message…"
-          aria-label="Message"
+          placeholder={t('Write a message…')}
+          aria-label={t('Message')}
           className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 text-white outline-none placeholder:text-white/50 focus:border-rosa"
         />
         <button
           disabled={!text.trim() || sending}
-          aria-label="Send"
+          aria-label={t('Send')}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full btn-primary disabled:opacity-40"
         >
           <Send className="h-5 w-5" />
@@ -273,6 +280,15 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
       </form>
     </div>
   )
+}
+
+// Los mensajes automáticos de las ofertas los escribe la base de datos en inglés: aquí se traducen.
+function systemText(text: string, t: (text: string, vars?: Record<string, string>) => string) {
+  const accepted = text.match(/^Offer accepted: (.+) €\. Let's agree on a time to meet!$/)
+  if (accepted) return t("Offer accepted: {amount} €. Let's agree on a time to meet!", { amount: accepted[1] })
+  const declined = text.match(/^Offer declined \((.+) €\)\.$/)
+  if (declined) return t('Offer declined ({amount} €).', { amount: declined[1] })
+  return text
 }
 
 const STATUS_LABEL = {
@@ -295,6 +311,7 @@ function OfferBubble({
   onAnswer: (accept: boolean) => Promise<void>
 }) {
   const [busy, setBusy] = useState(false)
+  const t = useT()
   const status = message.offer_status ?? 'pending'
   const amount = Number(message.offer_amount)
   const discount = listPrice && listPrice > amount ? Math.round((1 - amount / listPrice) * 100) : 0
@@ -318,7 +335,7 @@ function OfferBubble({
       >
         <div className="px-4 pt-3 pb-2">
           <p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-white/70 uppercase">
-            <HandCoins className="h-3.5 w-3.5" /> {mine ? 'Your offer' : 'Offer'}
+            <HandCoins className="h-3.5 w-3.5" /> {t(mine ? 'Your offer' : 'Offer')}
           </p>
           <p className="mt-1 flex items-baseline gap-2">
             <span className={`font-display text-3xl font-bold ${status === 'declined' || status === 'replaced' ? 'line-through' : ''}`}>
@@ -331,9 +348,9 @@ function OfferBubble({
           </p>
           <p className={`mt-1 text-xs ${status === 'accepted' ? 'font-semibold text-emerald-300' : 'text-white/60'}`}>
             {status === 'accepted' && '✓ '}
-            {status === 'pending' && !mine ? 'Your turn to answer' : STATUS_LABEL[status]}
+            {t(status === 'pending' && !mine ? 'Your turn to answer' : STATUS_LABEL[status])}
             {' · '}
-            {new Date(message.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+            {new Date(message.created_at).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
         {status === 'pending' && !mine && (
@@ -343,14 +360,14 @@ function OfferBubble({
               onClick={() => run(false)}
               className="flex min-h-11 items-center justify-center gap-1.5 text-sm font-semibold text-white/80 transition hover:bg-white/10 disabled:opacity-50"
             >
-              <X className="h-4 w-4" /> Decline
+              <X className="h-4 w-4" /> {t('Decline')}
             </button>
             <button
               disabled={busy}
               onClick={() => run(true)}
               className="flex min-h-11 items-center justify-center gap-1.5 border-l border-white/10 bg-white/10 text-sm font-semibold transition hover:bg-white/20 disabled:opacity-50"
             >
-              <Check className="h-4 w-4" /> Accept
+              <Check className="h-4 w-4" /> {t('Accept')}
             </button>
           </div>
         )}
@@ -370,6 +387,7 @@ function OfferPanel({
   onClose: () => void
 }) {
   const [value, setValue] = useState('')
+  const t = useT()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const amount = Number(value.replace(',', '.'))
@@ -384,7 +402,7 @@ function OfferPanel({
     try {
       await onSend(Math.round(amount * 100) / 100)
     } catch {
-      setError('Offer not sent. Please try again.')
+      setError(t('Offer not sent. Please try again.'))
       setBusy(false)
     }
   }
@@ -392,11 +410,11 @@ function OfferPanel({
   return (
     <form onSubmit={submit} className="mb-3 space-y-3 rounded-2xl border border-rosa/30 bg-grafito/80 p-4 backdrop-blur-md">
       <div className="flex items-center justify-between">
-        <p className="font-semibold">Make an offer</p>
+        <p className="font-semibold">{t('Make an offer')}</p>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close offer"
+          aria-label={t('Close offer')}
           className="-m-2 flex h-11 w-11 items-center justify-center rounded-full text-white/60 hover:text-white"
         >
           <X className="h-4 w-4" />
@@ -420,19 +438,19 @@ function OfferPanel({
       )}
       <div className="flex gap-2">
         <label className="relative flex-1">
-          <span className="sr-only">Your offer in euros</span>
+          <span className="sr-only">{t('Your offer in euros')}</span>
           <input
             autoFocus
             inputMode="decimal"
             value={value}
             onChange={(event) => setValue(event.target.value.replace(/[^\d.,]/g, ''))}
-            placeholder={`Listed at ${formatPrice(listPrice)}`}
+            placeholder={t('Listed at {price}', { price: formatPrice(listPrice) })}
             className="min-h-12 w-full rounded-xl border border-white/15 bg-white/10 px-4 pr-9 text-white outline-none placeholder:text-white/50 focus:border-rosa"
           />
           <span className="absolute top-1/2 right-3.5 -translate-y-1/2 text-sm text-white/60">€</span>
         </label>
         <button disabled={!valid || busy} className="btn-primary min-h-12 rounded-full px-5 text-sm font-semibold disabled:opacity-40">
-          {busy ? 'Sending…' : 'Send offer'}
+          {t(busy ? 'Sending…' : 'Send offer')}
         </button>
       </div>
       {error && <p className="text-sm text-rosa">{error}</p>}

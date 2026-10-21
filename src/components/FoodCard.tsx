@@ -5,9 +5,11 @@ import { DIETARY, imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import Avatar from './Avatar'
 import FavoriteButton from './FavoriteButton'
+import { useT } from '../i18n/lang'
 
 // Tarjeta de un plato: foto apetecible, quién lo cocina, cuándo está listo y cuántas raciones quedan.
 function FoodCard({ listing }: { listing: Listing }) {
+  const t = useT()
   const cover = listing.images[0]
   const tags = DIETARY.filter((tag) => listing.dietary?.includes(tag.value))
 
@@ -34,8 +36,8 @@ function FoodCard({ listing }: { listing: Listing }) {
               {tags.map((tag) => (
                 <span
                   key={tag.value}
-                  title={tag.label}
-                  aria-label={tag.label}
+                  title={t(tag.label)}
+                  aria-label={t(tag.label)}
                   className="flex h-7 w-7 items-center justify-center rounded-full bg-noche/70 text-sm backdrop-blur-md"
                 >
                   {tag.emoji}
@@ -45,11 +47,11 @@ function FoodCard({ listing }: { listing: Listing }) {
           )}
           <p className="absolute bottom-2.5 left-3 font-display text-xl font-bold drop-shadow-lg">
             {formatPrice(listing.price)}
-            <span className="ml-1 font-sans text-xs font-medium text-white/70">/ portion</span>
+            <span className="ml-1 font-sans text-xs font-medium text-white/70">{t('/ portion')}</span>
           </p>
           {listing.status === 'reserved' && (
             <span className="absolute right-3 bottom-3 rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-noche">
-              Reserved
+              {t('Reserved')}
             </span>
           )}
         </div>
@@ -58,7 +60,7 @@ function FoodCard({ listing }: { listing: Listing }) {
           <h3 className="truncate font-sans text-sm font-semibold text-white/90">{listing.title}</h3>
           <p className="flex items-center gap-1.5 text-xs text-white/60">
             <Avatar name={listing.seller?.display_name} url={listing.seller?.avatar_url} className="h-5 w-5 text-[11px]" />
-            <span className="truncate">by {listing.seller?.display_name}</span>
+            <span className="truncate">{t('by {name}', { name: listing.seller?.display_name ?? '' })}</span>
           </p>
           <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-white/60">
             {listing.ready_at && (
@@ -72,7 +74,7 @@ function FoodCard({ listing }: { listing: Listing }) {
           </p>
           {listing.quantity !== null && (
             <p className={`text-xs font-semibold ${listing.quantity <= 3 ? 'text-rosa' : 'text-white/60'}`}>
-              {listing.quantity} {listing.quantity === 1 ? 'portion' : 'portions'} left
+              {t(listing.quantity === 1 ? '{n} portion left' : '{n} portions left', { n: listing.quantity })}
             </p>
           )}
         </div>

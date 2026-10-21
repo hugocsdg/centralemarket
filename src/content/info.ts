@@ -12,7 +12,7 @@ export const INFO_PAGES: Record<string, InfoPage> = {
     sections: [
       {
         title: '1. Sign in with your student email',
-        body: 'Type your @student-cs.fr address and the code we send you. No password to remember.',
+        body: 'Type your @student-cs.fr address and the code we send you, then choose a password for next time.',
       },
       {
         title: '2. List an item in under a minute',

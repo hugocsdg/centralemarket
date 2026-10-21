@@ -1,36 +1,33 @@
+import { ChevronDown, Globe } from 'lucide-react'
 import { useLang } from '../i18n/lang'
-import type { Lang } from '../i18n/lang'
+import { LANGUAGES } from '../i18n/core'
+import type { Lang } from '../i18n/core'
 
-// Selector de idioma "EN | FR": dos botones; el activo se marca y lo anuncia el lector de pantalla.
-const LANGS: { id: Lang; label: string; name: string }[] = [
-  { id: 'en', label: 'EN', name: 'English' },
-  { id: 'fr', label: 'FR', name: 'Français' },
-]
-
+// Selector de idioma compacto: una pastilla "🌐 FR ⌄". Al tocarla se abre la lista nativa del
+// móvil/navegador (cómoda con el dedo y accesible), con los 5 idiomas escritos en su propia lengua.
 function LangSwitch({ label, className = '' }: { label: string; className?: string }) {
   const { lang, setLang } = useLang()
+  const current = LANGUAGES.find((language) => language.id === lang)!
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className={`flex items-center rounded-full border border-white/15 p-0.5 ${className}`}
+    <label
+      className={`relative flex min-h-11 items-center gap-1.5 rounded-full border border-white/15 pr-2.5 pl-3 text-xs font-semibold tracking-wide text-white/85 transition focus-within:border-rosa hover:border-white/30 ${className}`}
     >
-      {LANGS.map(({ id, label: short, name }) => (
-        <button
-          key={id}
-          type="button"
-          lang={id}
-          aria-label={name}
-          aria-pressed={lang === id}
-          onClick={() => setLang(id)}
-          className={`flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 text-xs font-semibold tracking-wide transition ${
-            lang === id ? 'bg-white text-noche' : 'text-white/70 hover:text-white'
-          }`}
-        >
-          {short}
-        </button>
-      ))}
-    </div>
+      <Globe aria-hidden="true" className="h-4 w-4 text-white/70" />
+      <span aria-hidden="true">{current.short}</span>
+      <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-white/60" />
+      <select
+        aria-label={label}
+        value={lang}
+        onChange={(event) => setLang(event.target.value as Lang)}
+        className="absolute inset-0 cursor-pointer appearance-none opacity-0"
+      >
+        {LANGUAGES.map((language) => (
+          <option key={language.id} value={language.id} lang={language.id}>
+            {language.name}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 

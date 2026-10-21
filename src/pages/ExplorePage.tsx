@@ -12,6 +12,7 @@ import LoginPrompt from '../components/LoginPrompt'
 import SpaceTabs from '../components/SpaceTabs'
 import FilterSheet from '../components/FilterSheet'
 import { countFilters, readFilters } from '../lib/filters'
+import { useT } from '../i18n/lang'
 
 // Market tiene dos vistas:
 // - Sin búsqueda, categoría ni filtros: la cuadrícula de categorías con sus dibujos (como Vinted).
@@ -22,6 +23,7 @@ function ExplorePage() {
   const { session } = useAuth()
   const [params, setParams] = useSearchParams()
   const [sheetOpen, setSheetOpen] = useState(false)
+  const t = useT()
   const query = params.get('q') ?? ''
   const category = params.get('category') ?? ''
   const filters = readFilters(params)
@@ -72,25 +74,25 @@ function ExplorePage() {
 
   // Las "etiquetas" de los filtros puestos, cada una con su ✕ para quitarla.
   const active: { label: string; clear: Record<string, string> }[] = []
-  if (filters.free) active.push({ label: 'Free', clear: { free: '' } })
+  if (filters.free) active.push({ label: t('Free'), clear: { free: '' } })
   else if (filters.min || filters.max) {
     const label =
       filters.min && filters.max
         ? `${filters.min}–${filters.max} €`
         : filters.max
-          ? `Under ${filters.max} €`
-          : `From ${filters.min} €`
+          ? t('Under {n} €', { n: filters.max })
+          : t('From {n} €', { n: filters.min })
     active.push({ label, clear: { min: '', max: '' } })
   }
   for (const condition of filters.conditions) {
-    active.push({ label: condition, clear: { cond: filters.conditions.filter((c) => c !== condition).join(',') } })
+    active.push({ label: t(condition), clear: { cond: filters.conditions.filter((c) => c !== condition).join(',') } })
   }
-  if (filters.location) active.push({ label: filters.location, clear: { loc: '' } })
-  if (filters.available) active.push({ label: 'Available now', clear: { avail: '' } })
-  if (filters.priceDrop) active.push({ label: 'Price drops', clear: { drop: '' } })
-  if (filters.movingOut) active.push({ label: 'Moving out', clear: { moving: '' } })
+  if (filters.location) active.push({ label: t(filters.location), clear: { loc: '' } })
+  if (filters.available) active.push({ label: t('Available now'), clear: { avail: '' } })
+  if (filters.priceDrop) active.push({ label: t('Price drops'), clear: { drop: '' } })
+  if (filters.movingOut) active.push({ label: t('Moving out'), clear: { moving: '' } })
 
-  const count = data ? `${data.length} ${data.length === 1 ? 'item' : 'items'}` : ''
+  const count = data ? t(data.length === 1 ? '{n} item' : '{n} items', { n: data.length }) : ''
 
   return (
     <div className="space-y-5">
@@ -98,8 +100,8 @@ function ExplorePage() {
 
       {browsing ? (
         <div>
-          <h1 className="text-3xl font-bold">Market</h1>
-          <p className="mt-1 text-sm text-white/60">Furniture, tech, clothes and everything in between.</p>
+          <h1 className="text-3xl font-bold">{t('Market')}</h1>
+          <p className="mt-1 text-sm text-white/60">{t('Furniture, tech, clothes and everything in between.')}</p>
         </div>
       ) : (
         <div>
@@ -107,10 +109,10 @@ function ExplorePage() {
             to="/explore"
             className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm font-medium text-white/70 hover:text-white"
           >
-            <ArrowLeft aria-hidden="true" className="h-4 w-4" /> All categories
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" /> {t('All categories')}
           </Link>
           <h1 className="text-3xl font-bold">
-            {getCategory(category)?.name ?? (query ? 'Search results' : 'All items')}
+            {t(getCategory(category)?.name ?? (query ? 'Search results' : 'All items'))}
           </h1>
         </div>
       )}
@@ -121,14 +123,14 @@ function ExplorePage() {
           <input
             value={query}
             onChange={(event) => update({ q: event.target.value })}
-            aria-label="Search listings"
-            placeholder="Search lamps, bikes, tickets…"
+            aria-label={t('Search listings')}
+            placeholder={t('Search lamps, bikes, tickets…')}
             className="w-full bg-transparent text-sm outline-none placeholder:text-white/50"
           />
           {query && (
             <button
               onClick={() => update({ q: '' })}
-              aria-label="Clear search"
+              aria-label={t('Clear search')}
               className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/60 hover:text-white"
             >
               <X className="h-4 w-4" />
@@ -137,13 +139,13 @@ function ExplorePage() {
         </label>
         <button
           onClick={() => setSheetOpen(true)}
-          aria-label={`Filters${activeCount ? ` (${activeCount} active)` : ''}`}
+          aria-label={activeCount ? t('Filters ({n} active)', { n: activeCount }) : t('Filters')}
           className={`relative flex min-h-12 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold transition ${
             activeCount ? 'btn-primary text-white' : 'glass text-white/85 hover:bg-white/10'
           }`}
         >
           <SlidersHorizontal className="h-4 w-4" />
-          <span className="hidden sm:inline">Filters</span>
+          <span className="hidden sm:inline">{t('Filters')}</span>
           {activeCount > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-bold text-noche">
               {activeCount}
@@ -159,7 +161,7 @@ function ExplorePage() {
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
             {/* "All" enseña todos los anuncios (no vuelve a las tarjetas) */}
             <Chip active={!category} onClick={() => update({ category: '', all: '1' })}>
-              All
+              {t('All')}
             </Chip>
             {categories.map((item) => (
               <Chip
@@ -168,7 +170,7 @@ function ExplorePage() {
                 onClick={() => update({ category: item.slug, all: '' })}
               >
                 <item.icon className="h-4 w-4" aria-hidden="true" />
-                {item.name}
+                {t(item.name)}
               </Chip>
             ))}
           </div>
@@ -179,7 +181,7 @@ function ExplorePage() {
                 <button
                   key={item.label}
                   onClick={() => update(item.clear)}
-                  aria-label={`Remove filter ${item.label}`}
+                  aria-label={t('Remove filter {name}', { name: item.label })}
                   className="flex min-h-9 items-center gap-1.5 rounded-full border border-rosa/40 bg-rojo/15 py-1 pr-2 pl-3 text-xs font-semibold text-white transition hover:bg-rojo/25"
                 >
                   {item.label}
@@ -190,7 +192,7 @@ function ExplorePage() {
                 onClick={clearFilters}
                 className="min-h-9 px-2 text-xs font-semibold text-white/60 underline-offset-4 hover:text-white hover:underline"
               >
-                Clear all
+                {t('Clear all')}
               </button>
             </div>
           )}
@@ -201,7 +203,7 @@ function ExplorePage() {
             <>
               <p className="text-sm text-white/60">
                 {count}
-                {category && data && ` in ${getCategory(category)?.name ?? category}`}
+                {category && data && ` · ${t(getCategory(category)?.name ?? category)}`}
               </p>
 
               <ProductGrid
@@ -210,8 +212,8 @@ function ExplorePage() {
                 error={error}
                 empty={
                   query || category || activeCount
-                    ? 'No items found. Try removing a filter or searching for something else.'
-                    : 'Nothing here yet. Be the first to list something!'
+                    ? t('No items found. Try removing a filter or searching for something else.')
+                    : t('Nothing here yet. Be the first to list something!')
                 }
               />
             </>
@@ -225,7 +227,7 @@ function ExplorePage() {
         onChange={update}
         onClear={clearFilters}
         onClose={closeSheet}
-        resultLabel={loading || !data ? 'Show results' : `Show ${count}`}
+        resultLabel={loading || !data ? t('Show results') : t('Show {count}', { count })}
       />
     </div>
   )
@@ -233,6 +235,7 @@ function ExplorePage() {
 
 // La cuadrícula de categorías: dos columnas en el móvil, más en pantallas grandes.
 function CategoryGrid() {
+  const t = useT()
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
       <Link
@@ -240,8 +243,8 @@ function CategoryGrid() {
         className="group relative col-span-2 flex min-h-28 items-center justify-between overflow-hidden rounded-3xl btn-primary p-5 md:col-span-3 lg:col-span-4"
       >
         <span>
-          <span className="block text-xl font-bold">All items</span>
-          <span className="text-sm text-white/85">Everything for sale on campus, newest first</span>
+          <span className="block text-xl font-bold">{t('All items')}</span>
+          <span className="text-sm text-white/85">{t('Everything for sale on campus, newest first')}</span>
         </span>
         <LayoutGrid aria-hidden="true" className="h-10 w-10 shrink-0 transition duration-300 group-hover:scale-110" />
       </Link>
@@ -255,13 +258,14 @@ function CategoryGrid() {
 // Tarjeta de categoría: el nombre arriba y su dibujo en 3D abajo a la derecha (o el icono si no hay dibujo).
 function CategoryCard({ category }: { category: Category }) {
   const Icon = category.icon
+  const t = useT()
   return (
     <Link
       to={`/explore?category=${category.slug}`}
       className="group relative flex aspect-[4/3.2] flex-col justify-between overflow-hidden rounded-3xl glass p-4 transition duration-300 hover:-translate-y-1 hover:bg-white/10 sm:p-5"
     >
       <span className="relative z-10 text-base leading-snug font-semibold text-balance sm:text-lg">
-        {category.name}
+        {t(category.name)}
       </span>
       {category.image ? (
         <img

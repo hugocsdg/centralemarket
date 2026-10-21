@@ -1,9 +1,7 @@
-import type { Lang } from './lang'
-
 // Todos los textos de la página de introducción (/welcome).
 // Para cambiar una frase, cámbiala aquí: los componentes solo la leen.
-// Hay una versión en inglés (en) y otra en francés (fr), con las mismas claves.
-// En francés va un espacio fino que no se corta antes de ? ! : y del símbolo € (\u00a0).
+// Aquí está la versión en inglés; las demás están en src/i18n/locales/<idioma>.ts (campo intro),
+// con las mismas claves. En francés va un espacio que no se corta antes de ? ! : y del € (\u00a0).
 
 const en = {
   nav: {
@@ -92,7 +90,7 @@ const en = {
     steps: [
       {
         title: 'Sign in with your student email.',
-        text: 'Type your @student-cs.fr address and the code we send you. No password.',
+        text: 'Type your @student-cs.fr address and the code we send you. That’s how we know you’re a student.',
       },
       { title: 'List it in under a minute.', text: 'A few photos, a title, a price. Published.' },
       { title: 'Chat inside the app.', text: 'Buyers message you right here. Your number stays private.' },
@@ -129,126 +127,4 @@ const en = {
 
 export type IntroCopy = typeof en
 
-const fr: IntroCopy = {
-  nav: {
-    skip: 'Passer l’intro',
-    login: 'Se connecter',
-    getStarted: 'Commencer',
-    enter: 'Aller au marché',
-    chapters: 'Chapitres',
-    language: 'Langue',
-  },
-  chapters: {
-    campus: 'Campus',
-    market: 'Le marché',
-    order: 'En ordre',
-    how: 'Comment ça marche',
-    life: 'Ton année',
-    join: 'Rejoindre',
-  },
-  hero: {
-    badge: 'Réservé aux étudiants de CentraleSupélec',
-    titleTop: 'La marketplace du campus',
-    titleBottom: 'que tu attendais.',
-    sub: 'Achète et vends entre étudiants de ton école. La remise se fait sur le campus.',
-    how: 'Comment ça marche',
-    trust: ['Uniquement @student-cs.fr', '0 € de frais, toujours', 'Rendez-vous sur le campus'],
-    windows: 'Chaque fenêtre allumée, c’est quelqu’un qui a quelque chose à vendre.',
-    scroll: 'Défiler',
-  },
-  campus: [
-    {
-      title: 'Ton campus. Le vrai.',
-      text: 'Eiffel, Bréguet, Bouygues et les six résidences du César. Tout se passe ici.',
-    },
-    {
-      title: 'Tout le monde est voisin.',
-      text: 'Ton acheteur vit à la Rés. IV. Ta vendeuse a cours à Bréguet jusqu’à 18 h.',
-    },
-    {
-      title: 'Pas de livraison. Pas d’inconnus.',
-      text: 'Chaque échange est à quelques minutes à pied, et chaque compte est une adresse @student-cs.fr.',
-    },
-  ],
-  market: {
-    title: 'D’une lampe à 8 € à un vélo à 280 €.',
-    text: 'Si ça rentre dans une chambre d’étudiant, quelqu’un le vend sur le campus.',
-    items: [
-      { name: 'Lampe de bureau', price: 8, where: 'À récupérer à la Rés. II' },
-      { name: 'Casque audio', price: 40, where: 'À récupérer à Bréguet' },
-      { name: 'Vélo de ville', price: 280, where: 'À récupérer à la Rés. VI' },
-    ],
-    example: 'Annonces d’exemple',
-  },
-  order: {
-    chaosTitle: 'Sur WhatsApp, tout se perd.',
-    chaosText: 'Des centaines de messages par jour. La lampe à 8 € ? Noyée en quelques minutes.',
-    orderTitle: 'Ici, tout est en ordre.',
-    orderText: 'Chaque objet avec ses photos, son prix et sa catégorie. Facile à chercher. Toujours à jour.',
-    hold: 'Maintiens pour tout ranger',
-    holdHint: 'Garde le bouton appuyé, ou maintiens la barre d’espace.',
-    reducedHold: 'Tout ranger',
-    replay: 'Revenir au chaos',
-    done: 'Rangé. Voilà CentraleMarket.',
-    group: 'Achat-vente campus',
-    members: 'Léa, Tom, Inès, Marco, Yuki…',
-    search: 'Cherche une lampe, un vélo, un bureau…',
-    ticket: { name: 'Place pour le gala', price: 12 },
-    messages: [
-      { who: 'Léa', text: 'Je vends lampe de bureau 8€ 💡 MP', lamp: true },
-      { who: 'Tom', text: 'qqn a une imprimante ??' },
-      { who: 'Inès', text: 'Places soirée vendredi 🎉 12€' },
-      { who: 'Marco', text: 'qui a laissé un vélo à la gare' },
-      { who: 'Yuki', text: 'Je vends chaise 25€, dispo ce soir' },
-      { who: 'Sam', text: 'Pâtes gratuites ce soir 🍝 passez' },
-      { who: 'Pablo', text: 'la lampe est toujours dispo ?' },
-      { who: 'Anna', text: 'Je cherche une bouilloire !!' },
-      { who: 'Hugo', text: 'mini frigo 40€ quelqu’un ?' },
-      { who: 'Chloé', text: 'j’ai perdu mes clés au gymnase 😭' },
-      { who: 'Ali', text: 'vends calculatrice, comme neuve' },
-      { who: 'Emma', text: 'qui va à Paris demain' },
-      { who: 'Noah', text: 'Lot bureau + chaise 35€' },
-      { who: 'Lina', text: 'une place pour le gala ??' },
-      { who: 'Pablo', text: 'allô ?? la lampe ??' },
-    ],
-  },
-  how: {
-    steps: [
-      {
-        title: 'Connecte-toi avec ton email étudiant.',
-        text: 'Tape ton adresse @student-cs.fr et le code qu’on t’envoie. Pas de mot de passe.',
-      },
-      { title: 'Publie en moins d’une minute.', text: 'Quelques photos, un titre, un prix. C’est en ligne.' },
-      { title: 'Discute dans l’app.', text: 'Les acheteurs t’écrivent ici. Ton numéro reste privé.' },
-      { title: 'Rendez-vous sur le campus. Vendu.', text: 'Tu remets l’objet et tu le marques comme vendu. Terminé.' },
-    ],
-    stepLabel: 'Étape',
-    ctaTitle: 'C’est tout.',
-    ctaText: 'Quatre étapes, toutes sur le campus.',
-  },
-  life: {
-    title: 'Pensé pour une année sur le campus.',
-    moments: [
-      { title: 'Arriver.', text: 'Meuble ta chambre en un week-end. D’occasion, à quelques minutes à pied.' },
-      { title: 'Rester.', text: 'Vends ce qui ne te sert plus. Trouve ce qu’il te faut entre deux cours.' },
-      { title: 'Partir.', text: 'Vends avant ton vol retour, pas la veille au soir.' },
-    ],
-    storageTitle: 'Bientôt : Campus Storage.',
-    storageText:
-      'Tu pars avant d’avoir tout vendu ? On aimerait te permettre de stocker tes affaires sur le campus et de continuer à vendre depuis chez toi. Ça dépend de l’école, et on y travaille.',
-  },
-  proof: {
-    title: 'Déjà sur le campus',
-    students: (n: number) => `${n} étudiants de CentraleSupélec l’utilisent déjà.`,
-  },
-  final: {
-    title: 'Allume ta fenêtre.',
-    text: 'Il te faut juste ton email @student-cs.fr. Ça prend 30 secondes.',
-  },
-  footer: {
-    about: 'Une initiative étudiante indépendante pour la communauté CentraleSupélec.',
-    osm: 'Carte © les contributeurs d’OpenStreetMap',
-  },
-}
-
-export const introCopy: Record<Lang, IntroCopy> = { en, fr }
+export const introEn = en

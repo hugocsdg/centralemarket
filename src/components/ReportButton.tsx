@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { CheckCircle2, Flag, X } from 'lucide-react'
 import { LISTING_REASONS, USER_REASONS, sendReport } from '../lib/reports'
 import type { ReportReason, ReportTarget } from '../lib/reports'
+import { useT } from '../i18n/lang'
 
 // Enlace discreto "Report…" que abre un panel para elegir el motivo.
 // Desde abajo en el móvil, ventana centrada en el ordenador (como los filtros).
@@ -29,6 +30,7 @@ function ReportSheet({ target, title, onClose }: { target: ReportTarget; title: 
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'already' | 'error'>('idle')
   const [error, setError] = useState('')
   const closeRef = useRef<HTMLButtonElement>(null)
+  const t = useT()
   const done = status === 'sent' || status === 'already'
   const needsDetails = reason === 'other' && details.trim().length < 5
 
@@ -59,7 +61,7 @@ function ReportSheet({ target, title, onClose }: { target: ReportTarget; title: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" role="dialog" aria-modal="true" aria-label={title}>
-      <button aria-label="Close" tabIndex={-1} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <button aria-label={t('Close')} tabIndex={-1} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       <div className="relative flex max-h-[90dvh] w-full flex-col rounded-t-[2rem] border border-white/10 bg-grafito/95 shadow-2xl backdrop-blur-xl md:max-w-lg md:rounded-[2rem]">
         <span className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-white/20 md:hidden" aria-hidden="true" />
@@ -68,7 +70,7 @@ function ReportSheet({ target, title, onClose }: { target: ReportTarget; title: 
           <button
             ref={closeRef}
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('Close')}
             className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
           >
             <X className="h-5 w-5" />
@@ -79,25 +81,26 @@ function ReportSheet({ target, title, onClose }: { target: ReportTarget; title: 
           <div className="px-5 pt-4 pb-8 text-center" role="status">
             <CheckCircle2 aria-hidden="true" className="mx-auto h-12 w-12 text-emerald-400" />
             <p className="mt-3 text-lg font-bold">
-              {status === 'already' ? 'You already reported this' : 'Thanks, we got your report'}
+              {t(status === 'already' ? 'You already reported this' : 'Thanks, we got your report')}
             </p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-white/70">
-              We review every report. The other person is not told who reported them. If you feel unsafe, stop
-              replying and don’t meet up.
+              {t(
+                'We review every report. The other person is not told who reported them. If you feel unsafe, stop replying and don’t meet up.',
+              )}
             </p>
             <button
               onClick={onClose}
               className="mt-6 min-h-12 w-full rounded-full border border-white/20 px-5 font-semibold hover:border-white/40"
             >
-              Close
+              {t('Close')}
             </button>
           </div>
         ) : (
           <form onSubmit={submit} className="flex min-h-0 flex-col">
             <div className="space-y-4 overflow-y-auto px-5 pb-4">
-              <p className="text-sm text-white/70">What’s wrong? Your report is anonymous.</p>
+              <p className="text-sm text-white/70">{t('What’s wrong? Your report is anonymous.')}</p>
               <fieldset className="space-y-2">
-                <legend className="sr-only">Reason</legend>
+                <legend className="sr-only">{t('Reason')}</legend>
                 {reasons.map((option) => (
                   <label
                     key={option.value}
@@ -114,22 +117,22 @@ function ReportSheet({ target, title, onClose }: { target: ReportTarget; title: 
                       className="h-4 w-4 shrink-0 accent-[var(--color-carmin)]"
                     />
                     <span>
-                      <span className="block font-semibold">{option.label}</span>
-                      <span className="block text-xs text-white/60">{option.hint}</span>
+                      <span className="block font-semibold">{t(option.label)}</span>
+                      <span className="block text-xs text-white/60">{t(option.hint)}</span>
                     </span>
                   </label>
                 ))}
               </fieldset>
               <label className="block">
                 <span className="mb-1 block text-sm font-medium text-white/80">
-                  Details {reason === 'other' ? '' : '(optional)'}
+                  {t(reason === 'other' ? 'Details' : 'Details (optional)')}
                 </span>
                 <textarea
                   value={details}
                   onChange={(event) => setDetails(event.target.value)}
                   maxLength={500}
                   rows={3}
-                  placeholder="Anything that helps us understand what happened"
+                  placeholder={t('Anything that helps us understand what happened')}
                   className="w-full resize-none rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/50 focus:border-rosa"
                 />
               </label>
@@ -137,14 +140,14 @@ function ReportSheet({ target, title, onClose }: { target: ReportTarget; title: 
             <div className="border-t border-white/10 px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               {status === 'error' && (
                 <p role="alert" className="mb-3 rounded-xl bg-rojo/20 px-4 py-2 text-sm text-rosa">
-                  {error}
+                  {t(error)}
                 </p>
               )}
               <button
                 disabled={!reason || needsDetails || status === 'sending'}
                 className="min-h-12 w-full rounded-full btn-primary px-5 py-3 font-semibold disabled:opacity-50"
               >
-                {status === 'sending' ? 'Sending…' : 'Send report'}
+                {t(status === 'sending' ? 'Sending…' : 'Send report')}
               </button>
             </div>
           </form>

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { deleteAccount } from '../lib/account'
+import { useT } from '../i18n/lang'
 
 const CONFIRM_WORD = 'DELETE'
 
@@ -15,6 +16,7 @@ function DeleteAccountPage() {
   const [status, setStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
   const [error, setError] = useState('')
   const ready = typed.trim().toUpperCase() === CONFIRM_WORD
+  const t = useT()
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -26,7 +28,7 @@ function DeleteAccountPage() {
       navigate('/welcome', { replace: true })
     } catch (err) {
       setStatus('error')
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setError(t(err instanceof Error ? err.message : 'Something went wrong. Please try again.'))
     }
   }
 
@@ -36,10 +38,10 @@ function DeleteAccountPage() {
         to="/profile"
         className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm font-medium text-white/70 hover:text-white"
       >
-        <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Profile
+        <ArrowLeft aria-hidden="true" className="h-4 w-4" /> {t('Profile')}
       </Link>
-      <h1 className="mt-2 text-3xl font-bold">Delete your account</h1>
-      <p className="mt-3 text-white/75">This can't be undone. Everything linked to your account is deleted for good:</p>
+      <h1 className="mt-2 text-3xl font-bold">{t('Delete your account')}</h1>
+      <p className="mt-3 text-white/75">{t("This can't be undone. Everything linked to your account is deleted for good:")}</p>
       <ul className="mt-4 space-y-2 rounded-3xl glass p-6 text-white/80">
         {[
           'Your profile and profile photo',
@@ -49,18 +51,18 @@ function DeleteAccountPage() {
         ].map((item) => (
           <li key={item} className="flex gap-3">
             <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-carmin" />
-            {item}
+            {t(item)}
           </li>
         ))}
       </ul>
       <p className="mt-4 text-sm text-white/60">
-        You can create a new account later with the same @student-cs.fr email, but it will start empty.
+        {t('You can create a new account later with the same @student-cs.fr email, but it will start empty.')}
       </p>
 
       <form onSubmit={submit} className="mt-8 space-y-4">
         <label className="block">
           <span className="mb-1 block text-sm font-medium text-white/80">
-            Type <strong className="text-white">{CONFIRM_WORD}</strong> to confirm
+            {t('Type')} <strong className="text-white">{CONFIRM_WORD}</strong> {t('to confirm')}
           </span>
           <input
             value={typed}
@@ -84,13 +86,13 @@ function DeleteAccountPage() {
             className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-rojo px-5 font-semibold text-white transition hover:bg-carmin disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Trash2 aria-hidden="true" className="h-5 w-5" />
-            {status === 'deleting' ? 'Deleting your account…' : 'Delete my account'}
+            {t(status === 'deleting' ? 'Deleting your account…' : 'Delete my account')}
           </button>
           <Link
             to="/profile"
             className="flex min-h-12 items-center justify-center rounded-full border border-white/20 px-5 font-semibold text-white/85 hover:border-white/40"
           >
-            Cancel
+            {t('Cancel')}
           </Link>
         </div>
       </form>

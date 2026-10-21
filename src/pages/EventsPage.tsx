@@ -8,6 +8,8 @@ import { useQuery } from '../lib/useQuery'
 import SpaceTabs from '../components/SpaceTabs'
 import EventCard from '../components/EventCard'
 import LoginPrompt from '../components/LoginPrompt'
+import { useT } from '../i18n/lang'
+import { currentLocale } from '../i18n/core'
 
 // Cuántos días se enseñan en la tira de fechas.
 const DAYS = 14
@@ -40,6 +42,7 @@ function EventsPage() {
   const { session } = useAuth()
   const [params, setParams] = useSearchParams()
   const day = params.get('day') ?? ''
+  const t = useT()
   const { data, loading, error } = useQuery(session ? 'events' : null, () => fetchEvents())
 
   const days = Array.from({ length: DAYS }, (_, index) => startOfDay(index))
@@ -58,19 +61,20 @@ function EventsPage() {
 
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold md:text-4xl">Events</h1>
-          <p className="mt-1 text-sm text-white/60">Parties, concerts and gigs — tickets from fellow students.</p>
+          <h1 className="text-3xl font-bold md:text-4xl">{t('Events')}</h1>
+          <p className="mt-1 text-sm text-white/60">{t('Parties, concerts and gigs — tickets from fellow students.')}</p>
         </div>
         <Link
           to="/sell?category=tickets"
           className="btn-primary flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-semibold"
         >
-          <Plus className="h-4 w-4" /> Sell<span className="hidden sm:inline">&nbsp;a ticket</span>
+          <Plus className="h-4 w-4" /> <span className="sm:hidden">{t('Sell')}</span>
+          <span className="hidden sm:inline">{t('Sell a ticket')}</span>
         </Link>
       </div>
 
       {/* Tira de fechas: toca un día para ver solo sus eventos */}
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label="Pick a day">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label={t('Pick a day')}>
         <button
           onClick={() => pickDay('')}
           aria-pressed={!day}
@@ -78,7 +82,7 @@ function EventsPage() {
             !day ? 'btn-primary text-white' : 'glass text-white/80 hover:bg-white/10'
           }`}
         >
-          All
+          {t('All')}
         </button>
         {days.map((date, index) => {
           const key = dayKey(date)
@@ -89,13 +93,13 @@ function EventsPage() {
               key={key}
               onClick={() => pickDay(key)}
               aria-pressed={active}
-              aria-label={date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+              aria-label={date.toLocaleDateString(currentLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}
               className={`relative flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-2xl leading-none transition ${
                 active ? 'btn-primary text-white' : 'glass text-white/80 hover:bg-white/10'
               }`}
             >
               <span className={`text-[11px] font-bold ${active ? 'text-white/85' : 'text-white/60'}`}>
-                {index === 0 ? 'TODAY' : badge.weekday}
+                {index === 0 ? t('TODAY') : badge.weekday}
               </span>
               <span className="mt-1 font-display text-xl font-bold">{badge.day}</span>
               {busyDays.has(key) && !active && (
@@ -107,9 +111,9 @@ function EventsPage() {
       </div>
 
       {!session ? (
-        <LoginPrompt title="See what's on around campus" />
+        <LoginPrompt title={t("See what's on around campus")} />
       ) : error ? (
-        <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{error}</p>
+        <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{t(error)}</p>
       ) : loading || !shown ? (
         <div className="space-y-4">
           <div className="glass aspect-[4/5] animate-pulse rounded-3xl sm:aspect-[16/9]" />
@@ -122,12 +126,12 @@ function EventsPage() {
       ) : shown.length === 0 ? (
         <div className="glass rounded-3xl p-10 text-center">
           <PartyPopper className="mx-auto h-9 w-9 text-rosa" />
-          <h2 className="mt-3 text-xl font-bold">{day ? 'Nothing on that day (yet)' : 'No upcoming events yet'}</h2>
+          <h2 className="mt-3 text-xl font-bold">{t(day ? 'Nothing on that day (yet)' : 'No upcoming events yet')}</h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-white/60">
-            Organising a party or can't make it to a concert? Put your tickets here — students will find them.
+            {t("Organising a party or can't make it to a concert? Put your tickets here — students will find them.")}
           </p>
           <Link to="/sell?category=tickets" className="btn-primary mt-5 inline-block rounded-full px-5 py-2.5 text-sm font-semibold">
-            Sell a ticket
+            {t('Sell a ticket')}
           </Link>
         </div>
       ) : day ? (
@@ -139,12 +143,12 @@ function EventsPage() {
       ) : (
         <div className="space-y-10">
           <section>
-            <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-rosa uppercase">Next up</p>
+            <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-rosa uppercase">{t('Next up')}</p>
             <EventCard listing={featured} featured />
           </section>
           {groupEvents(rest).map((group) => (
             <section key={group.title}>
-              <h2 className="mb-4 text-2xl font-bold">{group.title}</h2>
+              <h2 className="mb-4 text-2xl font-bold">{t(group.title)}</h2>
               <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {group.events.map((event) => (
                   <EventCard key={event.id} listing={event} />
@@ -156,7 +160,7 @@ function EventsPage() {
       )}
 
       <p className="text-center text-xs text-white/60">
-        Tickets are resold by students. Only buy tickets the organiser allows to be resold, and meet in person to check them.
+        {t('Tickets are resold by students. Only buy tickets the organiser allows to be resold, and meet in person to check them.')}
       </p>
     </div>
   )

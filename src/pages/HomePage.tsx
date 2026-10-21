@@ -21,6 +21,7 @@ import Reveal from '../components/Reveal'
 import { fetchListings } from '../lib/listings'
 import { useAuth } from '../lib/auth'
 import { useQuery } from '../lib/useQuery'
+import { useT } from '../i18n/lang'
 
 // Categorías destacadas en la cuadrícula "bento" (cajas de distintos tamaños).
 const BENTO = [
@@ -66,6 +67,7 @@ const STEPS = [
 
 function HomePage() {
   const navigate = useNavigate()
+  const t = useT()
   // Los anuncios solo se piden si has iniciado sesión (las reglas de Supabase lo exigen).
   const { session } = useAuth()
   const fresh = useQuery(session ? 'home-fresh' : null, () => fetchListings({ limit: 8 }))
@@ -93,17 +95,16 @@ function HomePage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-carmin opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-carmin" />
             </span>
-            Made for CentraleSupélec students
+            {t('Made for CentraleSupélec students')}
           </span>
 
           <h1 className="mt-6 text-5xl leading-[0.95] font-bold sm:text-6xl lg:text-7xl">
-            Your campus.
-            <span className="text-shine block pb-2">Your marketplace.</span>
+            {t('Your campus.')}
+            <span className="text-shine block pb-2">{t('Your marketplace.')}</span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-md text-base text-white/65 md:mx-0 md:text-lg">
-            Buy, sell and discover great deals from fellow students. Furniture, tech, tickets, homemade food — all in
-            one place.
+            {t('Buy, sell and discover great deals from fellow students. Furniture, tech, tickets, homemade food — all in one place.')}
           </p>
 
           <form
@@ -113,11 +114,11 @@ function HomePage() {
             <Search className="h-5 w-5 shrink-0 text-white/60 transition group-focus-within:text-rosa" />
             <input
               name="q"
-              aria-label="Search listings"
-              placeholder="What are you looking for?"
+              aria-label={t('Search listings')}
+              placeholder={t('What are you looking for?')}
               className="w-full bg-transparent py-2 text-white outline-none placeholder:text-white/50"
             />
-            <button className="btn-primary shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold">Search</button>
+            <button className="btn-primary shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold">{t('Search')}</button>
           </form>
 
           <div className="mt-5 flex flex-wrap justify-center gap-3 md:justify-start">
@@ -125,11 +126,11 @@ function HomePage() {
               to="/explore"
               className="group flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-noche transition hover:bg-white/90"
             >
-              Explore marketplace
+              {t('Explore marketplace')}
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
             </Link>
             <Link to="/sell" className="glass rounded-full px-6 py-3 text-sm font-semibold transition hover:bg-white/10">
-              Start selling
+              {t('Start selling')}
             </Link>
           </div>
         </div>
@@ -145,7 +146,7 @@ function HomePage() {
               className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm whitespace-nowrap text-white/75 transition hover:text-white"
             >
               <Icon className="h-4 w-4 text-rosa" />
-              {name}
+              {t(name)}
             </Link>
           ))}
         </div>
@@ -165,10 +166,10 @@ function HomePage() {
                 <Icon className="h-7 w-7" />
               </span>
               <div className="relative mt-8">
-                <h2 className="text-3xl font-bold md:text-4xl">{title}</h2>
-                <p className="mt-2 max-w-sm text-white/65">{text}</p>
+                <h2 className="text-3xl font-bold md:text-4xl">{t(title)}</h2>
+                <p className="mt-2 max-w-sm text-white/65">{t(text)}</p>
                 <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
-                  {cta} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                  {t(cta)} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                 </span>
               </div>
             </Link>
@@ -179,7 +180,7 @@ function HomePage() {
       {/* ---------- Categorías en "bento" ---------- */}
       <section>
         <Reveal>
-          <SectionTitle eyebrow="Browse" title="Everything a student needs" />
+          <SectionTitle eyebrow={t('Browse')} title={t('Everything a student needs')} />
         </Reveal>
         <div className="grid auto-rows-[9.5rem] grid-cols-2 gap-3 md:auto-rows-[11rem] md:grid-cols-4 md:gap-4">
           {BENTO.map(({ slug, blurb, className }, index) => {
@@ -204,8 +205,8 @@ function HomePage() {
                     <Icon className={big ? 'h-7 w-7' : 'h-5 w-5'} />
                   </span>
                   <div className="relative">
-                    <h3 className={`font-semibold ${big ? 'text-2xl md:text-3xl' : 'text-lg'}`}>{category.name}</h3>
-                    <p className={`text-white/55 ${big ? 'mt-1 text-sm md:text-base' : 'line-clamp-1 text-xs'}`}>{blurb}</p>
+                    <h3 className={`font-semibold ${big ? 'text-2xl md:text-3xl' : 'text-lg'}`}>{t(category.name)}</h3>
+                    <p className={`text-white/55 ${big ? 'mt-1 text-sm md:text-base' : 'line-clamp-1 text-xs'}`}>{t(blurb)}</p>
                   </div>
                   <ArrowUpRight className="absolute top-5 right-5 h-5 w-5 text-white/30 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-white" />
                 </Link>
@@ -223,7 +224,7 @@ function HomePage() {
                 to={categoryLink(slug)}
                 className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white/75 transition hover:text-white"
               >
-                <Icon className="h-4 w-4 text-rosa" /> {category.name}
+                <Icon className="h-4 w-4 text-rosa" /> {t(category.name)}
               </Link>
             )
           })}
@@ -233,19 +234,19 @@ function HomePage() {
       {/* ---------- Lo más nuevo ---------- */}
       <section>
         <Reveal>
-          <SectionTitle eyebrow="Just listed" title="Fresh on CentraleMarket" link />
+          <SectionTitle eyebrow={t('Just listed')} title={t('Fresh on CentraleMarket')} link />
         </Reveal>
         {session ? (
           <ProductGrid listings={fresh.data} loading={fresh.loading} error={fresh.error} />
         ) : (
-          <LoginPrompt title="See what students are selling" />
+          <LoginPrompt title={t('See what students are selling')} />
         )}
       </section>
 
       {/* ---------- Cómo funciona ---------- */}
       <section>
         <Reveal>
-          <SectionTitle eyebrow="How it works" title="Sell it in three steps" />
+          <SectionTitle eyebrow={t('How it works')} title={t('Sell it in three steps')} />
         </Reveal>
         <div className="grid gap-4 md:grid-cols-3">
           {STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -255,8 +256,8 @@ function HomePage() {
                   0{index + 1}
                 </span>
                 <Icon className="h-7 w-7 text-rosa" />
-                <h3 className="mt-6 text-xl font-semibold">{title}</h3>
-                <p className="mt-2 text-sm text-white/60">{text}</p>
+                <h3 className="mt-6 text-xl font-semibold">{t(title)}</h3>
+                <p className="mt-2 text-sm text-white/60">{t(text)}</p>
               </div>
             </Reveal>
           ))}
@@ -272,17 +273,16 @@ function HomePage() {
             <div className="absolute -bottom-20 -left-10 h-60 w-60 rounded-full bg-carmin/30 blur-3xl" />
             <div className="relative">
               <Truck className="h-8 w-8 text-rosa" />
-              <h2 className="mt-4 text-3xl font-bold md:text-4xl">Leaving campus soon?</h2>
+              <h2 className="mt-4 text-3xl font-bold md:text-4xl">{t('Leaving campus soon?')}</h2>
               <p className="mt-2 max-w-md text-white/65">
-                Don't throw it away and don't stress. List your furniture in minutes and hand it over before you fly
-                home.
+                {t("Don't throw it away and don't stress. List your furniture in minutes and hand it over before you fly home.")}
               </p>
             </div>
             <Link
               to="/sell"
               className="group relative flex shrink-0 items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-noche transition hover:bg-white/90"
             >
-              Sell your items <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              {t('Sell your items')} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
             </Link>
           </div>
         </section>
@@ -292,7 +292,7 @@ function HomePage() {
       {session && cheap.data && cheap.data.length > 0 && (
         <section>
           <Reveal>
-            <SectionTitle eyebrow="Student budget" title="Great finds under €20" link />
+            <SectionTitle eyebrow={t('Student budget')} title={t('Great finds under €20')} link />
           </Reveal>
           <ProductGrid listings={cheap.data} />
         </section>
@@ -305,14 +305,13 @@ function HomePage() {
             <Leaf className="h-7 w-7 text-plata" />
           </span>
           <h2 className="text-3xl font-bold md:text-4xl">
-            Give your things a <span className="text-shine">second life.</span>
+            {t('Give your things a')} <span className="text-shine">{t('second life.')}</span>
           </h2>
           <p className="max-w-xl text-white/60">
-            Every lamp, chair or bike that changes hands on campus is one less thing thrown away — and one less thing
-            bought new.
+            {t('Every lamp, chair or bike that changes hands on campus is one less thing thrown away — and one less thing bought new.')}
           </p>
           <Link to="/sell" className="btn-primary mt-2 flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold">
-            <Sparkles className="h-4 w-4" /> List something now
+            <Sparkles className="h-4 w-4" /> {t('List something now')}
           </Link>
         </section>
       </Reveal>
@@ -321,6 +320,7 @@ function HomePage() {
 }
 
 function SectionTitle({ eyebrow, title, link }: { eyebrow: string; title: string; link?: boolean }) {
+  const t = useT()
   return (
     <div className="mb-6 flex items-end justify-between gap-4">
       <div>
@@ -332,7 +332,7 @@ function SectionTitle({ eyebrow, title, link }: { eyebrow: string; title: string
           to="/explore"
           className="group flex shrink-0 items-center gap-1 text-sm font-semibold text-white/70 transition hover:text-white"
         >
-          See all <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          {t('See all')} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
         </Link>
       )}
     </div>

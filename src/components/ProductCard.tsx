@@ -4,6 +4,7 @@ import { formatPrice } from '../lib/format'
 import { imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import FavoriteButton from './FavoriteButton'
+import { useT } from '../i18n/lang'
 
 type ProductCardProps = {
   listing: Listing
@@ -12,6 +13,7 @@ type ProductCardProps = {
 // Tarjeta de anuncio: foto grande, precio flotando sobre la foto y borde que brilla al pasar el ratón.
 // El corazón va encima de la tarjeta (no dentro del enlace: un botón no puede ir dentro de un enlace).
 function ProductCard({ listing }: ProductCardProps) {
+  const t = useT()
   const cover = listing.images[0]
   // Ha bajado de precio (la base de datos guarda el precio de antes).
   const dropped = listing.previous_price != null && listing.previous_price > listing.price
@@ -38,18 +40,18 @@ function ProductCard({ listing }: ProductCardProps) {
           <div className="absolute top-2 right-12 left-2 flex flex-wrap gap-1">
             {listing.status !== 'available' && (
               <span className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-noche capitalize">
-                {listing.status}
+                {t(listing.status === 'sold' ? 'Sold' : 'Reserved')}
               </span>
             )}
             {listing.price === 0 && (
-              <span className="btn-primary rounded-full px-2.5 py-0.5 text-[11px] font-bold">FREE</span>
+              <span className="btn-primary rounded-full px-2.5 py-0.5 text-[11px] font-bold">{t('FREE')}</span>
             )}
             {dropped && (
-              <span className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-carmin">Price drop</span>
+              <span className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-carmin">{t('Price drop')}</span>
             )}
             {listing.moving_out && (
               <span className="rounded-full bg-noche/70 px-2.5 py-0.5 text-[11px] font-semibold backdrop-blur-md">
-                Moving out
+                {t('Moving out')}
               </span>
             )}
           </div>
@@ -67,7 +69,7 @@ function ProductCard({ listing }: ProductCardProps) {
           <p className="mt-0.5 flex items-center gap-1 text-xs text-white/60">
             {listing.condition && (
               <>
-                <span>{listing.condition}</span>
+                <span>{t(listing.condition)}</span>
                 <span>·</span>
               </>
             )}

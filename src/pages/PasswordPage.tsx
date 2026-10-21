@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { ArrowLeft, CheckCircle2, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import { useT } from '../i18n/lang'
 
 // Crear o cambiar tu contraseña (/profile/password).
 // - ?welcome=1: justo después de crear la cuenta.
@@ -21,6 +22,7 @@ function PasswordPage() {
   const welcome = params.has('welcome')
   const reset = params.has('reset')
   const hasPassword = session?.user.user_metadata?.has_password === true
+  const t = useT()
 
   const [password, setPassword] = useState('')
   const [repeat, setRepeat] = useState('')
@@ -51,7 +53,7 @@ function PasswordPage() {
     const { error } = await supabase.auth.updateUser({ password, data: { has_password: true } })
     if (error) {
       setStatus('error')
-      setError(friendlyError(error.message))
+      setError(t(friendlyError(error.message)))
       return
     }
     setStatus('saved')
@@ -65,24 +67,24 @@ function PasswordPage() {
           to="/profile"
           className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm font-medium text-white/70 hover:text-white"
         >
-          <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Profile
+          <ArrowLeft aria-hidden="true" className="h-4 w-4" /> {t('Profile')}
         </Link>
       )}
       <div className="mt-2 rounded-3xl glass p-8">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <p className="mt-2 text-sm text-white/70">{intro}</p>
+        <h1 className="text-2xl font-bold">{t(title)}</h1>
+        <p className="mt-2 text-sm text-white/70">{t(intro)}</p>
 
         {status === 'saved' && !welcome && !reset ? (
           <p
             role="status"
             className="mt-6 flex items-center gap-2 rounded-xl bg-emerald-500/15 px-4 py-3 text-emerald-300"
           >
-            <CheckCircle2 aria-hidden="true" className="h-5 w-5" /> Password saved.
+            <CheckCircle2 aria-hidden="true" className="h-5 w-5" /> {t('Password saved.')}
           </p>
         ) : (
           <form onSubmit={submit} className="mt-6 space-y-4">
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-white/80">New password</span>
+              <span className="mb-1 block text-sm font-medium text-white/80">{t('New password')}</span>
               <div className="relative">
                 <input
                   type={show ? 'text' : 'password'}
@@ -95,19 +97,19 @@ function PasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShow((value) => !value)}
-                  aria-label={show ? 'Hide password' : 'Show password'}
+                  aria-label={t(show ? 'Hide password' : 'Show password')}
                   className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-white/60 hover:text-white"
                 >
                   {show ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
               <span className={`mt-1 block text-xs ${tooShort ? 'text-rosa' : 'text-white/60'}`}>
-                At least {MIN} characters.
+                {t('At least {n} characters.', { n: MIN })}
               </span>
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-white/80">Repeat it</span>
+              <span className="mb-1 block text-sm font-medium text-white/80">{t('Repeat it')}</span>
               <input
                 type={show ? 'text' : 'password'}
                 required
@@ -116,7 +118,7 @@ function PasswordPage() {
                 onChange={(event) => setRepeat(event.target.value)}
                 className={inputClass}
               />
-              {mismatch && <span className="mt-1 block text-xs text-rosa">The two passwords don't match.</span>}
+              {mismatch && <span className="mt-1 block text-xs text-rosa">{t("The two passwords don't match.")}</span>}
             </label>
 
             {status === 'error' && (
@@ -129,7 +131,7 @@ function PasswordPage() {
               disabled={!ready || status === 'saving'}
               className="min-h-12 w-full rounded-full btn-primary px-5 py-3 font-semibold text-white disabled:opacity-50"
             >
-              {status === 'saving' ? 'Saving…' : 'Save password'}
+              {t(status === 'saving' ? 'Saving…' : 'Save password')}
             </button>
 
             {(welcome || reset) && (
@@ -138,7 +140,7 @@ function PasswordPage() {
                 replace
                 className="flex min-h-11 items-center justify-center text-sm text-white/60 hover:text-white"
               >
-                Skip for now
+                {t('Skip for now')}
               </Link>
             )}
           </form>
@@ -152,7 +154,7 @@ function friendlyError(message: string) {
   const text = message.toLowerCase()
   if (text.includes('same')) return 'That is already your password. Choose a different one.'
   if (text.includes('weak') || text.includes('at least'))
-    return `Choose a stronger password (at least ${MIN} characters).`
+    return 'Choose a stronger password (at least 8 characters).'
   if (text.includes('reauthentication') || text.includes('recent')) {
     return 'For security, log out and log in again with a code, then change your password.'
   }

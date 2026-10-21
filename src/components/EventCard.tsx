@@ -4,10 +4,12 @@ import { dateBadge, formatPrice } from '../lib/format'
 import { imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import FavoriteButton from './FavoriteButton'
+import { useT } from '../i18n/lang'
 
 // Cartel de un evento: la foto ocupa todo, con la fecha "de calendario" arriba y los datos abajo.
 // "featured" = el grande de arriba del todo en la pantalla de eventos.
 function EventCard({ listing, featured = false }: { listing: Listing; featured?: boolean }) {
+  const t = useT()
   const cover = listing.images[0]
   const badge = listing.event_at ? dateBadge(listing.event_at) : null
   const time = listing.event_at
@@ -49,7 +51,7 @@ function EventCard({ listing, featured = false }: { listing: Listing; featured?:
 
         <div className={`absolute inset-x-0 bottom-0 p-4 ${featured ? 'sm:p-7' : ''}`}>
           {listing.status === 'reserved' && (
-            <span className="mb-2 inline-block rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-noche">Reserved</span>
+            <span className="mb-2 inline-block rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-noche">{t('Reserved')}</span>
           )}
           <h3 className={`font-bold leading-tight ${featured ? 'text-2xl sm:text-4xl' : 'line-clamp-2 text-base'}`}>
             {listing.title}
@@ -69,8 +71,8 @@ function EventCard({ listing, featured = false }: { listing: Listing; featured?:
               <Ticket className="h-4 w-4" aria-hidden="true" /> {formatPrice(listing.price)}
             </span>
             {listing.quantity !== null && (
-              <span className={`text-right text-xs font-semibold ${fewLeft ? 'text-rosa' : 'text-white/60'}`}>
-                {listing.quantity} left
+              <span className={`text-right text-xs font-semibold whitespace-nowrap ${fewLeft ? 'text-rosa' : 'text-white/60'}`}>
+                {t('{n} left', { n: listing.quantity })}
               </span>
             )}
           </div>

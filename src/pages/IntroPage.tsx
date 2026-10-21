@@ -16,7 +16,6 @@ import { useAuth } from '../lib/auth'
 import { markIntroSeen } from '../lib/intro'
 import { forceDarkTheme } from '../lib/theme'
 import { useLang } from '../i18n/lang'
-import { introCopy } from '../i18n/intro'
 import { socialProof } from '../data/socialProof'
 
 // Página de presentación (/welcome): cuenta qué es CentraleMarket mientras haces scroll.
@@ -37,8 +36,7 @@ const YEAR = new Date().getFullYear()
 function IntroPage() {
   const root = useRef<HTMLDivElement>(null)
   const { session } = useAuth()
-  const { lang } = useLang()
-  const copy = introCopy[lang]
+  const { lang, intro: copy } = useLang()
 
   useIntroAnimations(root)
 

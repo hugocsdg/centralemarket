@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Share, SquarePlus, X } from 'lucide-react'
 import { canPromptInstall, isInstalled, isIOS, onInstallChange, promptInstall } from '../lib/install'
+import { useT } from '../i18n/lang'
 
 const KEY = 'cm-install-dismissed'
 
@@ -19,6 +20,7 @@ function InstallAppBanner() {
   const [androidReady, setAndroidReady] = useState(canPromptInstall)
   const [showSteps, setShowSteps] = useState(false)
   const ios = isIOS()
+  const t = useT()
 
   useEffect(() => onInstallChange(() => setAndroidReady(canPromptInstall())), [])
 
@@ -34,17 +36,17 @@ function InstallAppBanner() {
   }
 
   return (
-    <section aria-label="Install the app" className="mb-6 rounded-3xl glass p-4 md:hidden">
+    <section aria-label={t('Install the app')} className="mb-6 rounded-3xl glass p-4 md:hidden">
       <div className="flex items-center gap-3">
         <img src="/app-icon-192.png" alt="" width={48} height={48} className="h-12 w-12 shrink-0 rounded-xl" />
         <div className="min-w-0 flex-1">
-          <h2 className="font-bold">Get the app</h2>
-          <p className="text-sm text-white/60">Add CentraleMarket to your home screen. Free, no store needed.</p>
+          <h2 className="font-bold">{t('Get the app')}</h2>
+          <p className="text-sm text-white/60">{t('Add CentraleMarket to your home screen. Free, no store needed.')}</p>
         </div>
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Close"
+          aria-label={t('Close')}
           className="-mt-2 -mr-2 flex h-11 w-11 shrink-0 items-center justify-center self-start rounded-full text-white/60 hover:text-white"
         >
           <X aria-hidden="true" className="h-5 w-5" />
@@ -59,8 +61,8 @@ function InstallAppBanner() {
                 1
               </span>
               <p className="leading-6">
-                In Safari, tap <Share aria-hidden="true" className="inline h-4 w-4 align-[-3px] text-rosa" />{' '}
-                <strong>Share</strong> at the bottom of the screen.
+                {t('In Safari, tap')} <Share aria-hidden="true" className="inline h-4 w-4 align-[-3px] text-rosa" />{' '}
+                <strong>{t('Share')}</strong> {t('at the bottom of the screen.')}
               </p>
             </li>
             <li className="flex items-start gap-2">
@@ -68,8 +70,8 @@ function InstallAppBanner() {
                 2
               </span>
               <p className="leading-6">
-                Tap <SquarePlus aria-hidden="true" className="inline h-4 w-4 align-[-3px] text-rosa" />{' '}
-                <strong>Add to Home Screen</strong>.
+                {t('Tap')} <SquarePlus aria-hidden="true" className="inline h-4 w-4 align-[-3px] text-rosa" />{' '}
+                <strong>{t('Add to Home Screen')}</strong>.
               </p>
             </li>
           </ol>
@@ -79,7 +81,7 @@ function InstallAppBanner() {
             onClick={() => setShowSteps(true)}
             className="mt-4 flex min-h-11 w-full items-center justify-center rounded-full btn-primary text-sm font-semibold"
           >
-            Show me how
+            {t('Show me how')}
           </button>
         )
       ) : (
@@ -90,7 +92,7 @@ function InstallAppBanner() {
           }}
           className="mt-4 flex min-h-11 w-full items-center justify-center rounded-full btn-primary text-sm font-semibold"
         >
-          Install
+          {t('Install')}
         </button>
       )}
     </section>

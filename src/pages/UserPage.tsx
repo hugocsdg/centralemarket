@@ -12,6 +12,8 @@ import LoginPrompt from '../components/LoginPrompt'
 import { RatingSummary, Stars } from '../components/Rating'
 import ReportButton from '../components/ReportButton'
 import NotFoundPage from './NotFoundPage'
+import { useT } from '../i18n/lang'
+import { currentLocale } from '../i18n/core'
 
 async function fetchPublicProfile(id: string) {
   const { data, error } = await supabase
@@ -30,6 +32,7 @@ function UserPage() {
   // "/user/me" = mi propio perfil público (desde Profile → My reviews).
   const id = param === 'me' ? (session?.user.id ?? '') : param
   const signedIn = Boolean(session)
+  const t = useT()
   const profile = useQuery(signedIn ? `user|${id}` : null, () => fetchPublicProfile(id))
   const rating = useQuery(signedIn ? `rating|${id}` : null, () => fetchSellerRating(id))
   // Si aún no se ha ejecutado el SQL de valoraciones, simplemente no hay valoraciones.
@@ -39,17 +42,17 @@ function UserPage() {
   if (!signedIn) {
     return (
       <div className="mx-auto max-w-md pt-6">
-        <LoginPrompt title="Log in to see this profile" />
+        <LoginPrompt title={t('Log in to see this profile')} />
       </div>
     )
   }
-  if (profile.loading) return <p className="py-20 text-center text-white/60">Loading…</p>
-  if (profile.error) return <p className="py-20 text-center text-rosa">{profile.error}</p>
+  if (profile.loading) return <p className="py-20 text-center text-white/60">{t('Loading…')}</p>
+  if (profile.error) return <p className="py-20 text-center text-rosa">{t(profile.error)}</p>
   if (!profile.data) return <NotFoundPage />
 
   const person = profile.data
   const isMe = person.id === session?.user.id
-  const memberSince = new Date(person.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const memberSince = new Date(person.created_at).toLocaleDateString(currentLocale(), { month: 'long', year: 'numeric' })
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -57,7 +60,7 @@ function UserPage() {
         <Avatar name={person.display_name} url={person.avatar_url} className="h-24 w-24 text-4xl" />
         <div className="flex-1 space-y-1">
           <h1 className="text-3xl font-bold">{person.display_name}</h1>
-          <p className="text-sm text-white/60">CentraleSupélec student · member since {memberSince}</p>
+          <p className="text-sm text-white/60">{t('CentraleSupélec student · member since {date}', { date: memberSince })}</p>
           <div className="flex justify-center sm:justify-start">
             {rating.data !== undefined && <RatingSummary rating={rating.data} />}
           </div>
@@ -67,13 +70,13 @@ function UserPage() {
             to="/profile/me"
             className="flex min-h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-sm font-semibold hover:border-white/40"
           >
-            <Pencil className="h-4 w-4" /> Edit profile
+            <Pencil className="h-4 w-4" /> {t('Edit profile')}
           </Link>
         )}
       </div>
 
       <section>
-        <h2 className="mb-4 text-2xl font-bold">Reviews</h2>
+        <h2 className="mb-4 text-2xl font-bold">{t('Reviews')}</h2>
         {reviews.data && reviews.data.length > 0 ? (
           <ul className="grid gap-3 md:grid-cols-2">
             {reviews.data.map((review) => (
@@ -83,7 +86,7 @@ function UserPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{review.reviewer?.display_name}</p>
                     <p className="truncate text-xs text-white/60">
-                      Bought {review.listing?.title ?? 'an item'} · {formatPosted(review.created_at).toLowerCase()}
+                      {t('Bought {title}', { title: review.listing?.title ?? t('an item') })} · {formatPosted(review.created_at).toLowerCase()}
                     </p>
                   </div>
                   <Stars value={review.rating} className="h-3.5 w-3.5" />
@@ -95,24 +98,24 @@ function UserPage() {
         ) : (
           <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">
             <MessageSquareQuote className="mx-auto mb-2 h-6 w-6 text-rosa" />
-            {reviews.loading ? 'Loading reviews…' : 'No reviews yet. Reviews appear after a completed sale.'}
+            {t(reviews.loading ? 'Loading reviews…' : 'No reviews yet. Reviews appear after a completed sale.')}
           </div>
         )}
       </section>
 
       <section>
-        <h2 className="mb-4 text-2xl font-bold">{isMe ? 'Your listings' : `On sale by ${person.display_name}`}</h2>
+        <h2 className="mb-4 text-2xl font-bold">{isMe ? t('Your listings') : t('On sale by {name}', { name: person.display_name })}</h2>
         <ProductGrid
           listings={listings.data}
           loading={listings.loading}
           error={listings.error}
-          empty="Nothing on sale right now."
+          empty={t('Nothing on sale right now.')}
         />
       </section>
 
       {!isMe && (
         <div className="-ml-2">
-          <ReportButton target={{ userId: person.id }} label={`Report ${person.display_name}`} />
+          <ReportButton target={{ userId: person.id }} label={t('Report {name}', { name: person.display_name })} />
         </div>
       )}
     </div>

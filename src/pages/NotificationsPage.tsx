@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { Fragment, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Bell, ImageOff, Star, TrendingDown } from 'lucide-react'
 import { fetchNotifications, markAllNotificationsRead } from '../lib/notifications'
@@ -7,19 +8,30 @@ import { imageUrl } from '../lib/listings'
 import { formatPosted, formatPrice } from '../lib/format'
 import { useQuery } from '../lib/useQuery'
 import { useAuth } from '../lib/auth'
+import { useT } from '../i18n/lang'
 
 // Qué dice cada aviso y adónde lleva al tocarlo.
-function describe(notification: Notification, userId: string) {
-  const title = notification.listing?.title ?? 'A listing'
+// Rellena una frase traducida con trozos con estilo: rich('{title} dropped', { title: <b>…</b> }).
+function rich(text: string, parts: Record<string, ReactNode>) {
+  return text.split(/(\{\w+\})/).map((piece, index) => {
+    const name = piece.match(/^\{(\w+)\}$/)?.[1]
+    return <Fragment key={index}>{name && name in parts ? parts[name] : piece}</Fragment>
+  })
+}
+
+function describe(notification: Notification, userId: string, t: (text: string) => string) {
+  const title = notification.listing?.title ?? t('A listing')
   switch (notification.kind) {
     case 'price_drop':
       return {
         icon: TrendingDown,
         text: (
           <>
-            <span className="font-semibold">{title}</span> dropped from{' '}
-            <span className="line-through">{formatPrice(Number(notification.old_price))}</span> to{' '}
-            <span className="font-semibold text-rosa">{formatPrice(Number(notification.new_price))}</span>
+            {rich(t('{title} dropped from {old} to {new}'), {
+              title: <span className="font-semibold">{title}</span>,
+              old: <span className="line-through">{formatPrice(Number(notification.old_price))}</span>,
+              new: <span className="font-semibold text-rosa">{formatPrice(Number(notification.new_price))}</span>,
+            })}
           </>
         ),
         to: `/item/${notification.listing_id}`,
@@ -28,9 +40,7 @@ function describe(notification: Notification, userId: string) {
       return {
         icon: Star,
         text: (
-          <>
-            You bought <span className="font-semibold">{title}</span>. How did it go? Rate the seller.
-          </>
+          <>{rich(t('You bought {title}. How did it go? Rate the seller.'), { title: <span className="font-semibold">{title}</span> })}</>
         ),
         to: `/item/${notification.listing_id}?rate=1`,
       }
@@ -39,8 +49,10 @@ function describe(notification: Notification, userId: string) {
         icon: Star,
         text: (
           <>
-            A buyer gave you <span className="font-semibold">{notification.rating} ★</span> for{' '}
-            <span className="font-semibold">{title}</span>
+            {rich(t('A buyer gave you {stars} for {title}'), {
+              stars: <span className="font-semibold">{notification.rating} ★</span>,
+              title: <span className="font-semibold">{title}</span>,
+            })}
           </>
         ),
         to: `/user/${userId}`,
@@ -54,6 +66,7 @@ function NotificationsPage() {
   const { session } = useAuth()
   const userId = session!.user.id
   const notifications = useQuery('notifications', fetchNotifications)
+  const t = useT()
 
   useEffect(() => {
     if (notifications.data?.some((n) => !n.read_at)) markAllNotificationsRead()
@@ -61,10 +74,10 @@ function NotificationsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-3xl font-bold">Notifications</h1>
+      <h1 className="text-3xl font-bold">{t('Notifications')}</h1>
 
       {notifications.error && (
-        <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{notifications.error}</p>
+        <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{t(notifications.error)}</p>
       )}
       {notifications.loading && (
         <div className="space-y-2">
@@ -78,14 +91,14 @@ function NotificationsPage() {
         <div className="glass rounded-3xl p-10 text-center">
           <Bell className="mx-auto h-8 w-8 text-rosa" />
           <p className="mt-3 text-white/70">
-            Nothing yet. Save items with the ♥ and we'll tell you here when their price drops.
+            {t("Nothing yet. Save items with the ♥ and we'll tell you here when their price drops.")}
           </p>
         </div>
       )}
 
       <ul className="space-y-2">
         {notifications.data?.map((notification) => {
-          const { icon: Icon, text, to } = describe(notification, userId)
+          const { icon: Icon, text, to } = describe(notification, userId, t)
           const cover = [...(notification.listing?.images ?? [])].sort((a, b) => a.position - b.position)[0]
           const unread = !notification.read_at
           return (
@@ -107,7 +120,7 @@ function NotificationsPage() {
                   <p className={`text-sm ${unread ? 'text-white' : 'text-white/70'}`}>{text}</p>
                   <p className="mt-0.5 text-xs text-white/50">{formatPosted(notification.created_at)}</p>
                 </div>
-                {unread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-carmin" aria-label="Unread" />}
+                {unread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-carmin" aria-label={t('Unread')} />}
               </Link>
             </li>
           )

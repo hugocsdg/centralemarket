@@ -1,5 +1,6 @@
 import ProductCard from './ProductCard'
 import type { Listing } from '../lib/listings'
+import { useT } from '../i18n/lang'
 
 type ProductGridProps = {
   listings?: Listing[]
@@ -10,8 +11,9 @@ type ProductGridProps = {
 
 // Cuadrícula de anuncios con sus estados: cargando, error y vacío.
 function ProductGrid({ listings, loading, error, empty = 'Nothing here yet. Be the first to list something!' }: ProductGridProps) {
+  const t = useT()
   if (error) {
-    return <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{error}</p>
+    return <p className="rounded-2xl border border-rojo/40 bg-rojo/10 p-6 text-center text-rosa">{t(error)}</p>
   }
   if (loading || !listings) {
     return (
@@ -23,7 +25,7 @@ function ProductGrid({ listings, loading, error, empty = 'Nothing here yet. Be t
     )
   }
   if (listings.length === 0) {
-    return <p className="rounded-2xl glass p-10 text-center text-white/60">{empty}</p>
+    return <p className="rounded-2xl glass p-10 text-center text-white/60">{t(empty)}</p>
   }
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">

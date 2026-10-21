@@ -26,6 +26,9 @@ import Avatar from '../components/Avatar'
 import { useAuth } from '../lib/auth'
 import { setTheme, useTheme } from '../lib/theme'
 import type { ThemeChoice } from '../lib/theme'
+import { useLang, useT } from '../i18n/lang'
+import { LANGUAGES } from '../i18n/core'
+import type { Lang } from '../i18n/core'
 
 // Profile: un menú ordenado por secciones (como Vinted).
 // Arriba tu tarjeta (lleva a My profile); luego tus cosas, ajustes, ayuda, legal y, al final, la cuenta.
@@ -51,7 +54,6 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { icon: Bell, label: 'Notifications', to: '/notifications' },
       { icon: KeyRound, label: 'Password', to: '/profile/password' },
-      { icon: Languages, label: 'Language', soon: true },
     ],
   },
   {
@@ -77,9 +79,10 @@ function ProfilePage() {
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
   const [leaving, setLeaving] = useState(false)
+  const t = useT()
 
   if (!profile) {
-    return <p className="py-20 text-center text-white/60">Loading your profile…</p>
+    return <p className="py-20 text-center text-white/60">{t('Loading your profile…')}</p>
   }
 
   async function logOut() {
@@ -90,47 +93,52 @@ function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-3xl font-bold">Profile</h1>
+      <h1 className="text-3xl font-bold">{t('Profile')}</h1>
 
       {/* Tu tarjeta: lleva a My profile */}
       <Link to="/profile/me" className="flex items-center gap-4 rounded-3xl glass p-4 transition hover:bg-white/10">
         <Avatar name={profile.display_name} url={profile.avatar_url} className="h-16 w-16 text-2xl" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-bold">{profile.display_name}</p>
-          <p className="text-sm text-white/60">View my profile</p>
+          <p className="text-sm text-white/60">{t('View my profile')}</p>
         </div>
         <ChevronRight aria-hidden="true" className="h-5 w-5 text-white/60" />
       </Link>
 
       {SECTIONS.map((section) => (
-        <MenuGroup key={section.title} title={section.title}>
+        <MenuGroup key={section.title} title={t(section.title)}>
           {section.items.map((item) =>
             item.to && !item.soon ? (
               <Link key={item.label} to={item.to} className={`${rowClass} hover:bg-white/5`}>
                 <item.icon aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
-                <span className="flex-1 font-medium">{item.label}</span>
+                <span className="flex-1 font-medium">{t(item.label)}</span>
                 <ChevronRight aria-hidden="true" className="h-5 w-5 text-white/60" />
               </Link>
             ) : (
               <div key={item.label} className={`${rowClass} text-white/60`} aria-disabled="true">
                 <item.icon aria-hidden="true" className="h-5 w-5 shrink-0" />
-                <span className="flex-1 font-medium">{item.label}</span>
-                <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white/70">Soon</span>
+                <span className="flex-1 font-medium">{t(item.label)}</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white/70">{t('Soon')}</span>
               </div>
             ),
           )}
-          {section.title === 'Settings' && <AppearanceRow />}
+          {section.title === 'Settings' && (
+            <>
+              <LanguageRow />
+              <AppearanceRow />
+            </>
+          )}
         </MenuGroup>
       ))}
 
-      <MenuGroup title="Account">
+      <MenuGroup title={t('Account')}>
         <button type="button" onClick={logOut} disabled={leaving} className={`${rowClass} hover:bg-white/5`}>
           <LogOut aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
-          <span className="flex-1 font-medium">{leaving ? 'Logging out…' : 'Log out'}</span>
+          <span className="flex-1 font-medium">{t(leaving ? 'Logging out…' : 'Log out')}</span>
         </button>
         <Link to="/profile/delete" className={`${rowClass} text-rosa hover:bg-rojo/10`}>
           <Trash2 aria-hidden="true" className="h-5 w-5 shrink-0" />
-          <span className="flex-1 font-medium">Delete account</span>
+          <span className="flex-1 font-medium">{t('Delete account')}</span>
           <ChevronRight aria-hidden="true" className="h-5 w-5 opacity-70" />
         </Link>
       </MenuGroup>
@@ -138,7 +146,7 @@ function ProfilePage() {
       <p className="pb-4 text-center text-xs text-white/60">
         CentraleMarket · Beta
         <br />
-        An independent student initiative for the CentraleSupélec community.
+        {t('An independent student initiative for the CentraleSupélec community.')}
       </p>
     </div>
   )
@@ -151,13 +159,39 @@ const THEMES: { value: ThemeChoice; label: string; icon: LucideIcon }[] = [
   { value: 'system', label: 'Auto', icon: Monitor },
 ]
 
+// Idioma de la app: lista nativa del móvil con los idiomas escritos en su propia lengua.
+function LanguageRow() {
+  const { lang, setLang, t } = useLang()
+  return (
+    <label className={`${rowClass} relative cursor-pointer hover:bg-white/5`}>
+      <Languages aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
+      <span className="flex-1 font-medium">{t('Language')}</span>
+      <span className="text-sm text-white/60">{LANGUAGES.find((language) => language.id === lang)?.name}</span>
+      <ChevronRight aria-hidden="true" className="h-5 w-5 text-white/60" />
+      <select
+        aria-label={t('Language')}
+        value={lang}
+        onChange={(event) => setLang(event.target.value as Lang)}
+        className="absolute inset-0 cursor-pointer appearance-none opacity-0"
+      >
+        {LANGUAGES.map((language) => (
+          <option key={language.id} value={language.id} lang={language.id}>
+            {language.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
 function AppearanceRow() {
   const theme = useTheme()
+  const t = useT()
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-3">
       <Palette aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
       <span id="appearance-label" className="flex-1 font-medium">
-        Appearance
+        {t('Appearance')}
       </span>
       <div
         role="radiogroup"
@@ -178,7 +212,7 @@ function AppearanceRow() {
               }`}
             >
               <option.icon aria-hidden="true" className="h-4 w-4" />
-              {option.label}
+              {t(option.label)}
             </button>
           )
         })}
