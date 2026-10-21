@@ -19,7 +19,7 @@ function EventCard({ listing, featured = false }: { listing: Listing; featured?:
     <div className="group relative transition duration-300 hover:-translate-y-1.5">
       <Link
         to={`/item/${listing.id}`}
-        className={`glow-border relative block overflow-hidden rounded-3xl bg-grafito shadow-2xl shadow-black/40 ${
+        className={`keep-dark glow-border relative block overflow-hidden rounded-3xl bg-grafito shadow-2xl shadow-black/40 ${
           featured ? 'aspect-[4/5] sm:aspect-[16/9]' : 'aspect-[3/4.6] sm:aspect-[3/4]'
         }`}
       >

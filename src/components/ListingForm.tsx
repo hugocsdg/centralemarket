@@ -167,7 +167,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
             <div key={photo.preview} className="relative aspect-square overflow-hidden rounded-xl border border-white/10">
               <img src={photo.preview} alt="" className="h-full w-full object-cover" />
               {index === 0 && (
-                <span className="absolute bottom-1 left-1 rounded-full bg-noche/80 px-2 py-0.5 text-[11px] font-semibold">
+                <span className="keep-dark absolute bottom-1 left-1 rounded-full bg-noche/80 px-2 py-0.5 text-[11px] font-semibold">
                   Cover
                 </span>
               )}
@@ -175,7 +175,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
                 type="button"
                 onClick={() => removePhoto(index)}
                 aria-label="Remove photo"
-                className="absolute top-1 right-1 rounded-full bg-noche/80 p-1 after:absolute after:-inset-2 hover:bg-rojo"
+                className="keep-dark absolute top-1 right-1 rounded-full bg-noche/80 p-1 after:absolute after:-inset-2 hover:bg-rojo"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

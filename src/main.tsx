@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import AuthProvider from './components/AuthProvider'
 import { LangProvider } from './i18n/lang'
+import './lib/theme' // modo oscuro / claro (sigue al sistema si se elige "Auto")
 import './lib/install' // escucha desde el principio el aviso de instalación de Android
 
 createRoot(document.getElementById('root')!).render(

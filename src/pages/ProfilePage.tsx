@@ -10,16 +10,22 @@ import {
   Languages,
   LogOut,
   Mail,
+  Monitor,
+  Moon,
+  Palette,
   ScrollText,
   ShieldCheck,
   Lock,
   Star,
+  Sun,
   Tag,
   Trash2,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Avatar from '../components/Avatar'
 import { useAuth } from '../lib/auth'
+import { setTheme, useTheme } from '../lib/theme'
+import type { ThemeChoice } from '../lib/theme'
 
 // Profile: un menú ordenado por secciones (como Vinted).
 // Arriba tu tarjeta (lleva a My profile); luego tus cosas, ajustes, ayuda, legal y, al final, la cuenta.
@@ -113,6 +119,7 @@ function ProfilePage() {
               </div>
             ),
           )}
+          {section.title === 'Settings' && <AppearanceRow />}
         </MenuGroup>
       ))}
 
@@ -133,6 +140,49 @@ function ProfilePage() {
         <br />
         An independent student initiative for the CentraleSupélec community.
       </p>
+    </div>
+  )
+}
+
+// Modo oscuro / claro / automático (como el móvil). Se guarda en este dispositivo.
+const THEMES: { value: ThemeChoice; label: string; icon: LucideIcon }[] = [
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'system', label: 'Auto', icon: Monitor },
+]
+
+function AppearanceRow() {
+  const theme = useTheme()
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-3">
+      <Palette aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
+      <span id="appearance-label" className="flex-1 font-medium">
+        Appearance
+      </span>
+      <div
+        role="radiogroup"
+        aria-labelledby="appearance-label"
+        className="grid w-full grid-cols-3 gap-1 rounded-full bg-white/5 p-1 sm:w-auto"
+      >
+        {THEMES.map((option) => {
+          const active = theme === option.value
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setTheme(option.value)}
+              className={`flex min-h-11 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold transition ${
+                active ? 'bg-white text-noche shadow-sm' : 'text-white/70 hover:text-white'
+              }`}
+            >
+              <option.icon aria-hidden="true" className="h-4 w-4" />
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -29,6 +29,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <!-- Modo claro (Profile → Appearance): se aplica antes de pintar nada, así no hay parpadeo oscuro.
+         Misma lógica que src/lib/theme.ts. La intro (/welcome) siempre va en oscuro. -->
+    <script>
+      ;(function () {
+        try {
+          var t = localStorage.getItem('cm-theme')
+          var light = t === 'light' || (t === 'system' && matchMedia('(prefers-color-scheme: light)').matches)
+          if (light && location.pathname !== '/welcome') {
+            document.documentElement.dataset.theme = 'light'
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#F5F4F2')
+          }
+        } catch (e) {}
+      })()
+    </script>
     <!-- En la intro (sin sesión), pedir la imagen de la portada cuanto antes: es lo primero que se ve -->
     <script>
       ;(function () {
@@ -156,6 +170,23 @@
         to {
           transform: translateX(260%);
         }
+      }
+      /* Pantalla de carga en modo claro */
+      [data-theme='light'],
+      [data-theme='light'] body {
+        background: #f5f4f2;
+      }
+      [data-theme='light'] .cm-splash {
+        background: radial-gradient(60vmax 60vmax at 50% 42%, rgb(224 21 63 / 0.08), transparent 60%), #f5f4f2;
+      }
+      [data-theme='light'] .cm-splash-name {
+        color: #111114;
+      }
+      [data-theme='light'] .cm-splash-tagline {
+        color: rgb(17 17 20 / 0.65);
+      }
+      [data-theme='light'] .cm-splash-bar {
+        background: rgb(17 17 20 / 0.1);
       }
       @media (prefers-reduced-motion: reduce) {
         .cm-splash *,

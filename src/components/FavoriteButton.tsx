@@ -67,7 +67,7 @@ function FavoriteButton({ listingId, title, variant = 'card' }: FavoriteButtonPr
       title={failed ? 'Could not save. Try again.' : undefined}
       className="flex h-11 w-11 items-center justify-center rounded-full"
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-noche/60 backdrop-blur-md transition hover:bg-noche/80">
+      <span className="keep-dark flex h-9 w-9 items-center justify-center rounded-full bg-noche/60 backdrop-blur-md transition hover:bg-noche/80">
         {icon}
       </span>
     </button>

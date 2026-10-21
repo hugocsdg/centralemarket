@@ -142,7 +142,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
       <div className="grid gap-6 md:grid-cols-2 md:gap-10">
         {/* Galería */}
         <div className="space-y-3">
-          <div className="relative aspect-square overflow-hidden rounded-3xl glass shadow-2xl shadow-black/40">
+          <div className="keep-dark relative aspect-square overflow-hidden rounded-3xl glass shadow-2xl shadow-black/40">
             {image ? (
               <img src={imageUrl(image.path)} alt={listing.title} className="h-full w-full object-cover" />
             ) : (

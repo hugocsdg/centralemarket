@@ -185,7 +185,7 @@ function ProfilePhoto({ profile, onSaved }: { profile: Profile; onSaved: () => P
           <Camera className="h-4 w-4" />
         </span>
         {busy && (
-          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-noche/70">
+          <span className="keep-dark absolute inset-0 flex items-center justify-center rounded-full bg-noche/70">
             <LoaderCircle aria-label="Uploading" className="h-6 w-6 animate-spin" />
           </span>
         )}

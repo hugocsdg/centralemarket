@@ -17,7 +17,7 @@ function FoodCard({ listing }: { listing: Listing }) {
         to={`/item/${listing.id}`}
         className="glass glow-border block overflow-hidden rounded-3xl p-1.5 transition duration-300 group-hover:shadow-[0_30px_60px_-25px_rgb(224_21_63/0.5)]"
       >
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-white/5">
+        <div className="keep-dark relative aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-white/5">
           {cover ? (
             <img
               src={imageUrl(cover.path)}

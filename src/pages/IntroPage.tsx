@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Link } from 'react-router'
 import 'lenis/dist/lenis.css'
@@ -14,6 +14,7 @@ import LifeSection from '../components/intro/LifeSection'
 import { scrollToSection, useIntroAnimations } from '../lib/useIntroAnimations'
 import { useAuth } from '../lib/auth'
 import { markIntroSeen } from '../lib/intro'
+import { forceDarkTheme } from '../lib/theme'
 import { useLang } from '../i18n/lang'
 import { introCopy } from '../i18n/intro'
 import { socialProof } from '../data/socialProof'
@@ -40,6 +41,12 @@ function IntroPage() {
   const copy = introCopy[lang]
 
   useIntroAnimations(root)
+
+  // La intro siempre en oscuro (vídeos del campus de noche), aunque hayas elegido el modo claro.
+  useLayoutEffect(() => {
+    forceDarkTheme(true)
+    return () => forceDarkTheme(false)
+  }, [])
 
   // Recordar que ya se vio la introducción en este dispositivo.
   useEffect(() => markIntroSeen(), [])

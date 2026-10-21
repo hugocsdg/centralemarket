@@ -486,6 +486,59 @@ h3 {
       radial-gradient(70vh 70vh at 10% 0%, rgb(224 21 63 / 0.12), transparent 70%),
       radial-gradient(80vh 80vh at 100% 35%, rgb(113 113 122 / 0.08), transparent 70%),
       radial-gradient(60vh 60vh at 55% 100%, rgb(181 18 39 / 0.07), transparent 70%),
-      #09090b;
+      var(--color-noche);
+  }
+}
+
+/* ---------- Modo claro (Profile → Appearance) ----------
+   Truco: toda la web usa "white" para el texto y "noche" para el fondo. En modo claro cambiamos
+   esos dos colores (el texto pasa a casi negro y el fondo a blanco roto) y todo se da la vuelta solo.
+   Lo pone src/lib/theme.ts con data-theme="light" en <html>. La intro siempre va en oscuro. */
+:root[data-theme='light'] {
+  --color-white: #111114;
+  --color-noche: #f5f4f2;
+  --color-grafito: #ffffff;
+  --color-plata: #6b6b73;
+  /* El rosa claro se lee mal sobre blanco: uno más intenso */
+  --color-rosa: #d0143c;
+  color-scheme: light;
+}
+:root[data-theme='light'] body {
+  background-color: var(--color-noche);
+}
+
+/* Lo que va sobre rojo o sobre una foto sigue con texto blanco y fondo oscuro, en los dos modos */
+:root[data-theme='light'] :is(.btn-primary, .bg-rojo, .bg-carmin, .bg-burdeos, .from-carmin, .from-rojo, .keep-dark) {
+  --color-white: #ffffff;
+  --color-noche: #09090b;
+  --color-rosa: #f43f5e;
+}
+/* …y su texto, aunque lo herede del padre (en una capa baja para que text-rosa, etc. sigan mandando) */
+@layer components {
+  :root[data-theme='light'] :is(.btn-primary, .bg-rojo, .bg-carmin, .bg-burdeos, .from-carmin, .from-rojo, .keep-dark) {
+    color: var(--color-white);
+  }
+}
+
+/* Tarjetas de cristal: blancas, con un borde y una sombra suaves */
+:root[data-theme='light'] .glass:not(.keep-dark .glass, .keep-dark.glass) {
+  background: rgb(255 255 255 / 0.82);
+  border-color: rgb(17 17 20 / 0.08);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255),
+    0 1px 2px rgb(17 17 20 / 0.04),
+    0 16px 36px -22px rgb(17 17 20 / 0.28);
+}
+:root[data-theme='light'] .text-shine {
+  background-image: linear-gradient(90deg, #111114, #e0153f, #b51227, #111114);
+}
+/* Campos de texto blancos (en gris quedaban pesados) */
+:root[data-theme='light'] :is(input:not([type='checkbox'], [type='radio'], [type='range'], .bg-transparent), textarea:not(.bg-transparent), select) {
+  background-color: #ffffff;
+}
+@media (pointer: coarse), (max-width: 767px) {
+  /* En el móvil no hay desenfoque: tarjetas y menú casi opacos para que no se transparente lo de detrás */
+  :root[data-theme='light'] .glass:not(.keep-dark .glass, .keep-dark.glass) {
+    background: rgb(255 255 255 / 0.97);
   }
 }
