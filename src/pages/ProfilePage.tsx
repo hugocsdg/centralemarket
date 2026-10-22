@@ -31,6 +31,7 @@ import { useLang, useT } from '../i18n/lang'
 import { LANGUAGES } from '../i18n/core'
 import type { Lang } from '../i18n/core'
 import { useIsAdmin } from '../lib/admin'
+import { CONTACT_EMAIL } from '../data/contact'
 
 // Profile: un menú ordenado por secciones (como Vinted).
 // Arriba tu tarjeta (lleva a My profile); luego tus cosas, ajustes, ayuda, legal y, al final, la cuenta.
@@ -64,7 +65,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { icon: CircleHelp, label: 'How CentraleMarket works', to: '/info/how-it-works' },
       { icon: ShieldCheck, label: 'Safety tips', to: '/info/safety' },
-      { icon: Mail, label: 'Contact us', soon: true },
+      { icon: Mail, label: 'Contact us', to: `mailto:${CONTACT_EMAIL}` },
     ],
   },
   {
@@ -112,7 +113,17 @@ function ProfilePage() {
       {SECTIONS.map((section) => (
         <MenuGroup key={section.title} title={t(section.title)}>
           {section.items.map((item) =>
-            item.to && !item.soon ? (
+            item.to?.startsWith('mailto:') ? (
+              // Abre la app de correo con nuestra dirección ya puesta.
+              <a key={item.label} href={item.to} className={`${rowClass} hover:bg-white/5`}>
+                <item.icon aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{t(item.label)}</span>
+                  <span className="block truncate text-xs text-white/60">{CONTACT_EMAIL}</span>
+                </span>
+                <ChevronRight aria-hidden="true" className="h-5 w-5 text-white/60" />
+              </a>
+            ) : item.to && !item.soon ? (
               <Link key={item.label} to={item.to} className={`${rowClass} hover:bg-white/5`}>
                 <item.icon aria-hidden="true" className="h-5 w-5 shrink-0 text-white/75" />
                 <span className="flex-1 font-medium">{t(item.label)}</span>

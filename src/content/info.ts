@@ -102,6 +102,10 @@ export const INFO_PAGES: Record<string, InfoPage> = {
         title: 'What happens if rules are broken',
         body: 'Anyone can report a listing or a student. A listing reported by several students is hidden until we review it. We can remove listings and suspend or delete accounts that break these rules.',
       },
+      {
+        title: 'Contact',
+        body: 'Questions or a problem with another student? Write to centralemarket.contact@gmail.com.',
+      },
     ],
   },
   privacy: {
@@ -147,6 +151,10 @@ export const INFO_PAGES: Record<string, InfoPage> = {
       {
         title: 'Your rights',
         body: 'Under the GDPR you can access, correct and delete your data. Most of it you can edit directly in the app; deleting your account removes everything.',
+      },
+      {
+        title: 'Contact',
+        body: 'For any question or request about your data, write to centralemarket.contact@gmail.com. You can also file a complaint with the CNIL (cnil.fr).',
       },
     ],
   },

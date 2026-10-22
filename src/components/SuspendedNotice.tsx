@@ -1,6 +1,7 @@
 import { Ban } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { useT } from '../i18n/lang'
+import { CONTACT_EMAIL } from '../data/contact'
 
 // Aviso arriba de todo si un administrador ha suspendido tu cuenta (supabase/11_admin.sql).
 function SuspendedNotice() {
@@ -16,7 +17,12 @@ function SuspendedNotice() {
           {t('You can’t publish, message or rate for now.')}
           {profile.ban_reason && ` ${t('Reason:')} ${profile.ban_reason}`}
         </p>
-        <p className="mt-1 text-white/60">{t('If you think this is a mistake, contact the CentraleMarket team.')}</p>
+        <p className="mt-1 text-white/60">
+          {t('If you think this is a mistake, write to us:')}{' '}
+          <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-rosa underline-offset-4 hover:underline">
+            {CONTACT_EMAIL}
+          </a>
+        </p>
       </div>
     </div>
   )
