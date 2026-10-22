@@ -94,12 +94,18 @@ function describe(notification: Notification, userId: string, t: (text: string, 
         ),
         to: `/item/${notification.listing_id}`,
       }
+    case 'rate_buyer':
+      return {
+        icon: Star,
+        text: <>{rich(t('You sold {title}. How did it go? Rate the buyer.'), { title: <span className="font-semibold">{title}</span> })}</>,
+        to: `/item/${notification.listing_id}?rate=1`,
+      }
     case 'new_review':
       return {
         icon: Star,
         text: (
           <>
-            {rich(t('A buyer gave you {stars} for {title}'), {
+            {rich(t('You got {stars} for {title}'), {
               stars: <span className="font-semibold">{notification.rating} ★</span>,
               title: <span className="font-semibold">{title}</span>,
             })}

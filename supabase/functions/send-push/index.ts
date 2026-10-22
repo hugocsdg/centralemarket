@@ -63,8 +63,10 @@ const T: Record<Lang, Record<string, string>> = {
     stale_listing_body: 'Lower the price or mark it as sold to keep your profile up to date.',
     rate_seller: 'How did it go?',
     rate_seller_body: 'You bought {title}. Rate the seller.',
+    rate_buyer: 'How did it go?',
+    rate_buyer_body: 'You sold {title}. Rate the buyer.',
     new_review: 'New review: {stars}',
-    new_review_body: 'A buyer rated you for {title}.',
+    new_review_body: 'You got a review for {title}.',
     free: 'Free',
     listing: 'a listing',
   },
@@ -89,8 +91,10 @@ const T: Record<Lang, Record<string, string>> = {
     stale_listing_body: 'Baisse le prix ou marque-le comme vendu pour garder ton profil à jour.',
     rate_seller: 'Comment ça s’est passé ?',
     rate_seller_body: 'Tu as acheté {title}. Note le vendeur.',
+    rate_buyer: 'Comment ça s’est passé ?',
+    rate_buyer_body: 'Tu as vendu {title}. Note l’acheteur.',
     new_review: 'Nouvel avis : {stars}',
-    new_review_body: 'Un acheteur t’a noté pour {title}.',
+    new_review_body: 'Tu as reçu un avis pour {title}.',
     free: 'Gratuit',
     listing: 'une annonce',
   },
@@ -115,8 +119,10 @@ const T: Record<Lang, Record<string, string>> = {
     stale_listing_body: 'Baja el precio o márcalo como vendido para tener tu perfil al día.',
     rate_seller: '¿Qué tal fue?',
     rate_seller_body: 'Has comprado {title}. Valora al vendedor.',
+    rate_buyer: '¿Qué tal fue?',
+    rate_buyer_body: 'Has vendido {title}. Valora al comprador.',
     new_review: 'Nueva valoración: {stars}',
-    new_review_body: 'Un comprador te ha valorado por {title}.',
+    new_review_body: 'Te han valorado por {title}.',
     free: 'Gratis',
     listing: 'un anuncio',
   },
@@ -141,8 +147,10 @@ const T: Record<Lang, Record<string, string>> = {
     stale_listing_body: 'Abbassa il prezzo o segnalo come venduto per tenere il profilo aggiornato.',
     rate_seller: 'Com’è andata?',
     rate_seller_body: 'Hai comprato {title}. Valuta il venditore.',
+    rate_buyer: 'Com’è andata?',
+    rate_buyer_body: 'Hai venduto {title}. Valuta l’acquirente.',
     new_review: 'Nuova recensione: {stars}',
-    new_review_body: 'Un acquirente ti ha valutato per {title}.',
+    new_review_body: 'Hai ricevuto una recensione per {title}.',
     free: 'Gratis',
     listing: 'un annuncio',
   },
@@ -167,8 +175,10 @@ const T: Record<Lang, Record<string, string>> = {
     stale_listing_body: 'Baixe o preço ou marque como vendido para manter seu perfil em dia.',
     rate_seller: 'Como foi?',
     rate_seller_body: 'Você comprou {title}. Avalie o vendedor.',
+    rate_buyer: 'Como foi?',
+    rate_buyer_body: 'Você vendeu {title}. Avalie o comprador.',
     new_review: 'Nova avaliação: {stars}',
-    new_review_body: 'Um comprador te avaliou por {title}.',
+    new_review_body: 'Você recebeu uma avaliação por {title}.',
     free: 'Grátis',
     listing: 'um anúncio',
   },
@@ -190,6 +200,7 @@ const PREF_FOR: Record<string, string> = {
   offer_reminder: 'offer_reminders',
   saved_search: 'saved_searches',
   rate_seller: 'reviews',
+  rate_buyer: 'reviews',
   new_review: 'reviews',
   event_tomorrow: 'event_reminders',
   likes: 'likes',
@@ -236,7 +247,7 @@ export function noticePush(lang: Lang, notice: Notice, listing: { title: string;
   const url =
     notice.kind === 'offer_reminder' && notice.conversation_id
       ? `/messages/${notice.conversation_id}`
-      : notice.kind === 'rate_seller'
+      : notice.kind === 'rate_seller' || notice.kind === 'rate_buyer'
         ? `${item}?rate=1`
         : notice.kind === 'new_review'
           ? '/user/me'

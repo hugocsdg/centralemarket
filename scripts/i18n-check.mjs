@@ -77,7 +77,7 @@ for (const file of files) {
   }
 }
 // Valores internos que también aparecen dentro de t(…) pero no se enseñan tal cual.
-const IGNORE = new Set(['PushManager', 'Notification', 'already', 'deleting', 'food', 'login', 'other', 'pending', 'saved', 'saving', 'sending', 'sold'])
+const IGNORE = new Set(['buyer', 'PushManager', 'Notification', 'already', 'deleting', 'food', 'login', 'other', 'pending', 'saved', 'saving', 'sending', 'sold'])
 const list = [...keys.keys()].filter((k) => !IGNORE.has(k) && !k.startsWith('Missing VITE_'))
 list.push('OK') // nota de 3 estrellas (Rating.tsx)
 

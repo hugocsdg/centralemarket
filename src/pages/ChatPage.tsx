@@ -71,6 +71,8 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
   const cover = [...(listing?.images ?? [])].sort((a, b) => a.position - b.position)[0]
   const canOffer = listing !== null && listing.status !== 'sold'
   const boughtByMe = listing?.status === 'sold' && listing.sold_to === userId
+  // Se lo vendí a esta persona: invitación a valorarla.
+  const soldToThem = iAmSeller && listing?.status === 'sold' && listing.sold_to === conversation.buyer_id
 
   // Añade un mensaje a la lista sin duplicarlo (puede llegar por dos caminos).
   function upsert(message: Message) {
@@ -179,6 +181,20 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
           </div>
         </Link>
       </div>
+
+      {/* Se lo has vendido: invitación a valorar al comprador */}
+      {soldToThem && (
+        <Link
+          to={`/item/${conversation.listing_id}?rate=1`}
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-rosa/30 bg-rojo/10 px-4 py-3 text-sm transition hover:bg-rojo/20"
+        >
+          <Star className="h-5 w-5 shrink-0 fill-carmin text-carmin" />
+          <span>
+            <span className="font-semibold">{t('You sold this to {name}.', { name: other?.display_name ?? '' })}</span>{' '}
+            {t('How did it go? Rate them.')}
+          </span>
+        </Link>
+      )}
 
       {/* Has comprado esto: invitación a valorar al vendedor */}
       {boughtByMe && (

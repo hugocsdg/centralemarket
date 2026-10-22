@@ -22,7 +22,7 @@ import OwnerPanel from '../components/OwnerPanel'
 import ReportButton from '../components/ReportButton'
 import FavoriteButton from '../components/FavoriteButton'
 import { formatEventDate, formatPosted, formatPrice, formatReady } from '../lib/format'
-import { fetchMyReview, fetchSellerRating } from '../lib/reviews'
+import { fetchMyReview, fetchPersonName, fetchSellerRating } from '../lib/reviews'
 import { RateSellerForm, RatingSummary, Stars } from '../components/Rating'
 import { getCategory } from '../data/categories'
 import { useAuth } from '../lib/auth'
@@ -89,7 +89,12 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
   const rating = useQuery(`rating|${listing.seller_id}`, () => fetchSellerRating(listing.seller_id))
   // ¿Lo compré yo? Entonces puedo valorar al vendedor (una vez).
   const boughtByMe = listing.status === 'sold' && listing.sold_to === userId
-  const myReview = useQuery(boughtByMe ? `my-review|${listing.id}` : null, () => fetchMyReview(listing.id, userId))
+  // ¿Lo vendí yo a alguien de la app? Entonces puedo valorar al comprador (una vez).
+  const soldByMe = isOwner && listing.status === 'sold' && Boolean(listing.sold_to)
+  const myReview = useQuery(boughtByMe || soldByMe ? `my-review|${listing.id}` : null, () =>
+    fetchMyReview(listing.id, userId),
+  )
+  const buyerName = useQuery(soldByMe ? `person|${listing.sold_to}` : null, () => fetchPersonName(listing.sold_to!))
   const tags = DIETARY.filter((tag) => listing.dietary?.includes(tag.value))
   // En la comida no se regatea: son raciones de pocos euros.
   const canOffer = !isOwner && !isFood && listing.status !== 'sold' && listing.price > 0
@@ -305,9 +310,23 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
               {t('You rated this purchase')} <Stars value={myReview.data.rating} />
             </p>
           )}
-          {params.has('rate') && !boughtByMe && (
+          {/* Lo vendiste: valora al comprador */}
+          {soldByMe && myReview.data === null && buyerName.data !== undefined && (
+            <RateSellerForm
+              listingId={listing.id}
+              sellerName={buyerName.data ?? t('the buyer')}
+              hint={t('Your rating helps other students sell with confidence.')}
+              onDone={() => myReview.reload()}
+            />
+          )}
+          {soldByMe && myReview.data && (
+            <p className="flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/80">
+              {t('You rated the buyer')} <Stars value={myReview.data.rating} />
+            </p>
+          )}
+          {params.has('rate') && !boughtByMe && !soldByMe && (
             <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/70">
-              {t('Only the buyer picked by the seller can rate this sale.')}
+              {t('Only the buyer and the seller of this sale can rate it.')}
             </p>
           )}
 

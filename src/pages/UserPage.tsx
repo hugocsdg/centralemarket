@@ -2,18 +2,19 @@ import { Link, useParams } from 'react-router'
 import { MessageSquareQuote, Pencil } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { fetchListings } from '../lib/listings'
-import { fetchReviews, fetchSellerRating } from '../lib/reviews'
+import { fetchRatingDetail, fetchReviews, fetchSellerRating } from '../lib/reviews'
 import { formatPosted } from '../lib/format'
 import { useAuth } from '../lib/auth'
 import { useQuery } from '../lib/useQuery'
 import Avatar from '../components/Avatar'
 import ProductGrid from '../components/ProductGrid'
 import LoginPrompt from '../components/LoginPrompt'
-import { RatingSummary, Stars } from '../components/Rating'
+import { RatingBreakdown, RatingSummary, Stars } from '../components/Rating'
 import ReportButton from '../components/ReportButton'
 import NotFoundPage from './NotFoundPage'
 import { useT } from '../i18n/lang'
 import { currentLocale } from '../i18n/core'
+import { useState } from 'react'
 
 async function fetchPublicProfile(id: string) {
   const { data, error } = await supabase
@@ -37,6 +38,9 @@ function UserPage() {
   const rating = useQuery(signedIn ? `rating|${id}` : null, () => fetchSellerRating(id))
   // Si aún no se ha ejecutado el SQL de valoraciones, simplemente no hay valoraciones.
   const reviews = useQuery(signedIn ? `reviews|${id}` : null, () => fetchReviews(id).catch(() => []))
+  const detail = useQuery(signedIn ? `rating-detail|${id}` : null, () => fetchRatingDetail(id))
+  // Pestañas de las valoraciones: todas, como vendedor o como comprador.
+  const [tab, setTab] = useState<'all' | 'seller' | 'buyer'>('all')
   const listings = useQuery(signedIn ? `user-listings|${id}` : null, () => fetchListings({ sellerId: id }))
 
   if (!signedIn) {
@@ -77,16 +81,49 @@ function UserPage() {
 
       <section>
         <h2 className="mb-4 text-2xl font-bold">{t('Reviews')}</h2>
+        {detail.data && (
+          <div className="mb-4">
+            <RatingBreakdown detail={detail.data} />
+          </div>
+        )}
+        {reviews.data && reviews.data.length > 0 && (
+          <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label={t('Reviews')}>
+            {(
+              [
+                ['all', t('All'), reviews.data.length],
+                ['seller', t('As seller'), reviews.data.filter((review) => review.role !== 'buyer').length],
+                ['buyer', t('As buyer'), reviews.data.filter((review) => review.role === 'buyer').length],
+              ] as const
+            ).map(([value, label, count]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTab(value)}
+                aria-pressed={tab === value}
+                className={`min-h-11 shrink-0 rounded-full px-4 text-sm font-medium whitespace-nowrap transition ${
+                  tab === value ? 'btn-primary text-white' : 'glass text-white/80 hover:bg-white/10'
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
+          </div>
+        )}
         {reviews.data && reviews.data.length > 0 ? (
           <ul className="grid gap-3 md:grid-cols-2">
-            {reviews.data.map((review) => (
+            {reviews.data
+              .filter((review) => tab === 'all' || (tab === 'buyer' ? review.role === 'buyer' : review.role !== 'buyer'))
+              .map((review) => (
               <li key={review.id} className="glass space-y-2 rounded-2xl p-4">
                 <div className="flex items-center gap-3">
                   <Avatar name={review.reviewer?.display_name} url={review.reviewer?.avatar_url} className="h-9 w-9 text-sm" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{review.reviewer?.display_name}</p>
                     <p className="truncate text-xs text-white/60">
-                      {t('Bought {title}', { title: review.listing?.title ?? t('an item') })} · {formatPosted(review.created_at).toLowerCase()}
+                      {t(review.role === 'buyer' ? 'Sold them {title}' : 'Bought {title}', {
+                        title: review.listing?.title ?? t('an item'),
+                      })}{' '}
+                      · {formatPosted(review.created_at).toLowerCase()}
                     </p>
                   </div>
                   <Stars value={review.rating} className="h-3.5 w-3.5" />

@@ -8,6 +8,7 @@ import { supabase } from './supabase'
 // - saved_search: alguien ha publicado algo que coincide con una búsqueda guardada
 // - offer_reminder: tienes una oferta sin responder desde hace 24 h
 // - rate_seller: el vendedor te marcó como comprador → valórale
+// - rate_buyer: vendiste algo a alguien de la app → valora al comprador
 // - new_review: alguien te ha valorado
 // - event_tomorrow: el evento de tu entrada es mañana
 // - likes: cuántas personas guardaron tus anuncios hoy
@@ -22,6 +23,7 @@ export type Notification = {
     | 'saved_search'
     | 'offer_reminder'
     | 'rate_seller'
+    | 'rate_buyer'
     | 'new_review'
     | 'event_tomorrow'
     | 'likes'

@@ -34,7 +34,7 @@ function OwnerPanel({ listing, onChanged }: { listing: Listing; onChanged: () =>
       setMessage(
         status === 'sold'
           ? soldTo
-            ? 'Marked as sold. The buyer can now rate you.'
+            ? 'Marked as sold. You can now rate each other.'
             : 'Your item has been marked as sold.'
           : status === 'reserved'
             ? 'Marked as reserved.'
@@ -109,7 +109,7 @@ function OwnerPanel({ listing, onChanged }: { listing: Listing; onChanged: () =>
       {buyers && (
         <div className="space-y-2 rounded-2xl bg-noche/50 p-3">
           <p className="text-sm font-semibold">{t('Who bought it?')}</p>
-          <p className="text-xs text-white/60">{t("They'll get a notification to rate you.")}</p>
+          <p className="text-xs text-white/60">{t("You'll be able to rate each other.")}</p>
           <ul className="space-y-1">
             {buyers.map((buyer) => (
               <li key={buyer.buyer_id}>
