@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router'
 import { Bell, Heart, MessageCircle, Plus, Search, User } from 'lucide-react'
@@ -13,12 +13,28 @@ import { useT } from '../i18n/lang'
 function Header({ unread, alerts }: { unread: number; alerts: number }) {
   const [query, setQuery] = useState('')
   const [scrolled, setScrolled] = useState(() => window.scrollY > 12)
+  // Al bajar, la cabecera se esconde hacia arriba (deja ver más contenido); al subir un poco, vuelve.
+  const [hidden, setHidden] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
   const navigate = useNavigate()
   const { session, profile } = useAuth()
   const t = useT()
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12)
+    let lastY = window.scrollY
+    const onScroll = () => {
+      const y = window.scrollY
+      setScrolled(y > 12)
+      // Cerca de arriba (o en el rebote del iPhone), siempre visible.
+      if (y < 80) setHidden(false)
+      // No esconderla mientras escribes en el buscador.
+      else if (headerRef.current?.contains(document.activeElement)) setHidden(false)
+      // Pequeños temblores del dedo (menos de 8 px) no cuentan.
+      else if (y > lastY + 8) setHidden(true)
+      else if (y < lastY - 8) setHidden(false)
+      else return
+      lastY = y
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -29,7 +45,13 @@ function Header({ unread, alerts }: { unread: number; alerts: number }) {
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-30 px-3 pt-3">
+    <header
+      ref={headerRef}
+      onFocus={() => setHidden(false)}
+      className={`fixed inset-x-0 top-0 z-30 px-3 pt-3 transition-transform duration-300 ease-out ${
+        hidden ? '-translate-y-[calc(100%+1rem)]' : ''
+      }`}
+    >
       <div
         className={`glass mx-auto flex h-14 max-w-6xl items-center gap-3 rounded-full pr-2 pl-4 transition-colors duration-300 ${
           scrolled ? 'bg-noche/70' : ''
