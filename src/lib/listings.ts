@@ -63,6 +63,22 @@ export function imageUrl(path: string) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
+// Cada foto se guarda dos veces: la grande (para la ficha del anuncio) y una pequeña de 600 px
+// ("miniatura", para tarjetas y listas: pesa unas 6 veces menos). Las fotos subidas antes de esto
+// no tienen miniatura: components/ListingPhoto.tsx usa entonces la grande.
+export function thumbPath(path: string) {
+  return path.replace(/\.jpg$/, '.thumb.jpg')
+}
+
+export function thumbUrl(path: string) {
+  return imageUrl(thumbPath(path))
+}
+
+// Para borrar: cada foto con su miniatura.
+function withThumbs(paths: string[]) {
+  return paths.flatMap((path) => [path, thumbPath(path)])
+}
+
 export type Sort = 'newest' | 'price-asc' | 'price-desc'
 
 export type ListingFilters = {
@@ -141,22 +157,22 @@ export async function fetchListing(id: number) {
 }
 
 // Reduce las fotos del móvil (que pueden pesar 5-10 MB) a máx. 1600 px en JPEG.
-// Así suben más rápido y caben en el límite de 5 MB del almacén.
-export async function prepareImage(file: File): Promise<Blob> {
+// Así suben más rápido y caben en el límite de 5 MB del almacén. (Con 600 px, la miniatura.)
+export async function prepareImage(file: File, maxSize = 1600, quality = 0.85): Promise<Blob> {
   let bitmap: ImageBitmap
   try {
     bitmap = await createImageBitmap(file)
   } catch {
     throw new Error(translate('"{file}" can\'t be read. Please use a JPG, PNG or WebP photo.', { file: file.name }))
   }
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height))
+  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height))
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(bitmap.width * scale)
   canvas.height = Math.round(bitmap.height * scale)
   canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
   bitmap.close()
   return new Promise((resolve, reject) =>
-    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not process the photo.'))), 'image/jpeg', 0.85),
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not process the photo.'))), 'image/jpeg', quality),
   )
 }
 
@@ -214,6 +230,13 @@ async function uploadPhotos(
     const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg' })
     if (error) throw error
     uploaded.push(path)
+    // La miniatura: si falla, no pasa nada (se usará la foto grande).
+    try {
+      const thumb = await prepareImage(file, 600, 0.8)
+      await supabase.storage.from(BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/jpeg' })
+    } catch {
+      // Sin miniatura.
+    }
   }
 }
 
@@ -237,7 +260,7 @@ export async function createListing(
     const { error: imagesError } = await supabase.from('listing_images').insert(rows)
     if (imagesError) throw imagesError
   } catch (failure) {
-    if (uploaded.length) await supabase.storage.from(BUCKET).remove(uploaded)
+    if (uploaded.length) await supabase.storage.from(BUCKET).remove(withThumbs(uploaded))
     await supabase.from('listings').delete().eq('id', listingId)
     throw failure
   }
@@ -263,7 +286,7 @@ export async function updateListing(
   try {
     await uploadPhotos(userId, listingId, newFiles, uploaded, onProgress)
   } catch (failure) {
-    if (uploaded.length) await supabase.storage.from(BUCKET).remove(uploaded)
+    if (uploaded.length) await supabase.storage.from(BUCKET).remove(withThumbs(uploaded))
     throw failure
   }
 
@@ -279,7 +302,7 @@ export async function updateListing(
   if (insertError) throw insertError
 
   const removed = originalPaths.filter((path) => !finalPaths.includes(path))
-  if (removed.length) await supabase.storage.from(BUCKET).remove(removed)
+  if (removed.length) await supabase.storage.from(BUCKET).remove(withThumbs(removed))
 }
 
 // Cambiar a disponible, reservado o vendido. Al venderlo, "soldTo" es quién lo compró
@@ -298,5 +321,5 @@ export async function deleteListing(listing: Listing) {
   const { error } = await supabase.from('listings').delete().eq('id', listing.id)
   if (error) throw error
   const paths = listing.images.map((image) => image.path)
-  if (paths.length) await supabase.storage.from(BUCKET).remove(paths)
+  if (paths.length) await supabase.storage.from(BUCKET).remove(withThumbs(paths))
 }

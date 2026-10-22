@@ -1,10 +1,10 @@
 import { Link } from 'react-router'
 import { ImageOff, MapPin } from 'lucide-react'
 import { formatPrice } from '../lib/format'
-import { imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import FavoriteButton from './FavoriteButton'
 import { useT } from '../i18n/lang'
+import ListingPhoto from './ListingPhoto'
 
 type ProductCardProps = {
   listing: Listing
@@ -25,10 +25,9 @@ function ProductCard({ listing }: ProductCardProps) {
       >
         <div className="keep-dark relative aspect-[4/5] overflow-hidden rounded-[1.25rem] bg-white/5">
           {cover ? (
-            <img
-              src={imageUrl(cover.path)}
+            <ListingPhoto
+              path={cover.path}
               alt={listing.title}
-              loading="lazy"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             />
           ) : (

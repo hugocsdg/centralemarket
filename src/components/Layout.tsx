@@ -10,6 +10,7 @@ import { useNotificationCount } from '../lib/notifications'
 import { useLang } from '../i18n/lang'
 import { syncPushLanguage } from '../lib/push'
 import SuspendedNotice from './SuspendedNotice'
+import ErrorBoundary from './ErrorBoundary'
 
 // El "marco" de la app: fondo, cabecera arriba, menú abajo y en medio la página actual (<Outlet />).
 function Layout() {
@@ -38,9 +39,12 @@ function Layout() {
         {/* "Get the app" solo en el inicio y en el perfil (y solo en móvil, si no está instalada) */}
         {(pathname === '/' || pathname === '/profile') && <InstallAppBanner />}
         <SuspendedNotice />
-        <Suspense fallback={null}>
-          <Outlet />
-        </Suspense>
+        {/* Si una pantalla falla, solo esa enseña "Algo ha fallado" (al cambiar de página se recupera). */}
+        <ErrorBoundary key={pathname}>
+          <Suspense fallback={null}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </main>
       <footer className="hidden border-t border-white/5 py-8 text-center text-xs text-white/60 md:block">
         {t('An independent student initiative for the CentraleSupélec community.')} ·{' '}

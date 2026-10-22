@@ -33,6 +33,7 @@ import LoginPrompt from '../components/LoginPrompt'
 import Avatar from '../components/Avatar'
 import NotFoundPage from './NotFoundPage'
 import { useT } from '../i18n/lang'
+import ListingPhoto from '../components/ListingPhoto'
 
 function ProductPage() {
   // El número de la URL (/item/3) llega aquí como texto: "3".
@@ -168,7 +169,7 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
                     index === selected ? 'border-rosa' : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={imageUrl(img.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <ListingPhoto path={img.path} className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>

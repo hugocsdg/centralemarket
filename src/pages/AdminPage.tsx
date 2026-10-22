@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import {
   ArrowLeft,
   BarChart3,
+  Bug,
   Ban,
   CheckCircle2,
   Flag,
@@ -19,23 +20,27 @@ import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { closeReports, fetchReports, fetchStats, searchAllListings, searchUsers, setBan, useIsAdmin } from '../lib/admin'
 import type { AdminUser, ReportRow, Stats } from '../lib/admin'
-import { deleteListing, fetchListing, imageUrl } from '../lib/listings'
+import { deleteListing, fetchListing } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import { formatPosted, formatPrice } from '../lib/format'
 import Avatar from '../components/Avatar'
+import { clearErrors, fetchErrors } from '../lib/errors'
+import type { ClientError } from '../lib/errors'
 import NotFoundPage from './NotFoundPage'
+import ListingPhoto from '../components/ListingPhoto'
 
 // Panel de administración (/admin): solo para los administradores (supabase/11_admin.sql).
 // Está en inglés y sin traducir: es una herramienta interna para los fundadores.
 // Resumen (números) · Denuncias · Usuarios (suspender) · Anuncios (borrar).
 
-type Tab = 'overview' | 'reports' | 'users' | 'listings'
+type Tab = 'overview' | 'reports' | 'users' | 'listings' | 'errors'
 
 const TABS: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
   { id: 'reports', label: 'Reports', icon: Flag },
   { id: 'users', label: 'Users', icon: Users },
   { id: 'listings', label: 'Listings', icon: Package },
+  { id: 'errors', label: 'Errors', icon: Bug },
 ]
 
 const REASONS: Record<string, string> = {
@@ -95,6 +100,7 @@ function AdminPage() {
       {tab === 'reports' && <Reports />}
       {tab === 'users' && <UsersTab currentUserId={session!.user.id} />}
       {tab === 'listings' && <ListingsTab />}
+      {tab === 'errors' && <ErrorsTab />}
     </div>
   )
 }
@@ -426,7 +432,7 @@ function ListingsTab() {
               <li key={listing.id} className="flex items-center gap-3 px-4 py-3">
                 <Link to={`/item/${listing.id}`} className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
                   {cover ? (
-                    <img src={imageUrl(cover.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <ListingPhoto path={cover.path} className="h-full w-full object-cover" />
                   ) : (
                     <ImageOff aria-hidden="true" className="absolute inset-0 m-auto h-5 w-5 text-white/20" />
                   )}
@@ -454,6 +460,86 @@ function ListingsTab() {
           })}
         </ul>
       )}
+    </div>
+  )
+}
+
+// ---------- Errores ----------
+
+// Los errores iguales se agrupan: cuántas veces, cuándo fue el último, en qué pantallas y versiones.
+function ErrorsTab() {
+  const [errors, setErrors] = useState<ClientError[] | null>(null)
+  const [failed, setFailed] = useState('')
+  const [open, setOpen] = useState<string | null>(null)
+
+  const load = useCallback(() => {
+    fetchErrors()
+      .then(setErrors)
+      .catch(() => setFailed('Could not load the errors (did you run 12_errores.sql?).'))
+  }, [])
+
+  useEffect(load, [load])
+
+  const groups = Object.values(
+    (errors ?? []).reduce<Record<string, ClientError[]>>((all, error) => {
+      ;(all[error.message] ??= []).push(error)
+      return all
+    }, {}),
+  )
+
+  async function clear(group: ClientError[]) {
+    await clearErrors(group.map((error) => error.id)).catch(() => setFailed('Could not delete.'))
+    load()
+  }
+
+  return (
+    <div className="space-y-4">
+      {failed && <ErrorBox text={failed} />}
+      {!errors && !failed ? (
+        <Loading />
+      ) : groups.length === 0 ? (
+        <Empty icon={CheckCircle2} text="No errors. Everything is running smoothly." />
+      ) : (
+        <ul className="space-y-3">
+          {groups.map((group) => {
+            const last = group[0]
+            const pages = [...new Set(group.map((error) => error.page).filter(Boolean))].slice(0, 4)
+            const versions = [...new Set(group.map((error) => error.app_version).filter(Boolean))].slice(0, 3)
+            return (
+              <li key={last.message} className="glass space-y-2 rounded-3xl p-4">
+                <div className="flex items-start gap-3">
+                  <Bug aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-rosa" />
+                  <p className="min-w-0 flex-1 font-mono text-sm break-words">{last.message}</p>
+                  <span className="shrink-0 rounded-full bg-rojo/20 px-2.5 py-0.5 text-xs font-bold text-rosa">×{group.length}</span>
+                </div>
+                <p className="text-xs text-white/60">
+                  Last {formatPosted(last.created_at).toLowerCase()} · {pages.join(', ') || '—'} · version {versions.join(', ') || '—'}
+                </p>
+                <p className="truncate text-xs text-white/60">{last.user_agent}</p>
+                <div className="flex flex-wrap gap-2">
+                  {last.stack && (
+                    <ActionButton icon={Search} onClick={() => setOpen(open === last.message ? null : last.message)}>
+                      {open === last.message ? 'Hide details' : 'Details'}
+                    </ActionButton>
+                  )}
+                  <ActionButton icon={CheckCircle2} onClick={() => clear(group)}>
+                    Fixed — clear
+                  </ActionButton>
+                </div>
+                {open === last.message && last.stack && (
+                  <pre className="max-h-64 overflow-auto rounded-2xl bg-white/5 p-3 text-[11px] leading-relaxed whitespace-pre-wrap text-white/75">
+                    {last.stack}
+                  </pre>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      <p className="text-xs text-white/60">
+        Errors from students’ phones and computers (no personal data). Copy the details to Claude to fix them. Errors older
+        than 60 days are deleted automatically.
+      </p>
     </div>
   )
 }

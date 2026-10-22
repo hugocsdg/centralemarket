@@ -4,12 +4,12 @@ import { Link } from 'react-router'
 import { Bell, CalendarClock, Heart, Hourglass, ImageOff, Lightbulb, RotateCcw, Search, Settings, Star, TrendingDown } from 'lucide-react'
 import { fetchNotifications, markAllNotificationsRead } from '../lib/notifications'
 import type { Notification } from '../lib/notifications'
-import { imageUrl } from '../lib/listings'
 import { formatPosted, formatPrice } from '../lib/format'
 import { useQuery } from '../lib/useQuery'
 import { useAuth } from '../lib/auth'
 import { useT } from '../i18n/lang'
 import PushPrompt from '../components/PushPrompt'
+import ListingPhoto from '../components/ListingPhoto'
 
 // Qué dice cada aviso y adónde lleva al tocarlo.
 // Rellena una frase traducida con trozos con estilo: rich('{title} dropped', { title: <b>…</b> }).
@@ -174,7 +174,7 @@ function NotificationsPage() {
                 <div className="relative h-14 w-14 shrink-0">
                   <div className="relative h-14 w-14 overflow-hidden rounded-xl bg-white/5">
                     {cover ? (
-                      <img src={imageUrl(cover.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      <ListingPhoto path={cover.path} className="h-full w-full object-cover" />
                     ) : (
                       <ImageOff className="absolute inset-0 m-auto h-5 w-5 text-white/20" />
                     )}

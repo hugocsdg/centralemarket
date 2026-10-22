@@ -12,7 +12,6 @@ import {
   subscribeToMessages,
 } from '../lib/chat'
 import type { Conversation, Message } from '../lib/chat'
-import { imageUrl } from '../lib/listings'
 import { formatPrice } from '../lib/format'
 import { useAuth } from '../lib/auth'
 import { useQuery } from '../lib/useQuery'
@@ -20,6 +19,7 @@ import Avatar from '../components/Avatar'
 import NotFoundPage from './NotFoundPage'
 import { useT } from '../i18n/lang'
 import { currentLocale } from '../i18n/core'
+import ListingPhoto from '../components/ListingPhoto'
 
 function ChatPage() {
   const { id } = useParams()
@@ -163,7 +163,7 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
           <div className="relative h-11 w-11 shrink-0">
             <div className="relative h-11 w-11 overflow-hidden rounded-lg bg-white/5">
               {cover ? (
-                <img src={imageUrl(cover.path)} alt="" className="h-full w-full object-cover" />
+                <ListingPhoto path={cover.path} loading="eager" className="h-full w-full object-cover" />
               ) : (
                 <ImageOff className="absolute inset-0 m-auto h-4 w-4 text-white/20" />
               )}

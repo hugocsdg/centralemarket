@@ -137,6 +137,10 @@ export const INFO_PAGES: Record<string, InfoPage> = {
         body: 'We only use your browser storage to keep you signed in and to remember your preferences (like your language). No advertising or tracking cookies.',
       },
       {
+        title: 'Statistics and errors',
+        body: 'We count visits anonymously with Vercel Web Analytics, without cookies. If the app breaks on your device, we record what failed and on which screen (no messages or personal content) to fix it, and delete it after 60 days.',
+      },
+      {
         title: 'How long we keep it',
         body: 'Until you delete your account. You can do it at any time from Profile → Delete account: your profile, listings, photos, favourites and chats are deleted for good.',
       },

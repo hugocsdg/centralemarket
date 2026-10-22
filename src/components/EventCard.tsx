@@ -5,6 +5,7 @@ import { imageUrl } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import FavoriteButton from './FavoriteButton'
 import { useT } from '../i18n/lang'
+import ListingPhoto from './ListingPhoto'
 
 // Cartel de un evento: la foto ocupa todo, con la fecha "de calendario" arriba y los datos abajo.
 // "featured" = el grande de arriba del todo en la pantalla de eventos.
@@ -26,12 +27,18 @@ function EventCard({ listing, featured = false }: { listing: Listing; featured?:
         }`}
       >
         {cover ? (
-          <img
-            src={imageUrl(cover.path)}
-            alt=""
-            loading={featured ? undefined : 'lazy'}
-            className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
-          />
+          featured ? (
+            <img
+              src={imageUrl(cover.path)}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            />
+          ) : (
+            <ListingPhoto
+              path={cover.path}
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            />
+          )
         ) : (
           <ImageOff className="absolute inset-0 m-auto h-8 w-8 text-white/20" />
         )}

@@ -1,11 +1,12 @@
 import { Link } from 'react-router'
 import { Clock, ImageOff, MapPin } from 'lucide-react'
 import { formatPrice, formatReady } from '../lib/format'
-import { DIETARY, imageUrl } from '../lib/listings'
+import { DIETARY } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import Avatar from './Avatar'
 import FavoriteButton from './FavoriteButton'
 import { useT } from '../i18n/lang'
+import ListingPhoto from './ListingPhoto'
 
 // Tarjeta de un plato: foto apetecible, quién lo cocina, cuándo está listo y cuántas raciones quedan.
 function FoodCard({ listing }: { listing: Listing }) {
@@ -21,12 +22,7 @@ function FoodCard({ listing }: { listing: Listing }) {
       >
         <div className="keep-dark relative aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-white/5">
           {cover ? (
-            <img
-              src={imageUrl(cover.path)}
-              alt=""
-              loading="lazy"
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            />
+            <ListingPhoto path={cover.path} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
           ) : (
             <ImageOff className="absolute inset-0 m-auto h-8 w-8 text-white/20" />
           )}

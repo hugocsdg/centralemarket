@@ -1,13 +1,13 @@
 import { Link } from 'react-router'
 import { ImageOff, MessageCircle } from 'lucide-react'
 import { fetchConversations, fetchUnreadConversationIds } from '../lib/chat'
-import { imageUrl } from '../lib/listings'
 import { formatPosted } from '../lib/format'
 import { useAuth } from '../lib/auth'
 import Avatar from '../components/Avatar'
 import { useQuery } from '../lib/useQuery'
 import { useT } from '../i18n/lang'
 import PushPrompt from '../components/PushPrompt'
+import ListingPhoto from '../components/ListingPhoto'
 
 // Bandeja de entrada: todas tus conversaciones, como compradora o como vendedora.
 function MessagesPage() {
@@ -58,7 +58,7 @@ function MessagesPage() {
                 <div className="relative h-14 w-14 shrink-0">
                   <div className="relative h-14 w-14 overflow-hidden rounded-xl bg-white/5">
                     {cover ? (
-                      <img src={imageUrl(cover.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      <ListingPhoto path={cover.path} className="h-full w-full object-cover" />
                     ) : (
                       <ImageOff className="absolute inset-0 m-auto h-5 w-5 text-white/20" />
                     )}
