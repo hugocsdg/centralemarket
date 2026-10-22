@@ -520,6 +520,17 @@ h3 {
   }
 }
 
+/* El logo: versión para fondo claro (ver components/Logo.tsx) */
+.logo-on-light {
+  display: none;
+}
+:root[data-theme='light'] .logo-on-light {
+  display: revert-layer;
+}
+:root[data-theme='light'] .logo-on-dark {
+  display: none;
+}
+
 /* Tarjetas de cristal: blancas, con un borde y una sombra suaves */
 :root[data-theme='light'] .glass:not(.keep-dark .glass, .keep-dark.glass) {
   background: rgb(255 255 255 / 0.82);
