@@ -5,7 +5,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 const ROOT = new URL('../src', import.meta.url).pathname
-const skip = ['i18n', 'components/intro', 'lib/campus3d.ts', 'lib/useIntroAnimations.ts', 'pages/IntroPage.tsx', 'data/campus.json', 'lib/scrub.ts']
+const skip = ['pages/AdminPage.tsx', 'lib/admin.ts', 'i18n', 'components/intro', 'lib/campus3d.ts', 'lib/useIntroAnimations.ts', 'pages/IntroPage.tsx', 'data/campus.json', 'lib/scrub.ts']
 const files = []
 const walk = (dir) => readdirSync(dir).forEach((name) => {
   const p = join(dir, name)

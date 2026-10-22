@@ -15,6 +15,7 @@ import NotFoundPage from './NotFoundPage'
 import { useT } from '../i18n/lang'
 import { currentLocale } from '../i18n/core'
 import { useState } from 'react'
+import BlockButton from '../components/BlockButton'
 
 async function fetchPublicProfile(id: string) {
   const { data, error } = await supabase
@@ -151,8 +152,9 @@ function UserPage() {
       </section>
 
       {!isMe && (
-        <div className="-ml-2">
+        <div className="-ml-2 flex flex-wrap items-center gap-x-4">
           <ReportButton target={{ userId: person.id }} label={t('Report {name}', { name: person.display_name })} />
+          <BlockButton userId={person.id} name={person.display_name} />
         </div>
       )}
     </div>

@@ -28,6 +28,8 @@ const FoodPage = lazy(() => import('./pages/FoodPage'))
 const UserPage = lazy(() => import('./pages/UserPage'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const NotificationSettingsPage = lazy(() => import('./pages/NotificationSettingsPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
+const BlockedPage = lazy(() => import('./pages/BlockedPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const IntroPage = lazy(() => import('./pages/IntroPage'))
 
@@ -116,6 +118,22 @@ function App() {
             element={
               <RequireAuth>
                 <MyProfilePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth>
+                <AdminPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile/blocked"
+            element={
+              <RequireAuth>
+                <BlockedPage />
               </RequireAuth>
             }
           />

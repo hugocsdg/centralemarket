@@ -9,6 +9,7 @@ import { useUnreadCount } from '../lib/useUnread'
 import { useNotificationCount } from '../lib/notifications'
 import { useLang } from '../i18n/lang'
 import { syncPushLanguage } from '../lib/push'
+import SuspendedNotice from './SuspendedNotice'
 
 // El "marco" de la app: fondo, cabecera arriba, menú abajo y en medio la página actual (<Outlet />).
 function Layout() {
@@ -36,6 +37,7 @@ function Layout() {
         {/* Mientras llega el código de la página, la cabecera y el menú se quedan */}
         {/* "Get the app" solo en el inicio y en el perfil (y solo en móvil, si no está instalada) */}
         {(pathname === '/' || pathname === '/profile') && <InstallAppBanner />}
+        <SuspendedNotice />
         <Suspense fallback={null}>
           <Outlet />
         </Suspense>

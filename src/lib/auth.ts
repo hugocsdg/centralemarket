@@ -7,6 +7,9 @@ export type Profile = {
   avatar_url: string | null
   whatsapp: string | null
   created_at: string
+  // Cuenta suspendida por un administrador (supabase/11_admin.sql): no puede publicar ni escribir.
+  banned_at?: string | null
+  ban_reason?: string | null
 }
 
 export type AuthState = {

@@ -20,6 +20,7 @@ import {
   Sun,
   Tag,
   Trash2,
+  UserX,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Avatar from '../components/Avatar'
@@ -29,6 +30,7 @@ import type { ThemeChoice } from '../lib/theme'
 import { useLang, useT } from '../i18n/lang'
 import { LANGUAGES } from '../i18n/core'
 import type { Lang } from '../i18n/core'
+import { useIsAdmin } from '../lib/admin'
 
 // Profile: un menú ordenado por secciones (como Vinted).
 // Arriba tu tarjeta (lleva a My profile); luego tus cosas, ajustes, ayuda, legal y, al final, la cuenta.
@@ -54,6 +56,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { icon: Bell, label: 'Notifications', to: '/profile/notifications' },
       { icon: KeyRound, label: 'Password', to: '/profile/password' },
+      { icon: UserX, label: 'Blocked students', to: '/profile/blocked' },
     ],
   },
   {
@@ -76,7 +79,8 @@ const SECTIONS: { title: string; items: Item[] }[] = [
 const rowClass = 'flex min-h-14 w-full items-center gap-4 px-5 py-3 text-left transition'
 
 function ProfilePage() {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, session } = useAuth()
+  const isAdmin = useIsAdmin(session?.user.id)
   const navigate = useNavigate()
   const [leaving, setLeaving] = useState(false)
   const t = useT()
@@ -130,6 +134,19 @@ function ProfilePage() {
           )}
         </MenuGroup>
       ))}
+
+      {isAdmin && (
+        <Link to="/admin" className="flex items-center gap-4 rounded-3xl border border-rosa/40 bg-rojo/10 p-4 transition hover:bg-rojo/20">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-carmin to-burdeos">
+            <ShieldCheck aria-hidden="true" className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold">Admin</span>
+            <span className="block text-sm text-white/60">Reports, students, listings and numbers</span>
+          </span>
+          <ChevronRight aria-hidden="true" className="h-5 w-5 text-white/60" />
+        </Link>
+      )}
 
       <MenuGroup title={t('Account')}>
         <button type="button" onClick={logOut} disabled={leaving} className={`${rowClass} hover:bg-white/5`}>

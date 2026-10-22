@@ -1,0 +1,526 @@
+import { useCallback, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import { Link } from 'react-router'
+import {
+  ArrowLeft,
+  BarChart3,
+  Ban,
+  CheckCircle2,
+  Flag,
+  ImageOff,
+  Package,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  Trash2,
+  Users,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { useAuth } from '../lib/auth'
+import { closeReports, fetchReports, fetchStats, searchAllListings, searchUsers, setBan, useIsAdmin } from '../lib/admin'
+import type { AdminUser, ReportRow, Stats } from '../lib/admin'
+import { deleteListing, fetchListing, imageUrl } from '../lib/listings'
+import type { Listing } from '../lib/listings'
+import { formatPosted, formatPrice } from '../lib/format'
+import Avatar from '../components/Avatar'
+import NotFoundPage from './NotFoundPage'
+
+// Panel de administración (/admin): solo para los administradores (supabase/11_admin.sql).
+// Está en inglés y sin traducir: es una herramienta interna para los fundadores.
+// Resumen (números) · Denuncias · Usuarios (suspender) · Anuncios (borrar).
+
+type Tab = 'overview' | 'reports' | 'users' | 'listings'
+
+const TABS: { id: Tab; label: string; icon: LucideIcon }[] = [
+  { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'reports', label: 'Reports', icon: Flag },
+  { id: 'users', label: 'Users', icon: Users },
+  { id: 'listings', label: 'Listings', icon: Package },
+]
+
+const REASONS: Record<string, string> = {
+  scam: 'Scam or fraud',
+  prohibited: 'Prohibited item',
+  offensive: 'Offensive',
+  harassment: 'Harassment',
+  not_student: 'Not a student',
+  spam: 'Spam',
+  other: 'Other',
+}
+
+function AdminPage() {
+  const { session } = useAuth()
+  const isAdmin = useIsAdmin(session?.user.id)
+  const [tab, setTab] = useState<Tab>('overview')
+
+  if (isAdmin === null) return <p className="py-20 text-center text-white/60">Loading…</p>
+  if (!isAdmin) return <NotFoundPage />
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-6">
+      <Link
+        to="/profile"
+        className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm font-medium text-white/70 hover:text-white"
+      >
+        <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Profile
+      </Link>
+      <div className="flex items-center gap-3">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-carmin to-burdeos">
+          <ShieldCheck aria-hidden="true" className="h-6 w-6" />
+        </span>
+        <div>
+          <h1 className="text-3xl font-bold">Admin</h1>
+          <p className="text-sm text-white/60">Only you and your co-founder can see this page.</p>
+        </div>
+      </div>
+
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Admin sections">
+        {TABS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={`flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold whitespace-nowrap transition ${
+              tab === id ? 'btn-primary text-white' : 'glass text-white/80 hover:bg-white/10'
+            }`}
+          >
+            <Icon aria-hidden="true" className="h-4 w-4" /> {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'overview' && <Overview onOpenReports={() => setTab('reports')} />}
+      {tab === 'reports' && <Reports />}
+      {tab === 'users' && <UsersTab currentUserId={session!.user.id} />}
+      {tab === 'listings' && <ListingsTab />}
+    </div>
+  )
+}
+
+// ---------- Resumen ----------
+
+function Overview({ onOpenReports }: { onOpenReports: () => void }) {
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchStats()
+      .then(setStats)
+      .catch(() => setError('Could not load the numbers.'))
+  }, [])
+
+  if (error) return <ErrorBox text={error} />
+  if (!stats) return <Loading />
+
+  const tiles: { label: string; value: string | number; hint?: string; alert?: boolean; onClick?: () => void }[] = [
+    { label: 'Students', value: stats.users, hint: `+${stats.users_week} this week` },
+    { label: 'Listings on sale', value: stats.listings_available, hint: `${stats.listings} total · +${stats.listings_week} this week` },
+    { label: 'Sold', value: stats.sold },
+    { label: 'Conversations', value: stats.conversations, hint: `${stats.messages_week} messages this week` },
+    { label: 'Reviews', value: stats.reviews, hint: stats.rating ? `Average ★ ${Number(stats.rating).toFixed(1)}` : 'No reviews yet' },
+    { label: 'Open reports', value: stats.open_reports, alert: stats.open_reports > 0, onClick: onOpenReports },
+    { label: 'Suspended accounts', value: stats.banned },
+    { label: 'Phones with notifications', value: stats.push_devices },
+  ]
+
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {tiles.map((tile) => {
+        const content = (
+          <>
+            <p className="text-sm text-white/60">{tile.label}</p>
+            <p className={`mt-1 font-display text-3xl font-bold ${tile.alert ? 'text-rosa' : ''}`}>{tile.value}</p>
+            {tile.hint && <p className="mt-1 text-xs text-white/60">{tile.hint}</p>}
+          </>
+        )
+        return tile.onClick ? (
+          <button
+            key={tile.label}
+            type="button"
+            onClick={tile.onClick}
+            className={`glass rounded-3xl p-4 text-left transition hover:bg-white/10 ${tile.alert ? 'ring-1 ring-rosa/50' : ''}`}
+          >
+            {content}
+          </button>
+        ) : (
+          <div key={tile.label} className="glass rounded-3xl p-4">
+            {content}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ---------- Denuncias ----------
+
+function Reports() {
+  const [view, setView] = useState<'open' | 'closed'>('open')
+  const [reports, setReports] = useState<ReportRow[] | null>(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState<number | null>(null)
+
+  const load = useCallback(() => {
+    fetchReports(view)
+      .then(setReports)
+      .catch(() => setError('Could not load the reports.'))
+  }, [view])
+
+  useEffect(load, [load])
+
+  async function act(report: ReportRow, action: 'dismiss' | 'delete' | 'ban') {
+    if (action === 'delete' && !window.confirm(`Delete “${report.listing_title}” for good? Its photos and chats are deleted too.`)) return
+    let reason: string | null = null
+    if (action === 'ban') {
+      reason = window.prompt(`Suspend ${report.against}? Write the reason (they will see it):`, REASONS[report.reason] ?? '')
+      if (reason === null) return
+    }
+    setBusy(report.id)
+    setError('')
+    try {
+      // Todas las denuncias abiertas sobre lo mismo se cierran a la vez.
+      const same = (reports ?? []).filter(
+        (other) =>
+          other.status === 'open' &&
+          (report.listing_id ? other.listing_id === report.listing_id : other.reported_user_id === report.reported_user_id),
+      )
+      const ids = same.length ? same.map((other) => other.id) : [report.id]
+      if (action === 'delete' && report.listing_id) {
+        const listing = await fetchListing(report.listing_id)
+        if (listing) await deleteListing(listing)
+      }
+      if (action === 'ban' && report.against_id) await setBan(report.against_id, true, reason ?? undefined)
+      await closeReports(ids, action === 'dismiss' ? 'dismissed' : 'resolved')
+      load()
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        {(['open', 'closed'] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => {
+              setReports(null)
+              setView(value)
+            }}
+            aria-pressed={view === value}
+            className={`min-h-11 rounded-full px-4 text-sm font-medium transition ${
+              view === value ? 'bg-white text-noche' : 'glass text-white/80 hover:bg-white/10'
+            }`}
+          >
+            {value === 'open' ? 'To review' : 'Closed'}
+          </button>
+        ))}
+      </div>
+      {error && <ErrorBox text={error} />}
+      {!reports ? (
+        <Loading />
+      ) : reports.length === 0 ? (
+        <Empty icon={CheckCircle2} text={view === 'open' ? 'No reports to review. All good!' : 'No closed reports yet.'} />
+      ) : (
+        <ul className="space-y-3">
+          {reports.map((report) => (
+            <li key={report.id} className="glass space-y-3 rounded-3xl p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-rojo/20 px-3 py-1 text-xs font-semibold text-rosa">
+                  {REASONS[report.reason] ?? report.reason}
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80">
+                  {report.type === 'listing' ? 'Listing' : 'Student'}
+                </span>
+                {report.status !== 'open' && (
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/70">{report.status}</span>
+                )}
+                <span className="ml-auto text-xs text-white/60">{formatPosted(report.created_at)}</span>
+              </div>
+              <p className="text-sm">
+                <span className="text-white/60">From</span> <strong>{report.reported_by}</strong>{' '}
+                <span className="text-white/60">about</span>{' '}
+                {report.listing_id ? (
+                  <Link to={`/item/${report.listing_id}`} className="font-semibold text-rosa hover:underline">
+                    {report.listing_title ?? 'a deleted listing'}
+                  </Link>
+                ) : (
+                  <Link to={`/user/${report.reported_user_id}`} className="font-semibold text-rosa hover:underline">
+                    {report.against}
+                  </Link>
+                )}
+                {report.listing_id && report.against && (
+                  <>
+                    {' '}
+                    <span className="text-white/60">by</span>{' '}
+                    <Link to={`/user/${report.against_id}`} className="font-semibold hover:underline">
+                      {report.against}
+                    </Link>
+                  </>
+                )}
+              </p>
+              {report.details && <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/80">“{report.details}”</p>}
+              {report.status === 'open' && (
+                <div className="flex flex-wrap gap-2">
+                  <ActionButton icon={RotateCcw} disabled={busy === report.id} onClick={() => act(report, 'dismiss')}>
+                    No problem
+                  </ActionButton>
+                  {report.listing_id && report.listing_title && (
+                    <ActionButton icon={Trash2} danger disabled={busy === report.id} onClick={() => act(report, 'delete')}>
+                      Delete listing
+                    </ActionButton>
+                  )}
+                  {report.against_id && (
+                    <ActionButton icon={Ban} danger disabled={busy === report.id} onClick={() => act(report, 'ban')}>
+                      Suspend {report.against}
+                    </ActionButton>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-xs text-white/60">
+        “No problem” closes the report (a listing hidden by 3 reports becomes visible again). Deleting or suspending
+        also closes all open reports about the same listing or student.
+      </p>
+    </div>
+  )
+}
+
+// ---------- Usuarios ----------
+
+function UsersTab({ currentUserId }: { currentUserId: string }) {
+  const [search, setSearch] = useState('')
+  const [users, setUsers] = useState<AdminUser[] | null>(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState<string | null>(null)
+
+  const load = useCallback((text: string) => {
+    searchUsers(text)
+      .then(setUsers)
+      .catch(() => setError('Could not load the students.'))
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => load(search), 300)
+    return () => clearTimeout(timer)
+  }, [search, load])
+
+  async function toggleBan(user: AdminUser) {
+    let reason: string | null = null
+    if (!user.banned_at) {
+      reason = window.prompt(`Suspend ${user.display_name}? Write the reason (they will see it):`)
+      if (reason === null) return
+    } else if (!window.confirm(`Reactivate ${user.display_name}'s account?`)) return
+    setBusy(user.id)
+    try {
+      await setBan(user.id, !user.banned_at, reason ?? undefined)
+      load(search)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <SearchBox value={search} onChange={setSearch} placeholder="Search by name or email" />
+      {error && <ErrorBox text={error} />}
+      {!users ? (
+        <Loading />
+      ) : users.length === 0 ? (
+        <Empty icon={Users} text="No students found." />
+      ) : (
+        <ul className="divide-y divide-white/10 overflow-hidden rounded-3xl glass">
+          {users.map((user) => (
+            <li key={user.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+              <Avatar name={user.display_name} url={user.avatar_url} className="h-11 w-11 text-base" />
+              <div className="min-w-0 flex-1">
+                <p className="flex flex-wrap items-center gap-2 font-semibold">
+                  <Link to={`/user/${user.id}`} className="truncate hover:underline">
+                    {user.display_name}
+                  </Link>
+                  {user.banned_at && (
+                    <span className="rounded-full bg-rojo/20 px-2 py-0.5 text-[11px] font-bold text-rosa">Suspended</span>
+                  )}
+                </p>
+                <p className="truncate text-xs text-white/60">{user.email}</p>
+                <p className="text-xs text-white/60">
+                  Joined {formatPosted(user.created_at).toLowerCase()} · {user.listings} listings
+                  {user.rating !== null && ` · ★ ${Number(user.rating).toFixed(1)}`}
+                  {user.reports > 0 && <span className="font-semibold text-rosa"> · {user.reports} open reports</span>}
+                </p>
+                {user.banned_at && user.ban_reason && <p className="text-xs text-white/60">Reason: {user.ban_reason}</p>}
+              </div>
+              {user.id !== currentUserId && (
+                <ActionButton
+                  icon={user.banned_at ? RotateCcw : Ban}
+                  danger={!user.banned_at}
+                  disabled={busy === user.id}
+                  onClick={() => toggleBan(user)}
+                >
+                  {user.banned_at ? 'Reactivate' : 'Suspend'}
+                </ActionButton>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+// ---------- Anuncios ----------
+
+function ListingsTab() {
+  const [search, setSearch] = useState('')
+  const [listings, setListings] = useState<Listing[] | null>(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState<number | null>(null)
+
+  const load = useCallback((text: string) => {
+    searchAllListings(text)
+      .then(setListings)
+      .catch(() => setError('Could not load the listings.'))
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => load(search), 300)
+    return () => clearTimeout(timer)
+  }, [search, load])
+
+  async function remove(listing: Listing) {
+    if (!window.confirm(`Delete “${listing.title}” for good? Its photos and chats are deleted too.`)) return
+    setBusy(listing.id)
+    try {
+      await deleteListing(listing)
+      setListings((current) => current?.filter((item) => item.id !== listing.id) ?? null)
+    } catch {
+      setError('Could not delete the listing.')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <SearchBox value={search} onChange={setSearch} placeholder="Search listings by title" />
+      {error && <ErrorBox text={error} />}
+      {!listings ? (
+        <Loading />
+      ) : listings.length === 0 ? (
+        <Empty icon={Package} text="No listings found." />
+      ) : (
+        <ul className="divide-y divide-white/10 overflow-hidden rounded-3xl glass">
+          {listings.map((listing) => {
+            const cover = [...listing.images].sort((a, b) => a.position - b.position)[0]
+            return (
+              <li key={listing.id} className="flex items-center gap-3 px-4 py-3">
+                <Link to={`/item/${listing.id}`} className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
+                  {cover ? (
+                    <img src={imageUrl(cover.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  ) : (
+                    <ImageOff aria-hidden="true" className="absolute inset-0 m-auto h-5 w-5 text-white/20" />
+                  )}
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link to={`/item/${listing.id}`} className="block truncate font-semibold hover:underline">
+                    {listing.title}
+                  </Link>
+                  <p className="truncate text-xs text-white/60">
+                    {formatPrice(listing.price, listing.price_unit)} · {listing.status} · by {listing.seller?.display_name} ·{' '}
+                    {formatPosted(listing.created_at).toLowerCase()}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => remove(listing)}
+                  disabled={busy === listing.id}
+                  aria-label={`Delete ${listing.title}`}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/60 hover:bg-rojo/20 hover:text-rosa disabled:opacity-50"
+                >
+                  <Trash2 aria-hidden="true" className="h-4 w-4" />
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+// ---------- Piezas pequeñas ----------
+
+function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (value: string) => void; placeholder: string }) {
+  return (
+    <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-3 focus-within:border-rosa/60">
+      <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-white/50" />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label={placeholder}
+        placeholder={placeholder}
+        className="w-full bg-transparent text-sm outline-none placeholder:text-white/50"
+      />
+    </label>
+  )
+}
+
+function ActionButton({
+  icon: Icon,
+  danger,
+  disabled,
+  onClick,
+  children,
+}: {
+  icon: LucideIcon
+  danger?: boolean
+  disabled?: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition disabled:opacity-50 ${
+        danger ? 'border border-rojo/50 text-rosa hover:bg-rojo/20' : 'border border-white/20 text-white/85 hover:border-white/40'
+      }`}
+    >
+      <Icon aria-hidden="true" className="h-4 w-4" /> {children}
+    </button>
+  )
+}
+
+function Loading() {
+  return <p className="py-10 text-center text-sm text-white/60">Loading…</p>
+}
+
+function ErrorBox({ text }: { text: string }) {
+  return (
+    <p role="alert" className="rounded-2xl bg-rojo/20 px-4 py-3 text-sm text-rosa">
+      {text}
+    </p>
+  )
+}
+
+function Empty({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
+  return (
+    <div className="glass rounded-3xl p-10 text-center text-sm text-white/60">
+      <Icon aria-hidden="true" className="mx-auto mb-2 h-7 w-7 text-rosa" />
+      {text}
+    </div>
+  )
+}
+
+export default AdminPage
