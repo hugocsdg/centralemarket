@@ -4,7 +4,7 @@
 -- Solo LEE: no cambia nada. Se puede ejecutar cuantas veces se quiera.
 -- Cómo usarlo: Supabase → SQL Editor → New query → pegar todo → Run.
 -- Sale una fila por archivo: ✅ ejecutado, ❌ falta (ejecútalo en orden).
--- Cuando se añada un archivo nuevo 1X_….sql, añadir aquí su fila.
+-- Desde el 12, cada archivo se apunta solo: select * from private.scripts_aplicados;
 -- =====================================================================
 
 select archivo, case when ok then '✅' else '❌' end as estado, nota
@@ -26,5 +26,6 @@ from (values
   ('11_admin.sql (admins)',      case when to_regclass('public.admins') is null then false
                                  else (xpath('/row/n/text()', query_to_xml(
                                    'select count(*) as n from public.admins', false, true, '')))[1]::text::int > 0 end,
-                                                                                           'hay al menos un administrador')
+                                                                                           'hay al menos un administrador'),
+  ('12_registro_e_historial.sql', to_regclass('public.admin_actions') is not null,         'registro de SQL e historial de moderación')
 ) as t(archivo, ok, nota);
