@@ -3,12 +3,13 @@
 --
 -- Si alguien roba el email de un estudiante (como en la estafa por Outlook), podría entrar en
 -- CentraleMarket con su cuenta. Estos límites hacen que NO pueda escribir a todo el campus de golpe.
--- Un estudiante normal nunca llega a ellos.
+-- Son amplios a propósito: alguien que se va del campus y lo vende todo no llega a ellos.
 --
---   - Chats nuevos: máx. 10 por hora y 40 al día por persona.
---   - Mensajes: máx. 20 por minuto y 300 por hora por persona.
---   - Cuentas de menos de 24 h: no pueden enviar enlaces (truco típico de las estafas).
---   - Anuncios nuevos: máx. 20 al día por persona.
+--   - Chats nuevos: máx. 25 por hora y 100 al día por persona.
+--   - Mensajes: máx. 40 por minuto y 600 por hora por persona.
+--   - Cuentas de menos de 6 h: no pueden enviar enlaces (truco típico de las estafas).
+--   - Anuncios nuevos: máx. 60 al día por persona.
+--   - Los administradores (tabla admins, 11_admin.sql) no tienen límites.
 --
 -- Cómo usarlo: Supabase → SQL Editor → New query → pegar todo → Run. Después de 12_errores.sql.
 -- Se puede ejecutar dos veces sin problema.
@@ -35,11 +36,14 @@ declare
   last_hour int;
   last_day int;
 begin
+  if public.is_admin() then
+    return new;
+  end if;
   select count(*) filter (where c.created_at > now() - interval '1 hour'), count(*)
   into last_hour, last_day
   from public.conversations c
   where c.buyer_id = auth.uid() and c.created_at > now() - interval '1 day';
-  if last_hour >= 10 or last_day >= 40 then
+  if last_hour >= 25 or last_day >= 100 then
     raise exception 'Too many new chats. Please try again later.';
   end if;
   return new;
@@ -63,18 +67,21 @@ declare
   last_hour int;
   account_age interval;
 begin
+  if public.is_admin() then
+    return new;
+  end if;
   -- Los mensajes automáticos (aceptar/rechazar oferta) también cuentan, pero son pocos.
   select count(*) filter (where m.created_at > now() - interval '1 minute'), count(*)
   into last_minute, last_hour
   from public.messages m
   where m.sender_id = auth.uid() and m.created_at > now() - interval '1 hour';
-  if last_minute >= 20 or last_hour >= 300 then
+  if last_minute >= 40 or last_hour >= 600 then
     raise exception 'You are sending messages too fast. Please wait a moment.';
   end if;
 
   select now() - p.created_at into account_age from public.profiles p where p.id = auth.uid();
-  if account_age < interval '24 hours' and public.has_link(new.content) then
-    raise exception 'New accounts can''t send links during their first 24 hours.';
+  if account_age < interval '6 hours' and public.has_link(new.content) then
+    raise exception 'New accounts can''t send links during their first hours.';
   end if;
   return new;
 end;
@@ -93,9 +100,12 @@ security definer
 set search_path = ''
 as $$
 begin
+  if public.is_admin() then
+    return new;
+  end if;
   if (select count(*) from public.listings l
-      where l.seller_id = auth.uid() and l.created_at > now() - interval '1 day') >= 20 then
-    raise exception 'You can publish up to 20 listings per day.';
+      where l.seller_id = auth.uid() and l.created_at > now() - interval '1 day') >= 60 then
+    raise exception 'You can publish up to 60 listings per day.';
   end if;
   return new;
 end;

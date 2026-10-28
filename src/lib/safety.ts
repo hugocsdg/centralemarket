@@ -19,8 +19,8 @@ export function limitMessage(error: unknown) {
   const text = error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String(error.message) : String(error)
   if (/too many new chats/i.test(text)) return 'You’ve started many chats in a short time. Please try again in a while.'
   if (/sending messages too fast/i.test(text)) return 'You’re sending messages too fast. Please wait a moment.'
-  if (/can.t send links/i.test(text)) return 'For safety, new accounts can’t send links during their first 24 hours.'
-  if (/20 listings per day/i.test(text)) return 'You can publish up to 20 listings per day.'
+  if (/can.t send links/i.test(text)) return 'For safety, new accounts can’t send links during their first 6 hours.'
+  if (/60 listings per day/i.test(text)) return 'You can publish up to 60 listings per day.'
   if (/banned or blocked/i.test(text)) return 'You can’t message this person.'
   return null
 }

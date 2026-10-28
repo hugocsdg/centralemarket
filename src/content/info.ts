@@ -56,6 +56,26 @@ export const INFO_PAGES: Record<string, InfoPage> = {
         ],
       },
       {
+        title: 'Links and payments',
+        points: [
+          'Never open a link that asks you to pay, log in or “confirm” your account. CentraleMarket never sends payment links.',
+          'Pay in person when you get the item. Never send money in advance to someone you haven’t met.',
+          'Messages with links show a warning, and new accounts can’t send links during their first hours.',
+        ],
+      },
+      {
+        title: 'If your school email is hacked',
+        points: [
+          'Change your school password right away and tell the CentraleSupélec IT service.',
+          'Write to us at centralemarket.contact@gmail.com: we can block your CentraleMarket account until it’s safe again.',
+          'If a friend’s account suddenly asks you for money or codes, check with them another way (in person or by phone).',
+        ],
+      },
+      {
+        title: 'Limits that protect everyone',
+        body: 'To stop scams from stolen accounts, there are generous limits on new chats, messages and listings per day. Normal use, even selling everything before you leave, never reaches them.',
+      },
+      {
         title: 'Trust your instincts',
         body: 'If a deal feels wrong (a price too good to be true, pressure to hurry), walk away.',
       },
@@ -92,6 +112,7 @@ export const INFO_PAGES: Record<string, InfoPage> = {
           'Exam answers, graded work or anything that breaks academic integrity.',
           'Adult content, or personal data about other people.',
           'Event tickets above their original price.',
+          'Scam or phishing links, asking for payment in advance, or using someone else’s account.',
         ],
       },
       {
