@@ -107,3 +107,39 @@ export async function searchAllListings(search: string) {
   if (error) throw error
   return data as unknown as Listing[]
 }
+
+// Crecimiento (Admin → Growth, supabase/15_crecimiento.sql): quién se une y quién usa la app.
+export type GrowthDay = { day: string; joined: number; listings: number; messages: number; active: number }
+
+export type GrowthUser = {
+  id: string
+  display_name: string
+  avatar_url: string | null
+  email: string
+  created_at: string
+  last_seen: string | null
+  listings: number
+  messages: number
+  push: boolean
+}
+
+export type Growth = {
+  totals: {
+    users: number
+    joined_today: number
+    joined_week: number
+    joined_prev_week: number
+    active_today: number
+    active_week: number
+    never_back: number
+  }
+  daily: GrowthDay[]
+  funnel: { joined: number; acted: number; listed: number; sold: number }
+  latest: GrowthUser[]
+}
+
+export async function fetchGrowth(days = 30) {
+  const { data, error } = await supabase.rpc('admin_growth', { days })
+  if (error) throw error
+  return data as Growth
+}

@@ -14,12 +14,13 @@ import {
   Search,
   ShieldCheck,
   Trash2,
+  TrendingUp,
   Users,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '../lib/auth'
-import { closeReports, fetchReports, fetchStats, searchAllListings, searchUsers, setBan, useIsAdmin } from '../lib/admin'
-import type { AdminUser, ReportRow, Stats } from '../lib/admin'
+import { closeReports, fetchGrowth, fetchReports, fetchStats, searchAllListings, searchUsers, setBan, useIsAdmin } from '../lib/admin'
+import type { AdminUser, Growth, GrowthDay, ReportRow, Stats } from '../lib/admin'
 import { deleteListing, fetchListing } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import { formatPosted, formatPrice } from '../lib/format'
@@ -33,10 +34,11 @@ import ListingPhoto from '../components/ListingPhoto'
 // Está en inglés y sin traducir: es una herramienta interna para los fundadores.
 // Resumen (números) · Denuncias · Usuarios (suspender) · Anuncios (borrar).
 
-type Tab = 'overview' | 'reports' | 'users' | 'listings' | 'errors'
+type Tab = 'overview' | 'growth' | 'reports' | 'users' | 'listings' | 'errors'
 
 const TABS: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'growth', label: 'Growth', icon: TrendingUp },
   { id: 'reports', label: 'Reports', icon: Flag },
   { id: 'users', label: 'Users', icon: Users },
   { id: 'listings', label: 'Listings', icon: Package },
@@ -97,6 +99,7 @@ function AdminPage() {
       </div>
 
       {tab === 'overview' && <Overview onOpenReports={() => setTab('reports')} />}
+      {tab === 'growth' && <GrowthTab />}
       {tab === 'reports' && <Reports />}
       {tab === 'users' && <UsersTab currentUserId={session!.user.id} />}
       {tab === 'listings' && <ListingsTab />}
@@ -157,6 +160,272 @@ function Overview({ onOpenReports }: { onOpenReports: () => void }) {
         )
       })}
     </div>
+  )
+}
+
+// ---------- Crecimiento ----------
+
+type Metric = 'joined' | 'active' | 'listings' | 'messages'
+
+const METRICS: { id: Metric; label: string; hint: string }[] = [
+  { id: 'joined', label: 'New students', hint: 'accounts created' },
+  { id: 'active', label: 'Active', hint: 'students who posted or wrote' },
+  { id: 'listings', label: 'Listings', hint: 'new listings' },
+  { id: 'messages', label: 'Messages', hint: 'messages sent' },
+]
+
+// "3 min ago", "5 h ago", "2 days ago" (el panel está en inglés).
+function ago(iso: string | null) {
+  if (!iso) return 'never'
+  const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000)
+  if (minutes < 2) return 'just now'
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} h ago`
+  const days = Math.floor(hours / 24)
+  return days === 1 ? 'yesterday' : `${days} days ago`
+}
+
+function GrowthTab() {
+  const [growth, setGrowth] = useState<Growth | null>(null)
+  const [error, setError] = useState('')
+  const [range, setRange] = useState(30)
+  const [metric, setMetric] = useState<Metric>('joined')
+  const [now] = useState(() => Date.now())
+
+  useEffect(() => {
+    let alive = true
+    fetchGrowth(range)
+      .then((data) => alive && setGrowth(data))
+      .catch(() => alive && setError('Could not load the numbers (did you run 15_crecimiento.sql?).'))
+    return () => {
+      alive = false
+    }
+  }, [range])
+
+  if (error) return <ErrorBox text={error} />
+  if (!growth) return <Loading />
+
+  const { totals, funnel } = growth
+  const trend = totals.joined_week - totals.joined_prev_week
+  const activeShare = totals.users ? Math.round((totals.active_week / totals.users) * 100) : 0
+  const tiles = [
+    {
+      label: 'Students',
+      value: totals.users,
+      hint: `+${totals.joined_week} this week${trend !== 0 ? ` (${trend > 0 ? '▲' : '▼'} ${Math.abs(trend)} vs last week)` : ''}`,
+    },
+    { label: 'Joined today', value: totals.joined_today, hint: 'new accounts since midnight' },
+    { label: 'Active today', value: totals.active_today, hint: 'opened the app today' },
+    { label: 'Active this week', value: totals.active_week, hint: `${activeShare}% of all students` },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {tiles.map((tile) => (
+          <div key={tile.label} className="glass rounded-3xl p-4">
+            <p className="text-sm text-white/60">{tile.label}</p>
+            <p className="mt-1 font-display text-3xl font-bold">{tile.value}</p>
+            <p className="mt-1 text-xs text-white/60">{tile.hint}</p>
+          </div>
+        ))}
+      </div>
+
+      <section className="glass space-y-4 rounded-3xl p-4 md:p-6" aria-label="Activity per day">
+        <div className="flex flex-wrap items-center gap-2">
+          {METRICS.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setMetric(id)}
+              aria-pressed={metric === id}
+              className={`min-h-11 rounded-full px-4 text-sm font-medium transition ${
+                metric === id ? 'bg-white text-noche' : 'border border-white/15 text-white/80 hover:bg-white/10'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          <label className="ml-auto flex min-h-11 items-center gap-2 text-sm text-white/60">
+            <span className="sr-only">Period</span>
+            <select
+              value={range}
+              onChange={(event) => {
+                setGrowth(null)
+                setRange(Number(event.target.value))
+              }}
+              className="min-h-11 rounded-full border border-white/15 bg-transparent px-3 text-sm text-white"
+            >
+              <option value={14}>Last 14 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
+          </label>
+        </div>
+        <DailyChart days={growth.daily} metric={metric} />
+      </section>
+
+      <div className="grid gap-6 md:grid-cols-[2fr_3fr]">
+        <section className="glass space-y-4 self-start rounded-3xl p-4 md:p-6" aria-label="Funnel">
+          <div>
+            <h2 className="font-display text-lg font-bold">From sign-up to sale</h2>
+            <p className="text-xs text-white/60">How far students get after creating an account.</p>
+          </div>
+          <Funnel
+            steps={[
+              { label: 'Created an account', value: funnel.joined },
+              { label: 'Posted or wrote a message', value: funnel.acted },
+              { label: 'Posted a listing', value: funnel.listed },
+              { label: 'Sold something', value: funnel.sold },
+            ]}
+          />
+          {totals.never_back > 0 && (
+            <p className="rounded-2xl bg-white/5 px-4 py-3 text-xs text-white/70">
+              <strong className="text-white">{totals.never_back}</strong> joined more than 2 days ago and never came back after
+              their first day.
+            </p>
+          )}
+        </section>
+
+        <section className="glass overflow-hidden rounded-3xl" aria-label="Latest students">
+          <div className="px-4 pt-4 md:px-6 md:pt-6">
+            <h2 className="font-display text-lg font-bold">Latest to join</h2>
+            <p className="text-xs text-white/60">Newest first · “seen” = last time they opened the app.</p>
+          </div>
+          {growth.latest.length === 0 ? (
+            <p className="p-6 text-sm text-white/60">Nobody yet.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-white/10 md:max-h-[560px] md:overflow-y-auto">
+              {growth.latest.map((user) => {
+                const online = user.last_seen && now - new Date(user.last_seen).getTime() < 15 * 60_000
+                return (
+                  <li key={user.id} className="flex items-center gap-3 px-4 py-3 md:px-6">
+                    <span className="relative shrink-0">
+                      <Avatar name={user.display_name} url={user.avatar_url} className="h-11 w-11 text-base" />
+                      {online && (
+                        <span
+                          className="absolute -right-0.5 -bottom-0.5 h-3.5 w-3.5 rounded-full border-2 border-noche bg-emerald-400"
+                          title="Using the app now"
+                        />
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-2">
+                        <Link to={`/user/${user.id}`} className="truncate font-semibold hover:underline">
+                          {user.display_name}
+                        </Link>
+                        <span className="shrink-0 text-xs text-white/60">joined {ago(user.created_at)}</span>
+                      </p>
+                      <p className="truncate text-xs text-white/60">{user.email}</p>
+                      <p className="text-xs text-white/60">
+                        {online ? (
+                          <span className="font-semibold text-emerald-400">Online now</span>
+                        ) : user.last_seen ? (
+                          `Seen ${ago(user.last_seen)}`
+                        ) : (
+                          'Never seen'
+                        )}
+                        {' · '}
+                        {user.listings} listings · {user.messages} messages{user.push && ' · notifications on'}
+                      </p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// Barras por día. Al pasar el ratón o tocar una barra se ve el día y la cifra.
+function DailyChart({ days, metric }: { days: GrowthDay[]; metric: Metric }) {
+  const [picked, setPicked] = useState<number | null>(null)
+  const values = days.map((day) => day[metric])
+  const max = Math.max(1, ...values)
+  const total = values.reduce((sum, value) => sum + value, 0)
+  const info = METRICS.find((item) => item.id === metric)!
+  const shown = picked !== null ? days[picked] : null
+  const label = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+
+  return (
+    <div>
+      <p className="text-sm text-white/60" aria-live="polite">
+        {shown ? (
+          <>
+            <span className="font-display text-2xl font-bold text-white">{shown[metric]}</span> {info.hint} on {label(shown.day)}
+          </>
+        ) : (
+          <>
+            <span className="font-display text-2xl font-bold text-white">{total}</span> {info.hint} in {days.length} days
+          </>
+        )}
+      </p>
+      <div
+        className="mt-4 flex h-44 items-end gap-[3px]"
+        role="img"
+        aria-label={`${info.label} per day: ${total} in ${days.length} days`}
+        onMouseLeave={() => setPicked(null)}
+      >
+        {days.map((day, index) => {
+          const value = day[metric]
+          const isToday = index === days.length - 1
+          return (
+            <button
+              key={day.day}
+              type="button"
+              tabIndex={-1}
+              aria-hidden="true"
+              onMouseEnter={() => setPicked(index)}
+              onClick={() => setPicked(picked === index ? null : index)}
+              className="group flex h-full min-w-0 flex-1 items-end"
+            >
+              <span
+                className={`block w-full rounded-t-[3px] transition-colors ${
+                  picked === index ? 'bg-rosa' : isToday ? 'bg-carmin' : 'bg-white/25 group-hover:bg-white/45'
+                }`}
+                style={{ height: value ? `${Math.max(4, (value / max) * 100)}%` : '2px' }}
+              />
+            </button>
+          )
+        })}
+      </div>
+      <div className="mt-2 flex justify-between text-[11px] text-white/60">
+        <span>{label(days[0].day)}</span>
+        <span>Today</span>
+      </div>
+    </div>
+  )
+}
+
+function Funnel({ steps }: { steps: { label: string; value: number }[] }) {
+  const top = Math.max(1, steps[0].value)
+  return (
+    <ol className="space-y-3">
+      {steps.map((step, index) => {
+        const share = Math.round((step.value / top) * 100)
+        return (
+          <li key={step.label}>
+            <div className="flex items-baseline justify-between gap-2 text-sm">
+              <span className="text-white/80">{step.label}</span>
+              <span>
+                <strong className="font-display">{step.value}</strong>
+                {index > 0 && <span className="ml-1.5 text-xs text-white/60">{share}%</span>}
+              </span>
+            </div>
+            <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-carmin to-rosa"
+                style={{ width: `${step.value ? Math.max(3, share) : 0}%` }}
+              />
+            </div>
+          </li>
+        )
+      })}
+    </ol>
   )
 }
 
