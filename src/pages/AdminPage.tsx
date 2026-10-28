@@ -7,6 +7,8 @@ import {
   Bug,
   Ban,
   CheckCircle2,
+  Database,
+  Download,
   Flag,
   ImageOff,
   Package,
@@ -19,8 +21,20 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '../lib/auth'
-import { closeReports, fetchGrowth, fetchReports, fetchStats, searchAllListings, searchUsers, setBan, useIsAdmin } from '../lib/admin'
-import type { AdminUser, Growth, GrowthDay, ReportRow, Stats } from '../lib/admin'
+import {
+  closeReports,
+  downloadCsv,
+  fetchAllListingsForExport,
+  fetchAppData,
+  fetchGrowth,
+  fetchReports,
+  fetchStats,
+  searchAllListings,
+  searchUsers,
+  setBan,
+  useIsAdmin,
+} from '../lib/admin'
+import type { AdminUser, AppData, DataAccount, Growth, GrowthDay, ReportRow, Stats } from '../lib/admin'
 import { deleteListing, fetchListing } from '../lib/listings'
 import type { Listing } from '../lib/listings'
 import { formatPosted, formatPrice } from '../lib/format'
@@ -29,16 +43,18 @@ import { clearErrors, fetchErrors } from '../lib/errors'
 import type { ClientError } from '../lib/errors'
 import NotFoundPage from './NotFoundPage'
 import ListingPhoto from '../components/ListingPhoto'
+import { getCategory } from '../data/categories'
 
 // Panel de administración (/admin): solo para los administradores (supabase/11_admin.sql).
 // Está en inglés y sin traducir: es una herramienta interna para los fundadores.
-// Resumen (números) · Denuncias · Usuarios (suspender) · Anuncios (borrar).
+// Resumen (números) · Crecimiento · Datos (todas las cuentas, descargas) · Denuncias · Usuarios (suspender) · Anuncios (borrar).
 
-type Tab = 'overview' | 'growth' | 'reports' | 'users' | 'listings' | 'errors'
+type Tab = 'overview' | 'growth' | 'data' | 'reports' | 'users' | 'listings' | 'errors'
 
 const TABS: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
   { id: 'growth', label: 'Growth', icon: TrendingUp },
+  { id: 'data', label: 'Data', icon: Database },
   { id: 'reports', label: 'Reports', icon: Flag },
   { id: 'users', label: 'Users', icon: Users },
   { id: 'listings', label: 'Listings', icon: Package },
@@ -100,6 +116,7 @@ function AdminPage() {
 
       {tab === 'overview' && <Overview onOpenReports={() => setTab('reports')} />}
       {tab === 'growth' && <GrowthTab />}
+      {tab === 'data' && <DataTab currentUserId={session!.user.id} />}
       {tab === 'reports' && <Reports />}
       {tab === 'users' && <UsersTab currentUserId={session!.user.id} />}
       {tab === 'listings' && <ListingsTab />}
@@ -565,6 +582,426 @@ function Reports() {
         “No problem” closes the report (a listing hidden by 3 reports becomes visible again). Deleting or suspending
         also closes all open reports about the same listing or student.
       </p>
+    </div>
+  )
+}
+
+// ---------- Datos ----------
+
+type AccountFilter = 'all' | 'sellers' | 'never_posted' | 'inactive' | 'suspended'
+type AccountSort = 'joined' | 'seen' | 'listings' | 'sold' | 'messages'
+
+const ACCOUNT_FILTERS: { id: AccountFilter; label: string; test: (a: DataAccount, now: number) => boolean }[] = [
+  { id: 'all', label: 'All', test: () => true },
+  { id: 'sellers', label: 'Sellers', test: (a) => a.listings > 0 },
+  { id: 'never_posted', label: 'Never posted', test: (a) => a.listings === 0 },
+  {
+    id: 'inactive',
+    label: 'Inactive 30+ days',
+    test: (a, now) => !a.last_seen || now - new Date(a.last_seen).getTime() > 30 * 86_400_000,
+  },
+  { id: 'suspended', label: 'Suspended', test: (a) => Boolean(a.banned_at) },
+]
+
+const ACCOUNT_SORTS: { id: AccountSort; label: string; value: (a: DataAccount) => number }[] = [
+  { id: 'joined', label: 'Newest first', value: (a) => new Date(a.created_at).getTime() },
+  { id: 'seen', label: 'Last seen', value: (a) => (a.last_seen ? new Date(a.last_seen).getTime() : 0) },
+  { id: 'listings', label: 'Most listings', value: (a) => a.listings },
+  { id: 'sold', label: 'Most sold', value: (a) => a.sold },
+  { id: 'messages', label: 'Most messages', value: (a) => a.messages },
+]
+
+const PAGE = 50
+
+function euros(value: number) {
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value)
+}
+
+function day(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function DataTab({ currentUserId }: { currentUserId: string }) {
+  const [data, setData] = useState<AppData | null>(null)
+  const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState<AccountFilter>('all')
+  const [sort, setSort] = useState<AccountSort>('joined')
+  const [shown, setShown] = useState(PAGE)
+  const [busy, setBusy] = useState<string | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const [now] = useState(() => Date.now())
+
+  const load = useCallback(() => {
+    fetchAppData()
+      .then(setData)
+      .catch(() => setError('Could not load the data (did you run 16_datos.sql?).'))
+  }, [])
+
+  useEffect(load, [load])
+
+  if (error && !data) return <ErrorBox text={error} />
+  if (!data) return <Loading />
+
+  const { totals } = data
+  const text = search.trim().toLowerCase()
+  const test = ACCOUNT_FILTERS.find((f) => f.id === filter)!.test
+  const value = ACCOUNT_SORTS.find((s) => s.id === sort)!.value
+  const accounts = data.accounts
+    .filter((a) => test(a, now))
+    .filter((a) => !text || a.display_name.toLowerCase().includes(text) || a.email.toLowerCase().includes(text))
+    .sort((a, b) => value(b) - value(a))
+  const maxCategory = Math.max(1, ...data.by_category.map((c) => c.total))
+
+  const n = (value: number) => value.toLocaleString('en-GB')
+  const groups: { title: string; tiles: { label: string; value: string; hint?: string }[] }[] = [
+    {
+      title: 'Students and activity',
+      tiles: [
+        { label: 'Accounts', value: n(totals.accounts), hint: `${n(totals.suspended)} suspended` },
+        {
+          label: 'Have posted',
+          value: n(totals.sellers),
+          hint: totals.accounts ? `${Math.round((totals.sellers / totals.accounts) * 100)}% of accounts` : undefined,
+        },
+        { label: 'Chats', value: n(totals.conversations) },
+        { label: 'Messages', value: n(totals.messages) },
+        { label: 'Favourites', value: n(totals.favorites) },
+        {
+          label: 'Reviews',
+          value: n(totals.reviews),
+          hint: totals.rating ? `Average ★ ${Number(totals.rating).toFixed(1)}` : 'No reviews yet',
+        },
+      ],
+    },
+    {
+      title: 'Listings',
+      tiles: [
+        { label: 'Listings ever', value: n(totals.listings), hint: `${n(totals.photos)} photos · ${n(totals.free)} free` },
+        { label: 'On sale', value: n(totals.available), hint: `${euros(totals.value_on_sale)} on sale` },
+        { label: 'Reserved', value: n(totals.reserved) },
+        { label: 'Sold', value: n(totals.sold), hint: `${euros(totals.value_sold)} sold` },
+        { label: 'Events', value: n(totals.events) },
+        { label: 'Food', value: n(totals.food) },
+      ],
+    },
+  ]
+
+  async function toggleBan(user: DataAccount) {
+    let reason: string | null = null
+    if (!user.banned_at) {
+      reason = window.prompt(`Suspend ${user.display_name}? Write the reason (they will see it):`)
+      if (reason === null) return
+    } else if (!window.confirm(`Reactivate ${user.display_name}'s account?`)) return
+    setBusy(user.id)
+    try {
+      await setBan(user.id, !user.banned_at, reason ?? undefined)
+      load()
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  function exportAccounts() {
+    downloadCsv(
+      `centralemarket-accounts-${new Date().toISOString().slice(0, 10)}.csv`,
+      ['Name', 'Email', 'Joined', 'Last seen', 'Listings', 'On sale', 'Sold', 'Bought', 'Messages', 'Rating', 'Open reports', 'Suspended'],
+      accounts.map((a) => [
+        a.display_name,
+        a.email,
+        a.created_at.slice(0, 10),
+        a.last_seen?.slice(0, 10) ?? '',
+        a.listings,
+        a.on_sale,
+        a.sold,
+        a.bought,
+        a.messages,
+        a.rating,
+        a.reports,
+        a.banned_at ? 'yes' : '',
+      ]),
+    )
+  }
+
+  async function exportListings() {
+    setExporting(true)
+    try {
+      const listings = await fetchAllListingsForExport()
+      downloadCsv(
+        `centralemarket-listings-${new Date().toISOString().slice(0, 10)}.csv`,
+        ['ID', 'Title', 'Category', 'Price (€)', 'Per', 'Status', 'Location', 'Posted', 'Seller'],
+        listings.map((l) => [
+          l.id,
+          l.title,
+          getCategory(l.category)?.name ?? l.category,
+          l.price,
+          l.price_unit ?? '',
+          l.status,
+          l.location,
+          l.created_at.slice(0, 10),
+          l.seller?.display_name ?? '',
+        ]),
+      )
+    } catch {
+      setError('Could not download the listings.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {error && <ErrorBox text={error} />}
+
+      <div className="space-y-4">
+        {groups.map((group) => (
+          <section key={group.title} aria-label={group.title}>
+            <h2 className="mb-2 font-display text-lg font-bold">{group.title}</h2>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+              {group.tiles.map((tile) => (
+                <div key={tile.label} className="glass rounded-3xl p-4">
+                  <p className="text-sm text-white/60">{tile.label}</p>
+                  <p className="mt-1 font-display text-3xl font-bold">{tile.value}</p>
+                  {tile.hint && <p className="mt-1 text-xs text-white/60">{tile.hint}</p>}
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <section className="glass space-y-4 rounded-3xl p-4 md:p-6" aria-label="Listings by category">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="font-display text-lg font-bold">Listings by category</h2>
+            <p className="text-xs text-white/60">All listings ever posted · light part = sold.</p>
+          </div>
+          <ActionButton icon={Download} onClick={exportListings} disabled={exporting}>
+            {exporting ? 'Preparing…' : 'Download listings'}
+          </ActionButton>
+        </div>
+        {data.by_category.length === 0 ? (
+          <p className="text-sm text-white/60">No listings yet.</p>
+        ) : (
+          <ul className="space-y-3">
+            {data.by_category.map((c) => {
+              const category = getCategory(c.category)
+              const Icon = category?.icon ?? Package
+              return (
+                <li key={c.category} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 text-sm md:grid-cols-[12rem_1fr_auto]">
+                  <span className="flex min-w-0 items-center gap-2 text-white/80">
+                    <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-white/60" />
+                    <span className="truncate">{category?.name ?? c.category}</span>
+                  </span>
+                  <span className="relative order-last col-span-2 h-3 overflow-hidden rounded-full bg-white/5 md:order-none md:col-span-1">
+                    <span
+                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-carmin to-rojo"
+                      style={{ width: `${(c.total / maxCategory) * 100}%` }}
+                    />
+                    <span
+                      className="absolute inset-y-0 left-0 rounded-full bg-rosa/70"
+                      style={{ width: `${(c.sold / maxCategory) * 100}%` }}
+                    />
+                  </span>
+                  <span className="text-right text-xs whitespace-nowrap text-white/60">
+                    <strong className="text-sm text-white">{c.total}</strong> · {c.available} on sale · {c.sold} sold
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="glass overflow-hidden rounded-3xl" aria-label="All accounts">
+        <div className="space-y-3 p-4 md:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="font-display text-lg font-bold">All accounts</h2>
+              <p className="text-xs text-white/60">
+                {accounts.length === data.accounts.length
+                  ? `${accounts.length} accounts`
+                  : `${accounts.length} of ${data.accounts.length} accounts`}{' '}
+                · “seen” = last time they opened the app.
+              </p>
+            </div>
+            <ActionButton icon={Download} onClick={exportAccounts} disabled={accounts.length === 0}>
+              Download accounts
+            </ActionButton>
+          </div>
+          <SearchBox
+            value={search}
+            onChange={(value) => {
+              setSearch(value)
+              setShown(PAGE)
+            }}
+            placeholder="Search by name or email"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            {ACCOUNT_FILTERS.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setFilter(id)
+                  setShown(PAGE)
+                }}
+                aria-pressed={filter === id}
+                className={`min-h-11 rounded-full px-4 text-sm font-medium transition ${
+                  filter === id ? 'bg-white text-noche' : 'border border-white/15 text-white/80 hover:bg-white/10'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+            <label className="ml-auto flex min-h-11 items-center">
+              <span className="sr-only">Sort accounts</span>
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value as AccountSort)}
+                className="min-h-11 rounded-full border border-white/15 bg-transparent px-3 text-sm text-white"
+              >
+                {ACCOUNT_SORTS.map(({ id, label }) => (
+                  <option key={id} value={id}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        {accounts.length === 0 ? (
+          <p className="px-6 pb-6 text-sm text-white/60">No accounts match.</p>
+        ) : (
+          <>
+            {/* Ordenador: tabla */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-left text-sm">
+                <thead className="border-y border-white/10 text-xs text-white/60">
+                  <tr>
+                    <th scope="col" className="px-6 py-2 font-medium">Student</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Joined</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Seen</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium">Listings</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium">Sold</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium">Bought</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium">Messages</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium">★</th>
+                    <th scope="col" className="px-6 py-2"><span className="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {accounts.slice(0, shown).map((a) => (
+                    <tr key={a.id} className="hover:bg-white/5">
+                      <td className="px-6 py-2">
+                        <span className="flex items-center gap-3">
+                          <Avatar name={a.display_name} url={a.avatar_url} className="h-9 w-9 shrink-0 text-sm" />
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-2">
+                              <Link to={`/user/${a.id}`} className="truncate font-semibold hover:underline">
+                                {a.display_name}
+                              </Link>
+                              {a.banned_at && (
+                                <span className="rounded-full bg-rojo/20 px-2 py-0.5 text-[11px] font-bold text-rosa">Suspended</span>
+                              )}
+                              {a.reports > 0 && (
+                                <span className="rounded-full bg-rojo/20 px-2 py-0.5 text-[11px] font-bold text-rosa">
+                                  {a.reports} reports
+                                </span>
+                              )}
+                            </span>
+                            <span className="block truncate text-xs text-white/60">{a.email}</span>
+                          </span>
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-white/70">{day(a.created_at)}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-white/70">{ago(a.last_seen)}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">
+                        {a.listings}
+                        {a.on_sale > 0 && <span className="text-xs text-white/60"> ({a.on_sale} on sale)</span>}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums">{a.sold}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{a.bought}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{a.messages}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{a.rating !== null ? Number(a.rating).toFixed(1) : '–'}</td>
+                      <td className="px-6 py-2 text-right">
+                        {a.id !== currentUserId && (
+                          <button
+                            type="button"
+                            onClick={() => toggleBan(a)}
+                            disabled={busy === a.id}
+                            aria-label={`${a.banned_at ? 'Reactivate' : 'Suspend'} ${a.display_name}`}
+                            title={a.banned_at ? 'Reactivate' : 'Suspend'}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-white/60 hover:bg-rojo/20 hover:text-rosa disabled:opacity-50"
+                          >
+                            {a.banned_at ? <RotateCcw aria-hidden="true" className="h-4 w-4" /> : <Ban aria-hidden="true" className="h-4 w-4" />}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Móvil: tarjetas */}
+            <ul className="divide-y divide-white/10 border-t border-white/10 md:hidden">
+              {accounts.slice(0, shown).map((a) => (
+                <li key={a.id} className="flex items-center gap-3 px-4 py-3">
+                  <Avatar name={a.display_name} url={a.avatar_url} className="h-11 w-11 shrink-0 text-base" />
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-center gap-2">
+                      <Link to={`/user/${a.id}`} className="truncate font-semibold hover:underline">
+                        {a.display_name}
+                      </Link>
+                      {a.banned_at && (
+                        <span className="rounded-full bg-rojo/20 px-2 py-0.5 text-[11px] font-bold text-rosa">Suspended</span>
+                      )}
+                      {a.reports > 0 && (
+                        <span className="rounded-full bg-rojo/20 px-2 py-0.5 text-[11px] font-bold text-rosa">{a.reports} reports</span>
+                      )}
+                    </p>
+                    <p className="truncate text-xs text-white/60">{a.email}</p>
+                    <p className="text-xs text-white/60">
+                      Joined {day(a.created_at)} · {a.last_seen ? `seen ${ago(a.last_seen)}` : 'never seen'}
+                    </p>
+                    <p className="text-xs text-white/60">
+                      {a.listings} listings · {a.sold} sold · {a.bought} bought · {a.messages} messages
+                      {a.rating !== null && ` · ★ ${Number(a.rating).toFixed(1)}`}
+                    </p>
+                  </div>
+                  {a.id !== currentUserId && (
+                    <button
+                      type="button"
+                      onClick={() => toggleBan(a)}
+                      disabled={busy === a.id}
+                      aria-label={`${a.banned_at ? 'Reactivate' : 'Suspend'} ${a.display_name}`}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/60 hover:bg-rojo/20 hover:text-rosa disabled:opacity-50"
+                    >
+                      {a.banned_at ? <RotateCcw aria-hidden="true" className="h-4 w-4" /> : <Ban aria-hidden="true" className="h-4 w-4" />}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {accounts.length > shown && (
+              <div className="border-t border-white/10 p-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShown((n) => n + PAGE)}
+                  className="min-h-11 rounded-full border border-white/15 px-5 text-sm font-medium text-white/80 hover:bg-white/10"
+                >
+                  Show {Math.min(PAGE, accounts.length - shown)} more
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
     </div>
   )
 }

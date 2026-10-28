@@ -143,3 +143,99 @@ export async function fetchGrowth(days = 30) {
   if (error) throw error
   return data as Growth
 }
+
+// Datos para el seguimiento (Admin → Data, supabase/16_datos.sql): totales, categorías y TODAS las cuentas.
+export type DataAccount = {
+  id: string
+  display_name: string
+  email: string
+  avatar_url: string | null
+  created_at: string
+  last_seen: string | null
+  banned_at: string | null
+  ban_reason: string | null
+  listings: number
+  on_sale: number
+  sold: number
+  bought: number
+  messages: number
+  rating: number | null
+  reports: number
+}
+
+export type AppData = {
+  totals: {
+    accounts: number
+    suspended: number
+    sellers: number
+    listings: number
+    available: number
+    reserved: number
+    sold: number
+    value_sold: number
+    value_on_sale: number
+    free: number
+    photos: number
+    events: number
+    food: number
+    conversations: number
+    messages: number
+    favorites: number
+    reviews: number
+    rating: number | null
+  }
+  by_category: { category: string; total: number; available: number; sold: number }[]
+  accounts: DataAccount[]
+}
+
+export async function fetchAppData() {
+  const { data, error } = await supabase.rpc('admin_data')
+  if (error) throw error
+  return data as AppData
+}
+
+// Todos los anuncios (también los ocultos) para descargarlos en una hoja de cálculo.
+export type ExportListing = {
+  id: number
+  title: string
+  category: string
+  price: number
+  price_unit: string | null
+  status: string
+  location: string
+  created_at: string
+  seller: { display_name: string } | null
+}
+
+const EXPORT_SELECT =
+  'id, title, category, price, price_unit, status, location, created_at, seller:profiles!listings_seller_id_fkey(display_name)'
+
+export async function fetchAllListingsForExport() {
+  const rows: ExportListing[] = []
+  // De 1000 en 1000 (es el máximo que da Supabase por petición).
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase
+      .from('listings')
+      .select(EXPORT_SELECT)
+      .order('created_at', { ascending: false })
+      .range(from, from + 999)
+    if (error) throw error
+    rows.push(...(data as unknown as ExportListing[]))
+    if (!data || data.length < 1000) return rows
+  }
+}
+
+// Descarga un CSV que se abre en Excel, Numbers o Google Sheets (con BOM para que salgan bien las tildes).
+export function downloadCsv(filename: string, header: string[], rows: (string | number | null)[][]) {
+  const cell = (value: string | number | null) => {
+    const text = value === null ? '' : String(value)
+    return /[",;\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+  }
+  const csv = [header, ...rows].map((row) => row.map(cell).join(',')).join('\n')
+  const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
