@@ -34,6 +34,7 @@ import Avatar from '../components/Avatar'
 import NotFoundPage from './NotFoundPage'
 import { useT } from '../i18n/lang'
 import ListingPhoto from '../components/ListingPhoto'
+import { limitMessage } from '../lib/safety'
 
 function ProductPage() {
   // El número de la URL (/item/3) llega aquí como texto: "3".
@@ -113,9 +114,9 @@ function ListingView({ listing, userId, isOwner, justPublished, onChanged }: Lis
     try {
       const conversationId = await startConversation(listing.id, userId)
       navigate(`/messages/${conversationId}${offer ? '?offer=1' : ''}`)
-    } catch {
+    } catch (failure) {
       setOpening(false)
-      setContactError(t('Could not open the chat. Please try again.'))
+      setContactError(t(limitMessage(failure) ?? 'Could not open the chat. Please try again.'))
     }
   }
 

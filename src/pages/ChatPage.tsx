@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
-import { ArrowLeft, Check, HandCoins, ImageOff, Send, Star, X } from 'lucide-react'
+import { ArrowLeft, Check, HandCoins, ImageOff, Send, Star, TriangleAlert, X } from 'lucide-react'
 import {
   fetchConversation,
   fetchMessages,
@@ -20,6 +20,7 @@ import NotFoundPage from './NotFoundPage'
 import { useT } from '../i18n/lang'
 import { currentLocale } from '../i18n/core'
 import ListingPhoto from '../components/ListingPhoto'
+import { hasLink, limitMessage } from '../lib/safety'
 
 function ChatPage() {
   const { id } = useParams()
@@ -115,8 +116,8 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
     try {
       upsert(await sendMessage(conversation.id, text))
       setText('')
-    } catch {
-      setError(t('Message not sent. Please try again.'))
+    } catch (failure) {
+      setError(t(limitMessage(failure) ?? 'Message not sent. Please try again.'))
     } finally {
       setSending(false)
     }
@@ -243,6 +244,13 @@ function ChatView({ conversation, userId, onListingChanged }: ChatViewProps) {
                 }`}
               >
                 <p className="break-words whitespace-pre-line">{systemText(message.content, t)}</p>
+                {/* Aviso antiestafas en los enlaces que te mandan (los enlaces nunca se pueden pulsar) */}
+                {!mine && hasLink(message.content) && (
+                  <p className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-black/25 px-2 py-1.5 text-xs text-white/85">
+                    <TriangleAlert aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" />
+                    {t('Careful with links: never pay or enter your password outside CentraleMarket.')}
+                  </p>
+                )}
                 <p className={`mt-0.5 text-right text-[11px] ${mine ? 'text-white/70' : 'text-white/60'}`}>
                   {new Date(message.created_at).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' })}
                   {mine && (message.read_at ? ` · ${t('Seen')}` : '')}

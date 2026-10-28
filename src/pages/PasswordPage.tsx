@@ -5,6 +5,7 @@ import { ArrowLeft, CheckCircle2, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { useT } from '../i18n/lang'
+import { safeNext } from '../lib/safety'
 
 // Crear o cambiar tu contraseña (/profile/password).
 // - ?welcome=1: justo después de crear la cuenta.
@@ -18,7 +19,7 @@ function PasswordPage() {
   const { session } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const next = params.get('next') || '/'
+  const next = safeNext(params.get('next'))
   const welcome = params.has('welcome')
   const reset = params.has('reset')
   const hasPassword = session?.user.user_metadata?.has_password === true

@@ -7,6 +7,7 @@ import { isAllowedEmail, useAuth } from '../lib/auth'
 import { LogoMark } from '../components/Logo'
 import { useT } from '../i18n/lang'
 import LangSwitch from '../components/LangSwitch'
+import { safeNext } from '../lib/safety'
 
 // Entrar en CentraleMarket:
 // - Lo normal: email de la uni + contraseña.
@@ -35,7 +36,7 @@ const TITLES: Record<Purpose, { title: string; text: string; button: string }> =
 function LoginPage() {
   const { session } = useAuth()
   const [params] = useSearchParams()
-  const next = params.get('next') || '/'
+  const next = safeNext(params.get('next'))
 
   const [mode, setMode] = useState<Mode>('password')
   const [purpose, setPurpose] = useState<Purpose>('login')

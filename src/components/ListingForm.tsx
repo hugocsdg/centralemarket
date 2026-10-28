@@ -6,6 +6,7 @@ import { CONDITIONS, DIETARY, LOCATIONS } from '../lib/listings'
 import type { Condition, Dietary, Listing, NewListing, PhotoItem } from '../lib/listings'
 import { imageUrl } from '../lib/listings'
 import { useT } from '../i18n/lang'
+import { limitMessage } from '../lib/safety'
 
 const MAX_PHOTOS = 6
 
@@ -148,7 +149,7 @@ function ListingForm({ heading, subheading, submitLabel, listing, initialCategor
       )
     } catch (failure) {
       setProgress('')
-      setError(t(failure instanceof Error ? failure.message : 'Something went wrong. Please try again.'))
+      setError(t(limitMessage(failure) ?? (failure instanceof Error ? failure.message : 'Something went wrong. Please try again.')))
       requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
     }
   }
